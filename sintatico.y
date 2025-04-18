@@ -2,12 +2,13 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include<unordered_map>
+#include<iostream>
+#include<vector>
 
 #define YYSTYPE atributos
 
 using namespace std;
-
-int var_temp_qnt;
 
 int vet_cedulas[200];
 
@@ -17,13 +18,13 @@ struct atributos
 	string traducao;
 };
 
-struct simbolo
-{
-	string temp;
-	string nome;
-	string tipo;
-};
+struct Symbol {
+    std::string nome;
+    std::string tipo;
+}; 
 
+int var_temp_qnt;
+unordered_map<string, Symbol> symbolTable;
 
 int yylex(void);
 void yyerror(string);
@@ -42,7 +43,7 @@ string gentempcode();
 
 S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 			{
-				string codigo = "/*Compilador FOCA*/\n"
+				string codigo = "/*Compilador boto*/\n"
 								"#include <iostream>\n"
 								"#include<string.h>\n"
 								"#include<stdio.h>\n"
@@ -82,8 +83,16 @@ COMANDOS	: COMANDO COMANDOS
 			;
 
 COMANDO 	: E ';'
+			| TK_TIPO_INT TK_ID ';'
 			{
-				$$ = $1;
+				Symbol val;
+				val.nome = $2.label;
+				val.tipo = "int";
+
+				symbolTable.insert({val.nome, val});
+
+				$$.traducao = "";
+				$$.label = "";
 			}
 			;
 
@@ -114,7 +123,7 @@ E 			: E '+' E
 			| '(' E ')' 
 			{
 				$$.label = $2.label;
-				$$.traducao = $2.traducao;
+				$$.traducao = $2.traducao + ";\n";
 			}
 			| TK_ID
 			{
@@ -126,12 +135,19 @@ E 			: E '+' E
 				$$.label = gentempcode();
 				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 			}
-			| TK_ID '=' E
+			| | TK_ID '=' E
 			{
-				$$.label = "";
-				$$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
+				auto it = symbolTable.find($1.label);
+				if (it != symbolTable.end()) {
+					Symbol variavel = it->second;
+
+					$$.label = $1.label; // não precisa gerar temporário aqui
+					$$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
+				} else {
+					yyerror("Variável não declarada.");
+				}
 			}
-			;
+
 
 %%
 
