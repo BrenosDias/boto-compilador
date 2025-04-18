@@ -16,6 +16,7 @@ struct atributos
 {
 	string label;
 	string traducao;
+	string type;
 };
 
 struct Symbol {
@@ -37,7 +38,8 @@ string gentempcode();
 
 %start S
 
-%left '+'
+%left '+' '-'
+%left '*' '/'
 
 %%
 
@@ -52,7 +54,7 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 
 				for(int i = 1; i <= var_temp_qnt; i++)
 				{
-					codigo += "\tint t" + to_string(i) + "\n";
+					codigo += "\tint t" + to_string(i) + ";\n";
 				}
 
 				codigo += "\n";
@@ -99,56 +101,65 @@ COMANDO 	: E ';'
 E 			: E '+' E
 			{
 				$$.label = gentempcode();
+				$$.type = "int";
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
 					" = " + $1.label + " + " + $3.label + ";\n";
 			}
 			| E '-' E
 			{
 				$$.label = gentempcode();
+				$$.type = "int";
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
 					" = " + $1.label + " - " + $3.label + ";\n";
 			}
 			| E '*' E
 			{
 				$$.label = gentempcode();
+				$$.type = "int";
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
 					" = " + $1.label + " * " + $3.label + ";\n";
 			}
 			| E '/' E
 			{
 				$$.label = gentempcode();
+				$$.type = "int";
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
 					" = " + $1.label + " / " + $3.label + ";\n";
 			}
 			| '(' E ')' 
 			{
 				$$.label = $2.label;
-				$$.traducao = $2.traducao + ";\n";
+				$$.type = $2.type;
+				$$.traducao = $2.traducao;
 			}
 			| TK_ID
 			{
-				$$.label = gentempcode();
-				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
-			}
-			| TK_NUM
-			{
-				$$.label = gentempcode();
-				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
-			}
-			| | TK_ID '=' E
-			{
 				auto it = symbolTable.find($1.label);
 				if (it != symbolTable.end()) {
-					Symbol variavel = it->second;
-
-					$$.label = $1.label; // não precisa gerar temporário aqui
-					$$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
+					$$.type = it->second.tipo;
+					$$.label = $1.label;
+					$$.traducao = "";
 				} else {
 					yyerror("Variável não declarada.");
 				}
 			}
+			| TK_NUM
+			{
+				$$.type = "int";
+				$$.label = gentempcode();
+				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+			}
+			| TK_ID '=' E
+			{
+				auto it = symbolTable.find($1.label);
+				if (it == symbolTable.end()) {
+					yyerror("Variável do lado esquerdo não declarada.");
+				}
 
-
+				$$.label = "";
+				$$.type = "int";
+				$$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
+			}
 %%
 
 #include "lex.yy.c"
