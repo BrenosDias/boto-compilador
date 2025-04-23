@@ -85,6 +85,10 @@ COMANDOS	: COMANDO COMANDOS
 			;
 
 COMANDO 	: E ';'
+			{
+				$$ = $1;
+			}
+			;
 			| TK_TIPO_INT TK_ID ';'
 			{
 				Symbol val;
@@ -137,8 +141,11 @@ E 			: E '+' E
 				auto it = symbolTable.find($1.label);
 				if (it != symbolTable.end()) {
 					$$.type = it->second.tipo;
-					$$.label = $1.label;
-					$$.traducao = "";
+					// $$.label = $1.label;
+					$$.label = gentempcode();
+					// $$.traducao = "";
+					$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+
 				} else {
 					yyerror("Variável não declarada.");
 				}
@@ -156,7 +163,8 @@ E 			: E '+' E
 					yyerror("Variável do lado esquerdo não declarada.");
 				}
 
-				$$.label = "";
+				// $$.label = "";
+				$$.label = gentempcode();
 				$$.type = "int";
 				$$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
 			}

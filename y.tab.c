@@ -596,8 +596,8 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    46,    46,    71,    77,    82,    87,    88,   101,   108,
-     115,   122,   129,   135,   146,   152
+       0,    46,    46,    71,    77,    82,    87,    92,   105,   112,
+     119,   126,   133,   139,   153,   159
 };
 #endif
 
@@ -1225,8 +1225,16 @@ yyreduce:
 #line 1226 "y.tab.c"
     break;
 
+  case 6: /* COMANDO: E ';'  */
+#line 88 "sintatico.y"
+                        {
+				yyval = yyvsp[-1];
+			}
+#line 1234 "y.tab.c"
+    break;
+
   case 7: /* COMANDO: TK_TIPO_INT TK_ID ';'  */
-#line 89 "sintatico.y"
+#line 93 "sintatico.y"
                         {
 				Symbol val;
 				val.nome = yyvsp[-1].label;
@@ -1237,105 +1245,109 @@ yyreduce:
 				yyval.traducao = "";
 				yyval.label = "";
 			}
-#line 1241 "y.tab.c"
+#line 1249 "y.tab.c"
     break;
 
   case 8: /* E: E '+' E  */
-#line 102 "sintatico.y"
+#line 106 "sintatico.y"
                         {
 				yyval.label = gentempcode();
 				yyval.type = "int";
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + 
 					" = " + yyvsp[-2].label + " + " + yyvsp[0].label + ";\n";
 			}
-#line 1252 "y.tab.c"
+#line 1260 "y.tab.c"
     break;
 
   case 9: /* E: E '-' E  */
-#line 109 "sintatico.y"
+#line 113 "sintatico.y"
                         {
 				yyval.label = gentempcode();
 				yyval.type = "int";
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + 
 					" = " + yyvsp[-2].label + " - " + yyvsp[0].label + ";\n";
 			}
-#line 1263 "y.tab.c"
+#line 1271 "y.tab.c"
     break;
 
   case 10: /* E: E '*' E  */
-#line 116 "sintatico.y"
+#line 120 "sintatico.y"
                         {
 				yyval.label = gentempcode();
 				yyval.type = "int";
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + 
 					" = " + yyvsp[-2].label + " * " + yyvsp[0].label + ";\n";
 			}
-#line 1274 "y.tab.c"
+#line 1282 "y.tab.c"
     break;
 
   case 11: /* E: E '/' E  */
-#line 123 "sintatico.y"
+#line 127 "sintatico.y"
                         {
 				yyval.label = gentempcode();
 				yyval.type = "int";
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + 
 					" = " + yyvsp[-2].label + " / " + yyvsp[0].label + ";\n";
 			}
-#line 1285 "y.tab.c"
+#line 1293 "y.tab.c"
     break;
 
   case 12: /* E: '(' E ')'  */
-#line 130 "sintatico.y"
+#line 134 "sintatico.y"
                         {
 				yyval.label = yyvsp[-1].label;
 				yyval.type = yyvsp[-1].type;
 				yyval.traducao = yyvsp[-1].traducao;
 			}
-#line 1295 "y.tab.c"
+#line 1303 "y.tab.c"
     break;
 
   case 13: /* E: TK_ID  */
-#line 136 "sintatico.y"
+#line 140 "sintatico.y"
                         {
 				auto it = symbolTable.find(yyvsp[0].label);
 				if (it != symbolTable.end()) {
 					yyval.type = it->second.tipo;
-					yyval.label = yyvsp[0].label;
-					yyval.traducao = "";
+					// $$.label = $1.label;
+					yyval.label = gentempcode();
+					// $$.traducao = "";
+					yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
+
 				} else {
 					yyerror("Variável não declarada.");
 				}
 			}
-#line 1310 "y.tab.c"
+#line 1321 "y.tab.c"
     break;
 
   case 14: /* E: TK_NUM  */
-#line 147 "sintatico.y"
+#line 154 "sintatico.y"
                         {
 				yyval.type = "int";
 				yyval.label = gentempcode();
 				yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 			}
-#line 1320 "y.tab.c"
+#line 1331 "y.tab.c"
     break;
 
   case 15: /* E: TK_ID '=' E  */
-#line 153 "sintatico.y"
+#line 160 "sintatico.y"
                         {
 				auto it = symbolTable.find(yyvsp[-2].label);
 				if (it == symbolTable.end()) {
 					yyerror("Variável do lado esquerdo não declarada.");
 				}
 
-				yyval.label = "";
+				// $$.label = "";
+				yyval.label = gentempcode();
 				yyval.type = "int";
 				yyval.traducao = yyvsp[0].traducao + "\t" + yyvsp[-2].label + " = " + yyvsp[0].label + ";\n";
 			}
-#line 1335 "y.tab.c"
+#line 1347 "y.tab.c"
     break;
 
 
-#line 1339 "y.tab.c"
+#line 1351 "y.tab.c"
 
       default: break;
     }
@@ -1528,7 +1540,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 163 "sintatico.y"
+#line 171 "sintatico.y"
 
 
 #include "lex.yy.c"
