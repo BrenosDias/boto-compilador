@@ -32,8 +32,8 @@ void yyerror(string);
 string gentempcode();
 %}
 
-%token TK_NUM
-%token TK_MAIN TK_ID TK_TIPO_INT
+%token TK_INT
+%token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
 
 %start S
@@ -100,6 +100,17 @@ COMANDO 	: E ';'
 				$$.traducao = "";
 				$$.label = "";
 			}
+			| TK_VAR TK_ID ';'
+			{
+				Symbol val;
+				val.nome = $2.label;
+				val.tipo = "undefined";
+
+				symbolTable.insert({val.nome, val});
+
+				$$.traducao = "";
+				$$.label = "";
+			}
 			;
 
 E 			: E '+' E
@@ -150,7 +161,7 @@ E 			: E '+' E
 					yyerror("Variável não declarada.");
 				}
 			}
-			| TK_NUM
+			| TK_INT
 			{
 				$$.type = "int";
 				$$.label = gentempcode();
@@ -165,7 +176,7 @@ E 			: E '+' E
 
 				// $$.label = "";
 				$$.label = gentempcode();
-				$$.type = "int";
+				$$.type = $3.type;
 				$$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
 			}
 %%

@@ -5,13 +5,14 @@
 
 ESPACO [ \t]
 DIGITO [0-9]
+FLOAT [0-9]*\.[0-9]+|[0-9]+\.[0-9]*
 LETRA [A-Za-z_]
 
 DELIM {ESPACO}+
-NUM {DIGITO}+
-REAL {NUM}+("."{NUM}+)?
-CHAR \'({LETRA}|{NUM})\'
-ID {LETRA}({LETRA}|{NUM})*
+INT {DIGITO}+
+REAL {INT}+("."{INT}+)?
+CHAR \'({LETRA}|{INT})\'
+ID {LETRA}({LETRA}|{INT})*
 
 %%
 
@@ -23,13 +24,16 @@ ID {LETRA}({LETRA}|{NUM})*
 
 "int"		{return TK_TIPO_INT;}
 
+"var"		{return TK_VAR;}
+
+
 [(){}[\];,]	{ return *yytext; }
 
 [+\-*/]		{ return *yytext; }
 
 "="		    { return '='; }
 
-{NUM}		{ yylval.label = yytext; return TK_NUM; }
+{INT}		{ yylval.label = yytext; return TK_INT; }
 {ID}		{ yylval.label = yytext; return TK_ID; }
 
 .			{ *yytext; }
