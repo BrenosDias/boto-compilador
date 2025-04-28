@@ -20,8 +20,9 @@ struct atributos
 };
 
 struct Symbol {
-    std::string nome;
-    std::string tipo;
+    string nome;
+    string tipo;
+	string temp;
 }; 
 
 int var_temp_qnt;
@@ -30,9 +31,10 @@ unordered_map<string, Symbol> symbolTable;
 int yylex(void);
 void yyerror(string);
 string gentempcode();
+void printSymbolTable();
 %}
 
-%token TK_INT
+%token TK_INT TK_FLOAT
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
 
@@ -50,11 +52,11 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 								"#include<string.h>\n"
 								"#include<stdio.h>\n"
 								"int main(void) {\n";
-								
+							
 
-				for(int i = 1; i <= var_temp_qnt; i++)
+				for(auto it = symbolTable.begin(); it != symbolTable.end(); it++)
 				{
-					codigo += "\tint t" + to_string(i) + ";\n";
+					codigo += "\t" + it->second.tipo + " " + it-> second.temp + ";\n";
 				}
 
 				codigo += "\n";
@@ -89,22 +91,13 @@ COMANDO 	: E ';'
 				$$ = $1;
 			}
 			;
-			| TK_TIPO_INT TK_ID ';'
-			{
-				Symbol val;
-				val.nome = $2.label;
-				val.tipo = "int";
 
-				symbolTable.insert({val.nome, val});
-
-				$$.traducao = "";
-				$$.label = "";
-			}
 			| TK_VAR TK_ID ';'
 			{
 				Symbol val;
 				val.nome = $2.label;
 				val.tipo = "undefined";
+				val.temp = "";
 
 				symbolTable.insert({val.nome, val});
 
@@ -167,6 +160,12 @@ E 			: E '+' E
 				$$.label = gentempcode();
 				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 			}
+			| TK_FLOAT
+			{
+				$$.type = "float";
+				$$.label = gentempcode();
+				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+			}
 			| TK_ID '=' E
 			{
 				auto it = symbolTable.find($1.label);
@@ -174,8 +173,15 @@ E 			: E '+' E
 					yyerror("Variável do lado esquerdo não declarada.");
 				}
 
-				// $$.label = "";
-				$$.label = gentempcode();
+				if (it->second.tipo == "undefined") {
+					it->second.tipo = $3.type;
+				}
+
+				if (it->second.temp == "")
+				{
+					it->second.temp = gentempcode();
+				}
+				
 				$$.type = $3.type;
 				$$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
 			}
@@ -185,12 +191,29 @@ E 			: E '+' E
 
 int yyparse();
 
-string gentempcode()
+string gentempcode(string nome, string tipo)
 {
+	Symbol val;
+	val.nome = nome;
+	val.tipo = tipo;
 	var_temp_qnt++;
-	string nome = "t" + to_string(var_temp_qnt);
+	string temp = "t" + to_string(var_temp_qnt);
+	val.temp = temp;
+	symbolTable.insert({val.temp, val});
+
 
 	return nome;
+}
+
+void printSymbolTable() {
+	cout << "\n========= SYMBOL TABLE =========" << endl;
+		for (const auto& entry : symbolTable) 
+		{
+			cout << "Nome: " << entry.second.nome
+				<< ", Tipo: " << entry.second.tipo
+				<< ", Temp: " << entry.second.temp << endl;
+		}
+	cout << "================================\n" << endl;
 }
 
 int main(int argc, char* argv[])
@@ -198,6 +221,7 @@ int main(int argc, char* argv[])
 	var_temp_qnt = 0;
 
 	yyparse();
+	printSymbolTable();
 
 	return 0;
 }

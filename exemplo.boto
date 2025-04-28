@@ -1,9 +1,6 @@
-int main()
-{
+int main() {
 	var a;
 	var b;
 	a = 2;
-
-	b = a + 5;
-
+	b = a + 3;
 }
