@@ -27,10 +27,11 @@ struct Symbol {
 
 int var_temp_qnt;
 unordered_map<string, Symbol> symbolTable;
+vector<Symbol> tempsVector;
 
 int yylex(void);
 void yyerror(string);
-string gentempcode();
+string gentempcode(string tipo);
 void printSymbolTable();
 %}
 
@@ -52,11 +53,19 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 								"#include<string.h>\n"
 								"#include<stdio.h>\n"
 								"int main(void) {\n";
-							
 
-				for(auto it = symbolTable.begin(); it != symbolTable.end(); it++)
-				{
-					codigo += "\t" + it->second.tipo + " " + it-> second.temp + ";\n";
+				// Declara apenas variáveis temporárias
+				for (auto &t : tempsVector) {
+					codigo += "\t" + t.tipo + " " + t.nome + ";\n";
+				}
+
+				for (auto &par : symbolTable) {
+					const Symbol &simbolo = par.second;
+
+					// Se o nome NÃO começa com 't', é uma variável do usuário (ex: a, b)
+					if (!simbolo.nome.empty() && simbolo.nome[0] != 't') {
+						codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
+					}
 				}
 
 				codigo += "\n";
@@ -108,28 +117,28 @@ COMANDO 	: E ';'
 
 E 			: E '+' E
 			{
-				$$.label = gentempcode();
+				$$.label = gentempcode($$.type);
 				$$.type = "int";
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
 					" = " + $1.label + " + " + $3.label + ";\n";
 			}
 			| E '-' E
 			{
-				$$.label = gentempcode();
+				$$.label = gentempcode($$.type);
 				$$.type = "int";
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
 					" = " + $1.label + " - " + $3.label + ";\n";
 			}
 			| E '*' E
 			{
-				$$.label = gentempcode();
+				$$.label = gentempcode($$.type);
 				$$.type = "int";
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
 					" = " + $1.label + " * " + $3.label + ";\n";
 			}
 			| E '/' E
 			{
-				$$.label = gentempcode();
+				$$.label = gentempcode($$.type);
 				$$.type = "int";
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
 					" = " + $1.label + " / " + $3.label + ";\n";
@@ -146,7 +155,7 @@ E 			: E '+' E
 				if (it != symbolTable.end()) {
 					$$.type = it->second.tipo;
 					// $$.label = $1.label;
-					$$.label = gentempcode();
+					$$.label = gentempcode($$.type);
 					// $$.traducao = "";
 					$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 
@@ -157,13 +166,13 @@ E 			: E '+' E
 			| TK_INT
 			{
 				$$.type = "int";
-				$$.label = gentempcode();
+				$$.label = gentempcode($$.type);
 				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 			}
 			| TK_FLOAT
 			{
 				$$.type = "float";
-				$$.label = gentempcode();
+				$$.label = gentempcode($$.type);
 				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 			}
 			| TK_ID '=' E
@@ -177,10 +186,6 @@ E 			: E '+' E
 					it->second.tipo = $3.type;
 				}
 
-				if (it->second.temp == "")
-				{
-					it->second.temp = gentempcode();
-				}
 				
 				$$.type = $3.type;
 				$$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
@@ -191,18 +196,18 @@ E 			: E '+' E
 
 int yyparse();
 
-string gentempcode(string nome, string tipo)
-{
-	Symbol val;
-	val.nome = nome;
-	val.tipo = tipo;
-	var_temp_qnt++;
-	string temp = "t" + to_string(var_temp_qnt);
+string gentempcode(string tipo) {
+    var_temp_qnt++;
+    string temp = "t" + to_string(var_temp_qnt);
+
+    Symbol val; 
+    val.nome = temp;
+    val.tipo = tipo;
 	val.temp = temp;
-	symbolTable.insert({val.temp, val});
 
+    tempsVector.push_back(val);
 
-	return nome;
+    return temp;
 }
 
 void printSymbolTable() {
@@ -230,4 +235,4 @@ void yyerror(string MSG)
 {
 	cout << MSG << endl;
 	exit (0);
-}				
+}		

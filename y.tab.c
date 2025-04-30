@@ -97,13 +97,14 @@ struct Symbol {
 
 int var_temp_qnt;
 unordered_map<string, Symbol> symbolTable;
+vector<Symbol> tempsVector;
 
 int yylex(void);
 void yyerror(string);
-string gentempcode();
+string gentempcode(string tipo);
 void printSymbolTable();
 
-#line 107 "y.tab.c"
+#line 108 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -604,8 +605,8 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    48,    48,    73,    79,    84,    89,    95,   109,   116,
-     123,   130,   137,   143,   157,   163,   169
+       0,    49,    49,    82,    88,    93,    98,   104,   118,   125,
+     132,   139,   146,   152,   166,   172,   178
 };
 #endif
 
@@ -1183,18 +1184,26 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* S: TK_TIPO_INT TK_MAIN '(' ')' BLOCO  */
-#line 49 "sintatico.y"
+#line 50 "sintatico.y"
                         {
 				string codigo = "/*Compilador boto*/\n"
 								"#include <iostream>\n"
 								"#include<string.h>\n"
 								"#include<stdio.h>\n"
 								"int main(void) {\n";
-							
 
-				for(auto it = symbolTable.begin(); it != symbolTable.end(); it++)
-				{
-					codigo += "\t" + it->second.tipo + " " + it-> second.temp + ";\n";
+				// Declara apenas variáveis temporárias
+				for (auto &t : tempsVector) {
+					codigo += "\t" + t.tipo + " " + t.nome + ";\n";
+				}
+
+				for (auto &par : symbolTable) {
+					const Symbol &simbolo = par.second;
+
+					// Se o nome NÃO começa com 't', é uma variável do usuário (ex: a, b)
+					if (!simbolo.nome.empty() && simbolo.nome[0] != 't') {
+						codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
+					}
 				}
 
 				codigo += "\n";
@@ -1206,43 +1215,43 @@ yyreduce:
 
 				cout << codigo << endl;
 			}
-#line 1210 "y.tab.c"
+#line 1219 "y.tab.c"
     break;
 
   case 3: /* BLOCO: '{' COMANDOS '}'  */
-#line 74 "sintatico.y"
+#line 83 "sintatico.y"
                         {
 				yyval.traducao = yyvsp[-1].traducao;
 			}
-#line 1218 "y.tab.c"
+#line 1227 "y.tab.c"
     break;
 
   case 4: /* COMANDOS: COMANDO COMANDOS  */
-#line 80 "sintatico.y"
+#line 89 "sintatico.y"
                         {
 				yyval.traducao = yyvsp[-1].traducao + yyvsp[0].traducao;
 			}
-#line 1226 "y.tab.c"
+#line 1235 "y.tab.c"
     break;
 
   case 5: /* COMANDOS: %empty  */
-#line 84 "sintatico.y"
+#line 93 "sintatico.y"
                         {
 				yyval.traducao = "";
 			}
-#line 1234 "y.tab.c"
+#line 1243 "y.tab.c"
     break;
 
   case 6: /* COMANDO: E ';'  */
-#line 90 "sintatico.y"
+#line 99 "sintatico.y"
                         {
 				yyval = yyvsp[-1];
 			}
-#line 1242 "y.tab.c"
+#line 1251 "y.tab.c"
     break;
 
   case 7: /* COMANDO: TK_VAR TK_ID ';'  */
-#line 96 "sintatico.y"
+#line 105 "sintatico.y"
                         {
 				Symbol val;
 				val.nome = yyvsp[-1].label;
@@ -1254,71 +1263,71 @@ yyreduce:
 				yyval.traducao = "";
 				yyval.label = "";
 			}
-#line 1258 "y.tab.c"
+#line 1267 "y.tab.c"
     break;
 
   case 8: /* E: E '+' E  */
-#line 110 "sintatico.y"
+#line 119 "sintatico.y"
                         {
-				yyval.label = gentempcode();
+				yyval.label = gentempcode(yyval.type);
 				yyval.type = "int";
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + 
 					" = " + yyvsp[-2].label + " + " + yyvsp[0].label + ";\n";
 			}
-#line 1269 "y.tab.c"
+#line 1278 "y.tab.c"
     break;
 
   case 9: /* E: E '-' E  */
-#line 117 "sintatico.y"
+#line 126 "sintatico.y"
                         {
-				yyval.label = gentempcode();
+				yyval.label = gentempcode(yyval.type);
 				yyval.type = "int";
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + 
 					" = " + yyvsp[-2].label + " - " + yyvsp[0].label + ";\n";
 			}
-#line 1280 "y.tab.c"
+#line 1289 "y.tab.c"
     break;
 
   case 10: /* E: E '*' E  */
-#line 124 "sintatico.y"
+#line 133 "sintatico.y"
                         {
-				yyval.label = gentempcode();
+				yyval.label = gentempcode(yyval.type);
 				yyval.type = "int";
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + 
 					" = " + yyvsp[-2].label + " * " + yyvsp[0].label + ";\n";
 			}
-#line 1291 "y.tab.c"
+#line 1300 "y.tab.c"
     break;
 
   case 11: /* E: E '/' E  */
-#line 131 "sintatico.y"
+#line 140 "sintatico.y"
                         {
-				yyval.label = gentempcode();
+				yyval.label = gentempcode(yyval.type);
 				yyval.type = "int";
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + 
 					" = " + yyvsp[-2].label + " / " + yyvsp[0].label + ";\n";
 			}
-#line 1302 "y.tab.c"
+#line 1311 "y.tab.c"
     break;
 
   case 12: /* E: '(' E ')'  */
-#line 138 "sintatico.y"
+#line 147 "sintatico.y"
                         {
 				yyval.label = yyvsp[-1].label;
 				yyval.type = yyvsp[-1].type;
 				yyval.traducao = yyvsp[-1].traducao;
 			}
-#line 1312 "y.tab.c"
+#line 1321 "y.tab.c"
     break;
 
   case 13: /* E: TK_ID  */
-#line 144 "sintatico.y"
+#line 153 "sintatico.y"
                         {
 				auto it = symbolTable.find(yyvsp[0].label);
 				if (it != symbolTable.end()) {
 					yyval.type = it->second.tipo;
-					yyval.label = yyvsp[0].label;
-					//$$.label = gentempcode();
+					// $$.label = $1.label;
+					yyval.label = gentempcode(yyval.type);
 					// $$.traducao = "";
 					yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 
@@ -1326,31 +1335,31 @@ yyreduce:
 					yyerror("Variável não declarada.");
 				}
 			}
-#line 1330 "y.tab.c"
+#line 1339 "y.tab.c"
     break;
 
   case 14: /* E: TK_INT  */
-#line 158 "sintatico.y"
+#line 167 "sintatico.y"
                         {
 				yyval.type = "int";
-				yyval.label = gentempcode();
+				yyval.label = gentempcode(yyval.type);
 				yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 			}
-#line 1340 "y.tab.c"
+#line 1349 "y.tab.c"
     break;
 
   case 15: /* E: TK_FLOAT  */
-#line 164 "sintatico.y"
+#line 173 "sintatico.y"
                         {
 				yyval.type = "float";
-				yyval.label = gentempcode();
+				yyval.label = gentempcode(yyval.type);
 				yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 			}
-#line 1350 "y.tab.c"
+#line 1359 "y.tab.c"
     break;
 
   case 16: /* E: TK_ID '=' E  */
-#line 170 "sintatico.y"
+#line 179 "sintatico.y"
                         {
 				auto it = symbolTable.find(yyvsp[-2].label);
 				if (it == symbolTable.end()) {
@@ -1361,19 +1370,15 @@ yyreduce:
 					it->second.tipo = yyvsp[0].type;
 				}
 
-				if (it->second.temp == "")
-				{
-					it->second.temp = gentempcode();
-				}
 				
 				yyval.type = yyvsp[0].type;
 				yyval.traducao = yyvsp[0].traducao + "\t" + yyvsp[-2].label + " = " + yyvsp[0].label + ";\n";
 			}
-#line 1373 "y.tab.c"
+#line 1378 "y.tab.c"
     break;
 
 
-#line 1377 "y.tab.c"
+#line 1382 "y.tab.c"
 
       default: break;
     }
@@ -1566,19 +1571,25 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 188 "sintatico.y"
+#line 193 "sintatico.y"
 
 
 #include "lex.yy.c"
 
 int yyparse();
 
-string gentempcode()
-{
-	var_temp_qnt++;
-	string nome = "t" + to_string(var_temp_qnt);
+string gentempcode(string tipo) {
+    var_temp_qnt++;
+    string temp = "t" + to_string(var_temp_qnt);
 
-	return nome;
+    Symbol val; 
+    val.nome = temp;
+    val.tipo = tipo;
+	val.temp = temp;
+
+    tempsVector.push_back(val);
+
+    return temp;
 }
 
 void printSymbolTable() {
@@ -1606,4 +1617,4 @@ void yyerror(string MSG)
 {
 	cout << MSG << endl;
 	exit (0);
-}				
+}		
