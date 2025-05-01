@@ -33,6 +33,8 @@ int yylex(void);
 void yyerror(string);
 string gentempcode(string tipo);
 void printSymbolTable();
+void checkUndefinedTypes();
+void insertTempsST(const string& nome, const string& tipo);
 %}
 
 %token TK_INT TK_FLOAT
@@ -53,6 +55,8 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 								"#include<string.h>\n"
 								"#include<stdio.h>\n"
 								"int main(void) {\n";
+
+				
 
 				// Declara apenas variáveis temporárias
 				for (auto &t : tempsVector) {
@@ -100,7 +104,21 @@ COMANDO 	: E ';'
 				$$ = $1;
 			}
 			;
+			| TK_ID
+			{
+				auto it = symbolTable.find($1.label);
+				if (it != symbolTable.end()) {
+					$$.type = it->second.tipo;
 
+					string origem = it->second.temp.empty() ? $1.label : it->second.temp;
+					$$.label = gentempcode($$.type);
+					insertTempsST($$.label, $$.type);
+					$$.traducao = "\t" + $$.label + " = " + origem + ";\n";
+				} else {
+					yyerror("Variável não declarada.");
+				}
+			}
+			;
 			| TK_VAR TK_ID ';'
 			{
 				Symbol val;
@@ -118,6 +136,7 @@ COMANDO 	: E ';'
 E 			: E '+' E
 			{
 				$$.label = gentempcode($$.type);
+				insertTempsST($$.label, $$.type);
 				$$.type = "int";
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
 					" = " + $1.label + " + " + $3.label + ";\n";
@@ -125,6 +144,7 @@ E 			: E '+' E
 			| E '-' E
 			{
 				$$.label = gentempcode($$.type);
+				insertTempsST($$.label, $$.type);
 				$$.type = "int";
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
 					" = " + $1.label + " - " + $3.label + ";\n";
@@ -132,6 +152,7 @@ E 			: E '+' E
 			| E '*' E
 			{
 				$$.label = gentempcode($$.type);
+				insertTempsST($$.label, $$.type);
 				$$.type = "int";
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
 					" = " + $1.label + " * " + $3.label + ";\n";
@@ -139,6 +160,7 @@ E 			: E '+' E
 			| E '/' E
 			{
 				$$.label = gentempcode($$.type);
+				insertTempsST($$.label, $$.type);
 				$$.type = "int";
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
 					" = " + $1.label + " / " + $3.label + ";\n";
@@ -156,6 +178,7 @@ E 			: E '+' E
 					$$.type = it->second.tipo;
 					// $$.label = $1.label;
 					$$.label = gentempcode($$.type);
+					insertTempsST($$.label, $$.type);
 					// $$.traducao = "";
 					$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 
@@ -167,12 +190,14 @@ E 			: E '+' E
 			{
 				$$.type = "int";
 				$$.label = gentempcode($$.type);
+				insertTempsST($$.label, $$.type);
 				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 			}
 			| TK_FLOAT
 			{
 				$$.type = "float";
 				$$.label = gentempcode($$.type);
+				insertTempsST($$.label, $$.type);
 				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 			}
 			| TK_ID '=' E
@@ -182,11 +207,14 @@ E 			: E '+' E
 					yyerror("Variável do lado esquerdo não declarada.");
 				}
 
+				// Se a variável ainda não tiver tipo definido, inferir agora
 				if (it->second.tipo == "undefined") {
 					it->second.tipo = $3.type;
 				}
 
-				
+				// Atualiza a temp da variável com o que veio de E
+				it->second.temp = $3.label;
+
 				$$.type = $3.type;
 				$$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
 			}
@@ -206,8 +234,27 @@ string gentempcode(string tipo) {
 	val.temp = temp;
 
     tempsVector.push_back(val);
-
     return temp;
+}
+
+void insertTempsST(const string& nome, const string& tipo)
+{
+	Symbol simbolo;
+    simbolo.nome = nome;
+    simbolo.tipo = tipo;
+    simbolo.temp = nome;
+
+    symbolTable.insert({nome, simbolo});
+}
+
+void checkUndefinedTypes() {
+    for (const auto& par : symbolTable) {
+        const Symbol& simbolo = par.second;
+        if (simbolo.tipo == "undefined" && (simbolo.nome.empty() || simbolo.nome[0] != 't')) {
+            cerr << "Erro: Variável '" << simbolo.nome << "' usada sem tipo definido.\n";
+            exit(1);
+        }
+    }
 }
 
 void printSymbolTable() {

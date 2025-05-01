@@ -1,6 +1,8 @@
 int main() {
 	var a;
-	var b;
 	a = 2.1;
-	b = a + 3.5;
+	var b;
+	b = 4.5;
+	var c;
+	c = a + b;
 }
