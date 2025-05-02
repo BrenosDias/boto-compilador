@@ -18,5 +18,4 @@ Foi criado um ``Makefile`` com os comandos para a execução e o arquivo exemplo
 make
 ```
 
-## Vídeos
 
