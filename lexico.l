@@ -8,6 +8,7 @@ DIGITO [0-9]
 FLOAT [0-9]*\.[0-9]+|[0-9]+\.[0-9]*
 LETRA [A-Za-z_]
 
+
 DELIM {ESPACO}+
 INT {DIGITO}+
 REAL {INT}+("."{INT}+)?

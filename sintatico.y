@@ -99,125 +99,123 @@ COMANDOS	: COMANDO COMANDOS
 			}
 			;
 
-COMANDO 	: E ';'
-			{
-				$$ = $1;
-			}
-			;
-			| TK_ID
-			{
-				auto it = symbolTable.find($1.label);
-				if (it != symbolTable.end()) {
-					$$.type = it->second.tipo;
+COMANDO 
+    : EXPRESSAO ';'
+    {
+        $$ = $1;
+    }
+    | TK_ID
+    {
+        auto it = symbolTable.find($1.label);
+        if (it != symbolTable.end()) {
+            $$.type = it->second.tipo;
+            string origem = it->second.temp.empty() ? $1.label : it->second.temp;
+            $$.label = gentempcode($$.type);
+            insertTempsST($$.label, $$.type);
+            $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
+        } else {
+            yyerror("Variável não declarada.");
+        }
+    }
+    | TK_VAR TK_ID ';'
+    {
+        Symbol val;
+        val.nome = $2.label;
+        val.tipo = "undefined";
+        val.temp = "";
+        symbolTable.insert({val.nome, val});
+        $$.traducao = "";
+        $$.label = "";
+    }
+    ;
 
-					string origem = it->second.temp.empty() ? $1.label : it->second.temp;
-					$$.label = gentempcode($$.type);
-					insertTempsST($$.label, $$.type);
-					$$.traducao = "\t" + $$.label + " = " + origem + ";\n";
-				} else {
-					yyerror("Variável não declarada.");
-				}
-			}
-			;
-			| TK_VAR TK_ID ';'
-			{
-				Symbol val;
-				val.nome = $2.label;
-				val.tipo = "undefined";
-				val.temp = "";
+// EXPRESSAO separa atribuições de E
+EXPRESSAO
+    : TK_ID '=' E
+    {
+        auto it = symbolTable.find($1.label);
+        if (it == symbolTable.end()) {
+            yyerror("Variável do lado esquerdo não declarada.");
+        }
 
-				symbolTable.insert({val.nome, val});
+        if (it->second.tipo == "undefined") {
+            it->second.tipo = $3.type;
+        }
 
-				$$.traducao = "";
-				$$.label = "";
-			}
-			;
+        it->second.temp = $3.label;
 
-E 			: E '+' E
-			{
-				$$.label = gentempcode($$.type);
-				insertTempsST($$.label, $$.type);
-				$$.type = "int";
-				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
-					" = " + $1.label + " + " + $3.label + ";\n";
-			}
-			| E '-' E
-			{
-				$$.label = gentempcode($$.type);
-				insertTempsST($$.label, $$.type);
-				$$.type = "int";
-				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
-					" = " + $1.label + " - " + $3.label + ";\n";
-			}
-			| E '*' E
-			{
-				$$.label = gentempcode($$.type);
-				insertTempsST($$.label, $$.type);
-				$$.type = "int";
-				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
-					" = " + $1.label + " * " + $3.label + ";\n";
-			}
-			| E '/' E
-			{
-				$$.label = gentempcode($$.type);
-				insertTempsST($$.label, $$.type);
-				$$.type = "int";
-				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + 
-					" = " + $1.label + " / " + $3.label + ";\n";
-			}
-			| '(' E ')' 
-			{
-				$$.label = $2.label;
-				$$.type = $2.type;
-				$$.traducao = $2.traducao;
-			}
-			| TK_ID
-			{
-				auto it = symbolTable.find($1.label);
-				if (it != symbolTable.end()) {
-					$$.type = it->second.tipo;
-					// $$.label = $1.label;
-					$$.label = gentempcode($$.type);
-					insertTempsST($$.label, $$.type);
-					// $$.traducao = "";
-					$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+        $$.type = $3.type;
+        $$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
+        $$.label = $1.label;
+    }
+    | E
+    {
+        $$ = $1;
+    }
+    ;
+// Expressões matemáticas e terminais
+E 
+    : E '+' E
+    {
+        $$.type = "int";
+        $$.label = gentempcode($$.type);
+        insertTempsST($$.label, $$.type);
+        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
+    }
+    | E '-' E
+    {
+        $$.type = "int";
+        $$.label = gentempcode($$.type);
+        insertTempsST($$.label, $$.type);
+        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
+    }
+    | E '*' E
+    {
+        $$.type = "int";
+        $$.label = gentempcode($$.type);
+        insertTempsST($$.label, $$.type);
+        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
+    }
+    | E '/' E
+    {
+        $$.type = "int";
+        $$.label = gentempcode($$.type);
+        insertTempsST($$.label, $$.type);
+        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
+    }
+    | '(' E ')'
+    {
+        $$ = $2;
+    }
+    | TK_ID
+    {
+        auto it = symbolTable.find($1.label);
+        if (it != symbolTable.end()) {
+            $$.type = it->second.tipo;
+            $$.label = gentempcode($$.type);
+            insertTempsST($$.label, $$.type);
+            string origem = it->second.temp.empty() ? $1.label : it->second.temp;
+            $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
+        } else {
+            yyerror("Variável não declarada.");
+        }
+    }
+    | TK_INT
+    {
+        $$.type = "int";
+        $$.label = gentempcode($$.type);
+        insertTempsST($$.label, $$.type);
+        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+    }
+    | TK_FLOAT
+    {
+        $$.type = "float";
+        $$.label = gentempcode($$.type);
+        insertTempsST($$.label, $$.type);
+        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+    }
+    ;
 
-				} else {
-					yyerror("Variável não declarada.");
-				}
-			}
-			| TK_INT
-			{
-				$$.type = "int";
-				$$.label = gentempcode($$.type);
-				insertTempsST($$.label, $$.type);
-				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
-			}
-			| TK_FLOAT
-			{
-				$$.type = "float";
-				$$.label = gentempcode($$.type);
-				insertTempsST($$.label, $$.type);
-				$$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
-			}
-			| TK_ID '=' E
-			{
-				auto it = symbolTable.find($1.label);
-				if (it == symbolTable.end()) {
-					yyerror("Variável do lado esquerdo não declarada.");
-				}
-
-				// Se a variável ainda não tiver tipo definido, inferir agora
-				if (it->second.tipo == "undefined") {
-					it->second.tipo = $3.type;
-				}
-
-				// Atualiza a temp da variável com o que veio de E
-				it->second.temp = $3.label;
-
-				$$.type = $3.type;
-				$$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
-			}
 %%
 
 #include "lex.yy.c"
