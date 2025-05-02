@@ -677,7 +677,7 @@ YY_DECL
 		}
 
 	{
-#line 17 "lexico.l"
+#line 18 "lexico.l"
 
 
 #line 684 "lex.yy.c"
@@ -740,67 +740,67 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 19 "lexico.l"
+#line 20 "lexico.l"
 {}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 21 "lexico.l"
+#line 22 "lexico.l"
 {}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 23 "lexico.l"
+#line 24 "lexico.l"
 {return TK_MAIN;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 25 "lexico.l"
+#line 26 "lexico.l"
 {return TK_TIPO_INT;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 27 "lexico.l"
+#line 28 "lexico.l"
 {return TK_VAR;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 30 "lexico.l"
+#line 31 "lexico.l"
 { return *yytext; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 32 "lexico.l"
+#line 33 "lexico.l"
 { return *yytext; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 34 "lexico.l"
+#line 35 "lexico.l"
 { return '='; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 36 "lexico.l"
+#line 37 "lexico.l"
 { yylval.label = yytext; return TK_INT; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 37 "lexico.l"
+#line 38 "lexico.l"
 { yylval.label = yytext; return TK_FLOAT;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 38 "lexico.l"
+#line 39 "lexico.l"
 { yylval.label = yytext; return TK_ID; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 40 "lexico.l"
+#line 41 "lexico.l"
 { *yytext; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 42 "lexico.l"
+#line 43 "lexico.l"
 ECHO;
 	YY_BREAK
 #line 807 "lex.yy.c"
@@ -1808,6 +1808,6 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 42 "lexico.l"
+#line 43 "lexico.l"
 
 

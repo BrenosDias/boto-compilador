@@ -35,6 +35,7 @@ string gentempcode(string tipo);
 void printSymbolTable();
 void checkUndefinedTypes();
 void insertTempsST(const string& nome, const string& tipo);
+void typeValue(std::string& result, const std::string& left, const std::string& right);
 %}
 
 %token TK_INT TK_FLOAT
@@ -157,28 +158,29 @@ EXPRESSAO
 E 
     : E '+' E
     {
-        $$.type = "int";
+        typeValue($$.type, $1.type, $3.type);
+        
         $$.label = gentempcode($$.type);
         insertTempsST($$.label, $$.type);
         $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
     }
     | E '-' E
     {
-        $$.type = "int";
+        typeValue($$.type, $1.type, $3.type);
         $$.label = gentempcode($$.type);
         insertTempsST($$.label, $$.type);
         $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
     }
     | E '*' E
     {
-        $$.type = "int";
+        typeValue($$.type, $1.type, $3.type);
         $$.label = gentempcode($$.type);
         insertTempsST($$.label, $$.type);
         $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
     }
     | E '/' E
     {
-        $$.type = "int";
+        typeValue($$.type, $1.type, $3.type);
         $$.label = gentempcode($$.type);
         insertTempsST($$.label, $$.type);
         $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
@@ -233,6 +235,24 @@ string gentempcode(string tipo) {
 
     tempsVector.push_back(val);
     return temp;
+}
+
+void typeValue(std::string& result, const std::string& left, const std::string& right){
+      if (left == "int" && right == "int"){
+            result = "int";
+        }
+
+        if (left == "float" && right == "float"){
+            result = "float";
+        }
+
+        if (left == "int" && right == "float"){
+            result = "float";
+        }
+
+        if (left == "float" && right == "int"){
+            result = "float";
+        }
 }
 
 void insertTempsST(const string& nome, const string& tipo)
