@@ -38,7 +38,7 @@ void insertTempsST(const string& nome, const string& tipo);
 void typeValue(std::string& result, const std::string& left, const std::string& right);
 %}
 
-%token TK_INT TK_FLOAT
+%token TK_INT TK_FLOAT TK_CHAR
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
 
@@ -178,9 +178,7 @@ E
             $$.traducao = $1.traducao + $3.traducao + "\t" + resultado + ";\n";
         }else{
             $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
-        }
-        
-       
+        }    
     }
     | E '-' E
     {
@@ -234,6 +232,13 @@ E
         insertTempsST($$.label, $$.type);
         $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
     }
+    | TK_CHAR
+    {
+        $$.type = "char";
+        $$.label = gentempcode($$.type);
+        insertTempsST($$.label, $$.type);
+        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+    }
     ;
 
 %%
@@ -255,22 +260,16 @@ string gentempcode(string tipo) {
     return temp;
 }
 
-void typeValue(string& result, const string& left, const string& right){
-        if (left == "int" && right == "int"){
-            result = "int";
-        }
-
-        if (left == "float" && right == "float"){
-            result = "float";
-        }
-
-        if (left == "int" && right == "float"){
-            result = "float";
-        }
-
-        if (left == "float" && right == "int"){
-            result = "float";
-        }
+void typeValue(std::string& result, const std::string& left, const std::string& right){
+    if (left == "float" || right == "float") {
+        result = "float";
+    } else if (left == "int" || right == "int") {
+        result = "int";
+    } else if (left == "char" && right == "char") {
+        result = "int"; // soma de dois chars resulta em int
+    } else {
+        result = "undefined";
+    }
 }
 
 void insertTempsST(const string& nome, const string& tipo)

@@ -12,7 +12,7 @@ LETRA [A-Za-z_]
 DELIM {ESPACO}+
 INT {DIGITO}+
 REAL {INT}+("."{INT}+)?
-CHAR \'({LETRA}|{INT})\'
+CHAR \'[ -~]\'
 ID {LETRA}({LETRA}|{INT})*
 
 %%
@@ -20,6 +20,8 @@ ID {LETRA}({LETRA}|{INT})*
 "\n"		{}
 
 {DELIM} 	{}
+
+{CHAR} { yylval.label = yytext; return TK_CHAR; }
 
 "main"		{return TK_MAIN;}
 
