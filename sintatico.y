@@ -159,10 +159,28 @@ E
     : E '+' E
     {
         typeValue($$.type, $1.type, $3.type);
-        
         $$.label = gentempcode($$.type);
         insertTempsST($$.label, $$.type);
-        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
+        string resultado;
+
+        if( $1.type == "int" && $3.type == "float")
+        {
+            string auxFloat = "(float) " + $1.label;
+            string aux = $3.label;  
+            resultado = $$.label + " = " + auxFloat + " + " + aux;
+            $$.traducao = $1.traducao + $3.traducao + "\t" + resultado + ";\n";
+        }
+        else if( $1.type == "float" && $3.type == "int")
+        {
+            string aux =  $1.label;
+            string auxFloat = "(float) " + $3.label;  
+            resultado = $$.label + " = " + aux + " + " +  auxFloat;
+            $$.traducao = $1.traducao + $3.traducao + "\t" + resultado + ";\n";
+        }else{
+            $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
+        }
+        
+       
     }
     | E '-' E
     {
@@ -237,8 +255,8 @@ string gentempcode(string tipo) {
     return temp;
 }
 
-void typeValue(std::string& result, const std::string& left, const std::string& right){
-      if (left == "int" && right == "int"){
+void typeValue(string& result, const string& left, const string& right){
+        if (left == "int" && right == "int"){
             result = "int";
         }
 

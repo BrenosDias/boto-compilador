@@ -610,7 +610,7 @@ static const yytype_int8 yytranslate[] =
 static const yytype_uint8 yyrline[] =
 {
        0,    52,    52,    87,    93,    98,   104,   108,   121,   135,
-     152,   159,   167,   174,   181,   188,   192,   205,   212
+     152,   159,   185,   192,   199,   206,   210,   223,   230
 };
 #endif
 
@@ -1320,57 +1320,75 @@ yyreduce:
 #line 160 "sintatico.y"
     {
         typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type);
-        
         yyval.label = gentempcode(yyval.type);
         insertTempsST(yyval.label, yyval.type);
-        yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " + " + yyvsp[0].label + ";\n";
+        string resultado;
+
+        if( yyvsp[-2].type == "int" && yyvsp[0].type == "float")
+        {
+            string auxFloat = "(float) " + yyvsp[-2].label;
+            string aux = yyvsp[0].label;  
+            resultado = yyval.label + " = " + auxFloat + " + " + aux;
+            yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + resultado + ";\n";
+        }
+        else if( yyvsp[-2].type == "float" && yyvsp[0].type == "int")
+        {
+            string aux =  yyvsp[-2].label;
+            string auxFloat = "(float) " + yyvsp[0].label;  
+            resultado = yyval.label + " = " + aux + " + " +  auxFloat;
+            yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + resultado + ";\n";
+        }else{
+            yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " + " + yyvsp[0].label + ";\n";
+        }
+        
+       
     }
-#line 1329 "y.tab.c"
+#line 1347 "y.tab.c"
     break;
 
   case 12: /* E: E '-' E  */
-#line 168 "sintatico.y"
+#line 186 "sintatico.y"
     {
         typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type);
         yyval.label = gentempcode(yyval.type);
         insertTempsST(yyval.label, yyval.type);
         yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " - " + yyvsp[0].label + ";\n";
     }
-#line 1340 "y.tab.c"
+#line 1358 "y.tab.c"
     break;
 
   case 13: /* E: E '*' E  */
-#line 175 "sintatico.y"
+#line 193 "sintatico.y"
     {
         typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type);
         yyval.label = gentempcode(yyval.type);
         insertTempsST(yyval.label, yyval.type);
         yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " * " + yyvsp[0].label + ";\n";
     }
-#line 1351 "y.tab.c"
+#line 1369 "y.tab.c"
     break;
 
   case 14: /* E: E '/' E  */
-#line 182 "sintatico.y"
+#line 200 "sintatico.y"
     {
         typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type);
         yyval.label = gentempcode(yyval.type);
         insertTempsST(yyval.label, yyval.type);
         yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " / " + yyvsp[0].label + ";\n";
     }
-#line 1362 "y.tab.c"
+#line 1380 "y.tab.c"
     break;
 
   case 15: /* E: '(' E ')'  */
-#line 189 "sintatico.y"
+#line 207 "sintatico.y"
     {
         yyval = yyvsp[-1];
     }
-#line 1370 "y.tab.c"
+#line 1388 "y.tab.c"
     break;
 
   case 16: /* E: TK_ID  */
-#line 193 "sintatico.y"
+#line 211 "sintatico.y"
     {
         auto it = symbolTable.find(yyvsp[0].label);
         if (it != symbolTable.end()) {
@@ -1383,33 +1401,33 @@ yyreduce:
             yyerror("Variável não declarada.");
         }
     }
-#line 1387 "y.tab.c"
+#line 1405 "y.tab.c"
     break;
 
   case 17: /* E: TK_INT  */
-#line 206 "sintatico.y"
+#line 224 "sintatico.y"
     {
         yyval.type = "int";
         yyval.label = gentempcode(yyval.type);
         insertTempsST(yyval.label, yyval.type);
         yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
     }
-#line 1398 "y.tab.c"
+#line 1416 "y.tab.c"
     break;
 
   case 18: /* E: TK_FLOAT  */
-#line 213 "sintatico.y"
+#line 231 "sintatico.y"
     {
         yyval.type = "float";
         yyval.label = gentempcode(yyval.type);
         insertTempsST(yyval.label, yyval.type);
         yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
     }
-#line 1409 "y.tab.c"
+#line 1427 "y.tab.c"
     break;
 
 
-#line 1413 "y.tab.c"
+#line 1431 "y.tab.c"
 
       default: break;
     }
@@ -1602,7 +1620,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 221 "sintatico.y"
+#line 239 "sintatico.y"
 
 
 #include "lex.yy.c"
@@ -1622,8 +1640,8 @@ string gentempcode(string tipo) {
     return temp;
 }
 
-void typeValue(std::string& result, const std::string& left, const std::string& right){
-      if (left == "int" && right == "int"){
+void typeValue(string& result, const string& left, const string& right){
+        if (left == "int" && right == "int"){
             result = "int";
         }
 
