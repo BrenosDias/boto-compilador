@@ -360,12 +360,21 @@ struct yy_trans_info
 	flex_int32_t yy_verify;
 	flex_int32_t yy_nxt;
 	};
+<<<<<<< HEAD
 static const flex_int16_t yy_accept[32] =
     {   0,
         0,    0,   15,   13,    2,    1,   13,    7,    8,   10,
         9,   12,   12,   12,   12,    2,    0,    0,   10,   12,
        12,   12,   12,   12,    3,   11,    5,   12,    6,    4,
         0
+=======
+static const flex_int16_t yy_accept[37] =
+    {   0,
+        0,    0,   15,   13,    2,    1,    6,    7,    9,    8,
+       12,   12,   12,   12,   12,   12,    2,    0,    9,   12,
+       12,   12,   12,   12,   12,   12,   10,   12,    4,   12,
+       12,    5,   12,    3,   11,    0
+>>>>>>> ba27dd1 (boolean semi-pronto)
     } ;
 
 static const YY_CHAR yy_ec[256] =
@@ -381,9 +390,15 @@ static const YY_CHAR yy_ec[256] =
        12,   12,   12,   12,   12,   12,   12,   12,   12,   12,
         7,    5,    7,    5,   12,    5,   13,   12,   12,   12,
 
+<<<<<<< HEAD
        12,   12,   12,   12,   14,   12,   12,   12,   15,   16,
        12,   12,   12,   17,   12,   18,   12,   19,   12,   12,
        12,   12,    7,    5,    7,    5,    1,    1,    1,    1,
+=======
+       11,   12,    9,    9,   13,    9,    9,   14,   15,   16,
+        9,    9,    9,   17,   18,   19,   20,   21,    9,    9,
+        9,    9,    4,    1,    4,    1,    1,    1,    1,    1,
+>>>>>>> ba27dd1 (boolean semi-pronto)
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
         1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
@@ -400,6 +415,7 @@ static const YY_CHAR yy_ec[256] =
         1,    1,    1,    1,    1
     } ;
 
+<<<<<<< HEAD
 static const YY_CHAR yy_meta[20] =
     {   0,
         1,    1,    1,    2,    2,    2,    2,    2,    2,    3,
@@ -444,6 +460,55 @@ static const flex_int16_t yy_chk[73] =
        12,    3,   31,   31,   31,   31,   31,   31,   31,   31,
        31,   31,   31,   31,   31,   31,   31,   31,   31,   31,
        31,   31
+=======
+static const YY_CHAR yy_meta[22] =
+    {   0,
+        1,    1,    1,    1,    1,    1,    2,    1,    2,    2,
+        2,    2,    2,    2,    2,    2,    2,    2,    2,    2,
+        2
+    } ;
+
+static const flex_int16_t yy_base[38] =
+    {   0,
+        0,    0,   66,   67,   63,   67,   67,   67,   16,   67,
+       57,   17,   18,   19,   21,   23,   61,   55,   25,   54,
+       53,   28,   29,   30,   32,   33,   52,   37,   51,   38,
+       40,   50,   42,   49,   39,   67,   39
+    } ;
+
+static const flex_int16_t yy_def[38] =
+    {   0,
+       36,    1,   36,   36,   36,   36,   36,   36,   36,   36,
+       37,   37,   37,   37,   37,   37,   36,   36,   36,   37,
+       37,   37,   37,   37,   37,   37,   36,   37,   37,   37,
+       37,   37,   37,   37,   37,    0,   36
+    } ;
+
+static const flex_int16_t yy_nxt[89] =
+    {   0,
+        4,    5,    6,    7,    8,    4,    9,   10,   11,   11,
+       11,   12,   13,   11,   14,   11,   11,   11,   15,   11,
+       16,   18,   19,   20,   20,   20,   22,   20,   24,   20,
+       18,   19,   26,   23,   20,   20,   20,   25,   20,   20,
+       21,   28,   30,   20,   20,   20,   20,   29,   20,   32,
+       35,   31,   35,   34,   33,   20,   20,   20,   27,   20,
+       20,   27,   17,   20,   17,   36,    3,   36,   36,   36,
+       36,   36,   36,   36,   36,   36,   36,   36,   36,   36,
+       36,   36,   36,   36,   36,   36,   36,   36
+    } ;
+
+static const flex_int16_t yy_chk[89] =
+    {   0,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    1,    1,    1,    1,    1,    1,    1,    1,    1,
+        1,    9,    9,   12,   13,   14,   12,   15,   14,   16,
+       19,   19,   16,   13,   22,   23,   24,   15,   25,   26,
+       37,   22,   24,   28,   30,   35,   31,   23,   33,   26,
+       31,   25,   33,   30,   28,   34,   32,   29,   27,   21,
+       20,   18,   17,   11,    5,    3,   36,   36,   36,   36,
+       36,   36,   36,   36,   36,   36,   36,   36,   36,   36,
+       36,   36,   36,   36,   36,   36,   36,   36
+>>>>>>> ba27dd1 (boolean semi-pronto)
     } ;
 
 static yy_state_type yy_last_accepting_state;
@@ -464,8 +529,13 @@ char *yytext;
 #line 2 "lexico.l"
 #include <string>
 
+<<<<<<< HEAD
 #line 468 "lex.yy.c"
 #line 469 "lex.yy.c"
+=======
+#line 471 "lex.yy.c"
+#line 472 "lex.yy.c"
+>>>>>>> ba27dd1 (boolean semi-pronto)
 
 #define INITIAL 0
 
@@ -682,10 +752,14 @@ YY_DECL
 		}
 
 	{
-#line 18 "lexico.l"
+#line 19 "lexico.l"
 
 
+<<<<<<< HEAD
 #line 689 "lex.yy.c"
+=======
+#line 692 "lex.yy.c"
+>>>>>>> ba27dd1 (boolean semi-pronto)
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -712,13 +786,21 @@ yy_match:
 			while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 				{
 				yy_current_state = (int) yy_def[yy_current_state];
+<<<<<<< HEAD
 				if ( yy_current_state >= 32 )
+=======
+				if ( yy_current_state >= 37 )
+>>>>>>> ba27dd1 (boolean semi-pronto)
 					yy_c = yy_meta[yy_c];
 				}
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 			++yy_cp;
 			}
+<<<<<<< HEAD
 		while ( yy_base[yy_current_state] != 53 );
+=======
+		while ( yy_base[yy_current_state] != 67 );
+>>>>>>> ba27dd1 (boolean semi-pronto)
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
@@ -745,16 +827,17 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 20 "lexico.l"
+#line 21 "lexico.l"
 {}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 22 "lexico.l"
+#line 23 "lexico.l"
 {}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
+<<<<<<< HEAD
 #line 24 "lexico.l"
 { yylval.label = yytext; return TK_CHAR; }
 	YY_BREAK
@@ -772,14 +855,34 @@ case 6:
 YY_RULE_SETUP
 #line 30 "lexico.l"
 {return TK_VAR;}
+=======
+#line 25 "lexico.l"
+{return TK_MAIN;}
+	YY_BREAK
+case 4:
+YY_RULE_SETUP
+#line 27 "lexico.l"
+{return TK_TIPO_INT;}
+	YY_BREAK
+case 5:
+YY_RULE_SETUP
+#line 29 "lexico.l"
+{return TK_VAR;}
+	YY_BREAK
+case 6:
+YY_RULE_SETUP
+#line 32 "lexico.l"
+{ return *yytext; }
+>>>>>>> ba27dd1 (boolean semi-pronto)
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 33 "lexico.l"
+#line 34 "lexico.l"
 { return *yytext; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
+<<<<<<< HEAD
 #line 35 "lexico.l"
 { return *yytext; }
 	YY_BREAK
@@ -787,16 +890,33 @@ case 9:
 YY_RULE_SETUP
 #line 37 "lexico.l"
 { return '='; }
+=======
+#line 36 "lexico.l"
+{ return '='; }
+	YY_BREAK
+case 9:
+YY_RULE_SETUP
+#line 38 "lexico.l"
+{ yylval.label = yytext; return TK_INT; }
+>>>>>>> ba27dd1 (boolean semi-pronto)
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
 #line 39 "lexico.l"
+<<<<<<< HEAD
 { yylval.label = yytext; return TK_INT; }
+=======
+{ yylval.label = yytext; return TK_FLOAT; }
+>>>>>>> ba27dd1 (boolean semi-pronto)
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
 #line 40 "lexico.l"
+<<<<<<< HEAD
 { yylval.label = yytext; return TK_FLOAT;}
+=======
+{ yylval.label = yytext; return TK_BOOLEAN; }
+>>>>>>> ba27dd1 (boolean semi-pronto)
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
@@ -813,7 +933,11 @@ YY_RULE_SETUP
 #line 45 "lexico.l"
 ECHO;
 	YY_BREAK
+<<<<<<< HEAD
 #line 817 "lex.yy.c"
+=======
+#line 820 "lex.yy.c"
+>>>>>>> ba27dd1 (boolean semi-pronto)
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1110,7 +1234,11 @@ static int yy_get_next_buffer (void)
 		while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 			{
 			yy_current_state = (int) yy_def[yy_current_state];
+<<<<<<< HEAD
 			if ( yy_current_state >= 32 )
+=======
+			if ( yy_current_state >= 37 )
+>>>>>>> ba27dd1 (boolean semi-pronto)
 				yy_c = yy_meta[yy_c];
 			}
 		yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
@@ -1138,11 +1266,19 @@ static int yy_get_next_buffer (void)
 	while ( yy_chk[yy_base[yy_current_state] + yy_c] != yy_current_state )
 		{
 		yy_current_state = (int) yy_def[yy_current_state];
+<<<<<<< HEAD
 		if ( yy_current_state >= 32 )
 			yy_c = yy_meta[yy_c];
 		}
 	yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
 	yy_is_jam = (yy_current_state == 31);
+=======
+		if ( yy_current_state >= 37 )
+			yy_c = yy_meta[yy_c];
+		}
+	yy_current_state = yy_nxt[yy_base[yy_current_state] + yy_c];
+	yy_is_jam = (yy_current_state == 36);
+>>>>>>> ba27dd1 (boolean semi-pronto)
 
 		return yy_is_jam ? 0 : yy_current_state;
 }

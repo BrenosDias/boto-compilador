@@ -12,7 +12,12 @@ LETRA [A-Za-z_]
 DELIM {ESPACO}+
 INT {DIGITO}+
 REAL {INT}+("."{INT}+)?
+<<<<<<< HEAD
 CHAR \'[ -~]\'
+=======
+CHAR \'({LETRA}|{INT})\'
+BOOLEAN true|false
+>>>>>>> ba27dd1 (boolean semi-pronto)
 ID {LETRA}({LETRA}|{INT})*
 
 %%
@@ -37,7 +42,8 @@ ID {LETRA}({LETRA}|{INT})*
 "="		    { return '='; }
 
 {INT}		{ yylval.label = yytext; return TK_INT; }
-{REAL}		{ yylval.label = yytext; return TK_FLOAT;}
+{REAL}		{ yylval.label = yytext; return TK_FLOAT; }
+{BOOLEAN}   { yylval.label = yytext; return TK_BOOLEAN; }
 {ID}		{ yylval.label = yytext; return TK_ID; }
 
 .			{ *yytext; }

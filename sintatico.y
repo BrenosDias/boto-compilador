@@ -39,7 +39,11 @@ void typeValue(std::string& result, const std::string& left, const std::string& 
 void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2);
 %}
 
+<<<<<<< HEAD
 %token TK_INT TK_FLOAT TK_CHAR
+=======
+%token TK_INT TK_FLOAT TK_BOOLEAN
+>>>>>>> ba27dd1 (boolean semi-pronto)
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
 
@@ -68,11 +72,27 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 				for (auto &par : symbolTable) {
 					const Symbol &simbolo = par.second;
 
-					// Se o nome NÃO começa com 't', é uma variável do usuário (ex: a, b)
-					if (!simbolo.nome.empty() && simbolo.nome[0] != 't') {
+					bool encontrado = false;
+					for (const Symbol &temp : tempsVector) {
+						if (temp.nome == simbolo.nome) {
+							encontrado = true;
+							break;
+						}
+					}
+
+					if (!encontrado) {
 						codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
 					}
 				}
+
+				// for (auto &par : symbolTable) {
+				// 	const Symbol &simbolo = par.second;
+
+				// 	// Se o nome NÃO começa com 't', é uma variável do usuário (ex: a, b)
+				// 	if (!simbolo.nome.empty() && simbolo.nome[0] != 't') {
+				// 		codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
+				// 	}
+				// }
 
 				codigo += "\n";
 
@@ -102,61 +122,62 @@ COMANDOS	: COMANDO COMANDOS
 			;
 
 COMANDO 
-    : EXPRESSAO ';'
-    {
-        $$ = $1;
-    }
-    | TK_ID
-    {
-        auto it = symbolTable.find($1.label);
-        if (it != symbolTable.end()) {
-            $$.type = it->second.tipo;
-            string origem = it->second.temp.empty() ? $1.label : it->second.temp;
-            $$.label = gentempcode($$.type);
-            insertTempsST($$.label, $$.type);
-            $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
-        } else {
-            yyerror("Variável não declarada.");
-        }
-    }
-    | TK_VAR TK_ID ';'
-    {
-        Symbol val;
-        val.nome = $2.label;
-        val.tipo = "undefined";
-        val.temp = "";
-        symbolTable.insert({val.nome, val});
-        $$.traducao = "";
-        $$.label = "";
-    }
-    ;
+		    : EXPRESSAO ';'
+		    {
+		        $$ = $1;
+		    }
+		    | TK_ID
+		    {
+		        auto it = symbolTable.find($1.label);
+		        if (it != symbolTable.end()) {
+		            $$.type = it->second.tipo;
+		            string origem = it->second.temp.empty() ? $1.label : it->second.temp;
+		            $$.label = gentempcode($$.type);
+		            insertTempsST($$.label, $$.type);
+		            $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
+		        } else {
+		            yyerror("Variável não declarada.");
+		        }
+		    }
+		    | TK_VAR TK_ID ';'
+		    {
+		        Symbol val;
+		        val.nome = $2.label;
+		        val.tipo = "undefined";
+		        val.temp = "";
+		        symbolTable.insert({val.nome, val});
+		        $$.traducao = "";
+		        $$.label = "";
+		    }
+		    ;
 
 // EXPRESSAO separa atribuições de E
 EXPRESSAO
-    : TK_ID '=' E
-    {
-        auto it = symbolTable.find($1.label);
-        if (it == symbolTable.end()) {
-            yyerror("Variável do lado esquerdo não declarada.");
-        }
+		    : TK_ID '=' E
+		    {
+		        auto it = symbolTable.find($1.label);
+		        if (it == symbolTable.end()) {
+		            yyerror("Variável do lado esquerdo não declarada.");
+		        }
 
-        if (it->second.tipo == "undefined") {
-            it->second.tipo = $3.type;
-        }
+		        if (it->second.tipo == "undefined") {
+		            it->second.tipo = $3.type;
+		        }
 
-        it->second.temp = $3.label;
+		        it->second.temp = $3.label;
 
-        $$.type = $3.type;
-        $$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
-        $$.label = $1.label;
-    }
-    | E
-    {
-        $$ = $1;
-    }
-    ;
+		        $$.type = $3.type;
+		        $$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
+		        $$.label = $1.label;
+		    }
+		    | E
+		    {
+		        $$ = $1;
+		    }
+		    ;
 // Expressões matemáticas e terminais
 E 
+<<<<<<< HEAD
     : E '+' E
     {
         typeValue($$.type, $1.type, $3.type);
@@ -228,6 +249,82 @@ E
         $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
     }
     ;
+=======
+		    : E '+' E
+		    {
+		        typeValue($$.type, $1.type, $3.type);
+		        
+		        $$.label = gentempcode($$.type);
+		        insertTempsST($$.label, $$.type);
+		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
+		    }
+		    | E '-' E
+		    {
+		        typeValue($$.type, $1.type, $3.type);
+		        $$.label = gentempcode($$.type);
+		        insertTempsST($$.label, $$.type);
+		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
+		    }
+		    | E '*' E
+		    {
+		        typeValue($$.type, $1.type, $3.type);
+		        $$.label = gentempcode($$.type);
+		        insertTempsST($$.label, $$.type);
+		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
+		    }
+		    | E '/' E
+		    {
+		        typeValue($$.type, $1.type, $3.type);
+		        $$.label = gentempcode($$.type);
+		        insertTempsST($$.label, $$.type);
+		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
+		    }
+		    | '(' E ')'
+		    {
+		        $$ = $2;
+		    }
+		    | TK_ID
+		    {
+		        auto it = symbolTable.find($1.label);
+		        if (it != symbolTable.end()) {
+		            $$.type = it->second.tipo;
+		            $$.label = gentempcode($$.type);
+		            insertTempsST($$.label, $$.type);
+		            string origem = it->second.temp.empty() ? $1.label : it->second.temp;
+		            $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
+		        } else {
+		            yyerror("Variável não declarada.");
+		        }
+		    }
+		    | TK_INT
+		    {
+		        $$.type = "int";
+		        $$.label = gentempcode($$.type);
+		        insertTempsST($$.label, $$.type);
+		        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+		    }
+		    | TK_FLOAT
+		    {
+		        $$.type = "float";
+		        $$.label = gentempcode($$.type);
+		        insertTempsST($$.label, $$.type);
+		        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+		    }
+		    | TK_BOOLEAN
+		    {	
+		        $$.type = "int";
+		        $$.label = gentempcode("boolean");
+		        string label;
+		        if($1.label == "true"){
+		        	label = "1";
+		        }else{
+		        	label = "0";
+		        }
+		        insertTempsST($$.label, $$.type);
+		        $$.traducao = "\t" + $$.label + " = " + label + ";\n";
+		    }
+		    ;
+>>>>>>> ba27dd1 (boolean semi-pronto)
 
 %%
 
@@ -237,8 +334,26 @@ int yyparse();
 
 string gentempcode(string tipo) {
     var_temp_qnt++;
-    string temp = "t" + to_string(var_temp_qnt);
+    string temp;
 
+    if(tipo != "boolean")
+    {
+    	temp = "t" + to_string(var_temp_qnt);
+    }else{
+    	temp = "b" + to_string(var_temp_qnt);
+    	tipo = "int";
+    }
+
+    // if(tipo == "boolean"){
+
+    //    	temp = "c" + to_string(var_temp_qnt);
+    // 	tipo = "int";
+    // } else {
+
+    // 	temp = "t" + to_string(var_temp_qnt);
+    // }
+
+	// temp = "t" + to_string(var_temp_qnt);
     Symbol val; 
     val.nome = temp;
     val.tipo = tipo;

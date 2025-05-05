@@ -56,7 +56,11 @@ extern int yydebug;
     YYUNDEF = 257,                 /* "invalid token"  */
     TK_INT = 258,                  /* TK_INT  */
     TK_FLOAT = 259,                /* TK_FLOAT  */
+<<<<<<< HEAD
     TK_CHAR = 260,                 /* TK_CHAR  */
+=======
+    TK_BOOLEAN = 260,              /* TK_BOOLEAN  */
+>>>>>>> ba27dd1 (boolean semi-pronto)
     TK_MAIN = 261,                 /* TK_MAIN  */
     TK_ID = 262,                   /* TK_ID  */
     TK_TIPO_INT = 263,             /* TK_TIPO_INT  */
@@ -73,7 +77,11 @@ extern int yydebug;
 #define YYUNDEF 257
 #define TK_INT 258
 #define TK_FLOAT 259
+<<<<<<< HEAD
 #define TK_CHAR 260
+=======
+#define TK_BOOLEAN 260
+>>>>>>> ba27dd1 (boolean semi-pronto)
 #define TK_MAIN 261
 #define TK_ID 262
 #define TK_TIPO_INT 263
