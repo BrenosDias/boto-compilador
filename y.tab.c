@@ -613,13 +613,8 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-<<<<<<< HEAD
-       0,    52,    52,    87,    93,    98,   104,   108,   121,   135,
-     152,   159,   183,   190,   197,   204,   208,   221,   228,   235
-=======
        0,    53,    53,    88,    94,    99,   105,   109,   122,   136,
      153,   160,   169,   177,   185,   193,   197,   210,   217
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
 };
 #endif
 
@@ -1231,11 +1226,7 @@ yyreduce:
 
 				cout << codigo << endl;
 			}
-<<<<<<< HEAD
-#line 1229 "y.tab.c"
-=======
 #line 1226 "y.tab.c"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     break;
 
   case 3: /* BLOCO: '{' COMANDOS '}'  */
@@ -1243,11 +1234,7 @@ yyreduce:
                         {
 				yyval.traducao = yyvsp[-1].traducao;
 			}
-<<<<<<< HEAD
-#line 1237 "y.tab.c"
-=======
 #line 1234 "y.tab.c"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     break;
 
   case 4: /* COMANDOS: COMANDO COMANDOS  */
@@ -1255,11 +1242,7 @@ yyreduce:
                         {
 				yyval.traducao = yyvsp[-1].traducao + yyvsp[0].traducao;
 			}
-<<<<<<< HEAD
-#line 1245 "y.tab.c"
-=======
 #line 1242 "y.tab.c"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     break;
 
   case 5: /* COMANDOS: %empty  */
@@ -1267,11 +1250,7 @@ yyreduce:
                         {
 				yyval.traducao = "";
 			}
-<<<<<<< HEAD
-#line 1253 "y.tab.c"
-=======
 #line 1250 "y.tab.c"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     break;
 
   case 6: /* COMANDO: EXPRESSAO ';'  */
@@ -1279,11 +1258,7 @@ yyreduce:
     {
         yyval = yyvsp[-1];
     }
-<<<<<<< HEAD
-#line 1261 "y.tab.c"
-=======
 #line 1258 "y.tab.c"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     break;
 
   case 7: /* COMANDO: TK_ID  */
@@ -1300,11 +1275,7 @@ yyreduce:
             yyerror("Variável não declarada.");
         }
     }
-<<<<<<< HEAD
-#line 1278 "y.tab.c"
-=======
 #line 1275 "y.tab.c"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     break;
 
   case 8: /* COMANDO: TK_VAR TK_ID ';'  */
@@ -1318,11 +1289,7 @@ yyreduce:
         yyval.traducao = "";
         yyval.label = "";
     }
-<<<<<<< HEAD
-#line 1292 "y.tab.c"
-=======
 #line 1289 "y.tab.c"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     break;
 
   case 9: /* EXPRESSAO: TK_ID '=' E  */
@@ -1343,11 +1310,7 @@ yyreduce:
         yyval.traducao = yyvsp[0].traducao + "\t" + yyvsp[-2].label + " = " + yyvsp[0].label + ";\n";
         yyval.label = yyvsp[-2].label;
     }
-<<<<<<< HEAD
-#line 1313 "y.tab.c"
-=======
 #line 1310 "y.tab.c"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     break;
 
   case 10: /* EXPRESSAO: E  */
@@ -1355,11 +1318,7 @@ yyreduce:
     {
         yyval = yyvsp[0];
     }
-<<<<<<< HEAD
-#line 1321 "y.tab.c"
-=======
 #line 1318 "y.tab.c"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     break;
 
   case 11: /* E: E '+' E  */
@@ -1370,30 +1329,6 @@ yyreduce:
         insertTempsST(yyval.label, yyval.type);
         string resultado;
 
-<<<<<<< HEAD
-        if( yyvsp[-2].type == "int" && yyvsp[0].type == "float")
-        {
-            string auxFloat = "(float) " + yyvsp[-2].label;
-            string aux = yyvsp[0].label;  
-            resultado = yyval.label + " = " + auxFloat + " + " + aux;
-            yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + resultado + ";\n";
-        }
-        else if( yyvsp[-2].type == "float" && yyvsp[0].type == "int")
-        {
-            string aux =  yyvsp[-2].label;
-            string auxFloat = "(float) " + yyvsp[0].label;  
-            resultado = yyval.label + " = " + aux + " + " +  auxFloat;
-            yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + resultado + ";\n";
-        }else{
-            yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " + " + yyvsp[0].label + ";\n";
-        }    
-    }
-#line 1349 "y.tab.c"
-    break;
-
-  case 12: /* E: E '-' E  */
-#line 184 "sintatico.y"
-=======
         implicitConversion(yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label, yyvsp[-2].traducao, yyvsp[0].traducao, yyval.label, yyval.traducao, " + ");
     }
 #line 1331 "y.tab.c"
@@ -1401,7 +1336,6 @@ yyreduce:
 
   case 12: /* E: E '-' E  */
 #line 170 "sintatico.y"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     {
         typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type);
         yyval.label = gentempcode(yyval.type);
@@ -1409,19 +1343,11 @@ yyreduce:
         yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " - " + yyvsp[0].label + ";\n";
         implicitConversion(yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label, yyvsp[-2].traducao, yyvsp[0].traducao, yyval.label, yyval.traducao, " - ");
     }
-<<<<<<< HEAD
-#line 1360 "y.tab.c"
-    break;
-
-  case 13: /* E: E '*' E  */
-#line 191 "sintatico.y"
-=======
 #line 1343 "y.tab.c"
     break;
 
   case 13: /* E: E '*' E  */
 #line 178 "sintatico.y"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     {
         typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type);
         yyval.label = gentempcode(yyval.type);
@@ -1429,19 +1355,11 @@ yyreduce:
         yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " * " + yyvsp[0].label + ";\n";
         implicitConversion(yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label, yyvsp[-2].traducao, yyvsp[0].traducao, yyval.label, yyval.traducao, " * ");
     }
-<<<<<<< HEAD
-#line 1371 "y.tab.c"
-    break;
-
-  case 14: /* E: E '/' E  */
-#line 198 "sintatico.y"
-=======
 #line 1355 "y.tab.c"
     break;
 
   case 14: /* E: E '/' E  */
 #line 186 "sintatico.y"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     {
         typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type);
         yyval.label = gentempcode(yyval.type);
@@ -1449,21 +1367,6 @@ yyreduce:
         yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " / " + yyvsp[0].label + ";\n";
         implicitConversion(yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label, yyvsp[-2].traducao, yyvsp[0].traducao, yyval.label, yyval.traducao, " / ");
     }
-<<<<<<< HEAD
-#line 1382 "y.tab.c"
-    break;
-
-  case 15: /* E: '(' E ')'  */
-#line 205 "sintatico.y"
-    {
-        yyval = yyvsp[-1];
-    }
-#line 1390 "y.tab.c"
-    break;
-
-  case 16: /* E: TK_ID  */
-#line 209 "sintatico.y"
-=======
 #line 1367 "y.tab.c"
     break;
 
@@ -1477,7 +1380,6 @@ yyreduce:
 
   case 16: /* E: TK_ID  */
 #line 198 "sintatico.y"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     {
         auto it = symbolTable.find(yyvsp[0].label);
         if (it != symbolTable.end()) {
@@ -1490,68 +1392,33 @@ yyreduce:
             yyerror("Variável não declarada.");
         }
     }
-<<<<<<< HEAD
-#line 1407 "y.tab.c"
-    break;
-
-  case 17: /* E: TK_INT  */
-#line 222 "sintatico.y"
-=======
 #line 1392 "y.tab.c"
     break;
 
   case 17: /* E: TK_INT  */
 #line 211 "sintatico.y"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     {
         yyval.type = "int";
         yyval.label = gentempcode(yyval.type);
         insertTempsST(yyval.label, yyval.type);
         yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
     }
-<<<<<<< HEAD
-#line 1418 "y.tab.c"
-    break;
-
-  case 18: /* E: TK_FLOAT  */
-#line 229 "sintatico.y"
-=======
 #line 1403 "y.tab.c"
     break;
 
   case 18: /* E: TK_FLOAT  */
 #line 218 "sintatico.y"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
     {
         yyval.type = "float";
         yyval.label = gentempcode(yyval.type);
         insertTempsST(yyval.label, yyval.type);
         yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
     }
-<<<<<<< HEAD
-#line 1429 "y.tab.c"
-    break;
-
-  case 19: /* E: TK_CHAR  */
-#line 236 "sintatico.y"
-    {
-        yyval.type = "char";
-        yyval.label = gentempcode(yyval.type);
-        insertTempsST(yyval.label, yyval.type);
-        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
-    }
-#line 1440 "y.tab.c"
-    break;
-
-
-#line 1444 "y.tab.c"
-=======
 #line 1414 "y.tab.c"
     break;
 
 
 #line 1418 "y.tab.c"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
 
       default: break;
     }
@@ -1744,11 +1611,7 @@ yyreturnlab:
   return yyresult;
 }
 
-<<<<<<< HEAD
-#line 244 "sintatico.y"
-=======
 #line 226 "sintatico.y"
->>>>>>> d37dfd4 (feat: Finalizado a conversao implicita)
 
 
 #include "lex.yy.c"
