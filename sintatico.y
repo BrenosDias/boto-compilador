@@ -36,6 +36,7 @@ void printSymbolTable();
 void checkUndefinedTypes();
 void insertTempsST(const string& nome, const string& tipo);
 void typeValue(std::string& result, const std::string& left, const std::string& right);
+void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2);
 %}
 
 %token TK_INT TK_FLOAT TK_CHAR
@@ -162,23 +163,7 @@ E
         $$.label = gentempcode($$.type);
         insertTempsST($$.label, $$.type);
         string resultado;
-
-        if( $1.type == "int" && $3.type == "float")
-        {
-            string auxFloat = "(float) " + $1.label;
-            string aux = $3.label;  
-            resultado = $$.label + " = " + auxFloat + " + " + aux;
-            $$.traducao = $1.traducao + $3.traducao + "\t" + resultado + ";\n";
-        }
-        else if( $1.type == "float" && $3.type == "int")
-        {
-            string aux =  $1.label;
-            string auxFloat = "(float) " + $3.label;  
-            resultado = $$.label + " = " + aux + " + " +  auxFloat;
-            $$.traducao = $1.traducao + $3.traducao + "\t" + resultado + ";\n";
-        }else{
-            $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
-        }    
+        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " + ");
     }
     | E '-' E
     {
@@ -186,6 +171,7 @@ E
         $$.label = gentempcode($$.type);
         insertTempsST($$.label, $$.type);
         $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
+        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " - ");
     }
     | E '*' E
     {
@@ -193,6 +179,7 @@ E
         $$.label = gentempcode($$.type);
         insertTempsST($$.label, $$.type);
         $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
+        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " * ");
     }
     | E '/' E
     {
@@ -200,6 +187,7 @@ E
         $$.label = gentempcode($$.type);
         insertTempsST($$.label, $$.type);
         $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
+        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " / ");
     }
     | '(' E ')'
     {
@@ -271,6 +259,30 @@ void typeValue(std::string& result, const std::string& left, const std::string& 
         result = "undefined";
     }
 }
+
+void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2)
+{
+    string resultado;
+
+    if (type1 == "int" && type3 == "float") {
+        string auxFloat = "(float) " + label1;
+        string aux = label3;
+        resultado = resultLabel + " = " + auxFloat + type2 + aux;
+        traducaoFinal = traducao1 + traducao3 + "\t" + resultado + ";\n";
+    }
+    else if (type1 == "float" && type3 == "int") {
+        string aux = label1;
+        string auxFloat = "(float) " + label3;
+        resultado = resultLabel + " = " + aux + type2 + auxFloat;
+        traducaoFinal = traducao1 + traducao3 + "\t" + resultado + ";\n";
+    }
+    else {
+        resultado = resultLabel + " = " + label1 + type2 + label3;
+        traducaoFinal = traducao1 + traducao3 + "\t" + resultado + ";\n";
+    }
+}
+
+
 
 void insertTempsST(const string& nome, const string& tipo)
 {
