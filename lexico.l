@@ -31,11 +31,12 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 {DELIM} 	{}
 
-{CHAR}      {yylval.label = yytext; return TK_CHAR;}
 
 "main"		{return TK_MAIN;}
 
 "int"		{return TK_TIPO_INT;}
+
+"float"		{return TK_TIPO_FLOAT;}
 
 "var"		{return TK_VAR;}
 
@@ -65,6 +66,7 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 "="		    { return '='; }
 
+{CHAR}      {yylval.label = yytext; return TK_CHAR;}
 {INT}		{ yylval.label = yytext; return TK_INT; }
 {REAL}		{ yylval.label = yytext; return TK_FLOAT; }
 {BOOLEAN}   { yylval.label = yytext; return TK_BOOLEAN; }

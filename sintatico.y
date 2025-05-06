@@ -40,6 +40,7 @@ void implicitConversion(string type1, string type3, string label1, string label3
 void reportSemanticError(string type1, string type3, string text);
 %}
 
+%token TK_TIPO_FLOAT
 %token TK_NOT TK_OR TK_AND
 %token TK_MAIOR TK_MAIOR_IGUAL TK_MENOR TK_MENOR_IGUAL TK_IGUAL_IGUAL TK_DIFERENTE
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOLEAN
@@ -88,15 +89,6 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 						codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
 					}
 				}
-
-				// for (auto &par : symbolTable) {
-				// 	const Symbol &simbolo = par.second;
-
-				// 	// Se o nome NÃO começa com 't', é uma variável do usuário (ex: a, b)
-				// 	if (!simbolo.nome.empty() && simbolo.nome[0] != 't') {
-				// 		codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
-				// 	}
-				// }
 
 				codigo += "\n";
 
@@ -251,8 +243,11 @@ E
 		    }
 			| E TK_IGUAL_IGUAL E
 		    {
-				if($$.label == "1"){
-					yyerror("AAA FOI");
+				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
+		        insertTempsST($$.label, $$.type);
+				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
+				{
+					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
 				}
 
 				$$.type = "int";
@@ -321,6 +316,20 @@ E
 					}
 				} 
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " || " + $3.label + ";\n";
+		    }
+			| TK_TIPO_INT '(' E ')' 
+		    {
+				$$.type = "int";
+				$$.label = gentempcode("int");
+
+				$$.traducao = $3.traducao  + "\t" + $$.label + " = " + "(int)" + $3.label + ";\n";
+		    }
+			| TK_TIPO_FLOAT '(' E ')' 
+		    {
+				$$.type = "float";
+				$$.label = gentempcode("float");
+
+				$$.traducao = $3.traducao  + "\t" + $$.label + " = " + "(float)" + $3.label + ";\n";
 		    }
 		    | '(' E ')'
 		    {

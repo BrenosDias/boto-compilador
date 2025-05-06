@@ -1,4 +1,4 @@
 int main() {
   var a;
-  a = ( 3 > 1) or ( 3 == 1);
+  a = int(2.43);
 }
