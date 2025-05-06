@@ -200,7 +200,6 @@ E
 		        typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
-		        string resultado;
 		        implicitConversion($1, $3, $$, " + ");
 		    }
 		    | E '-' E
@@ -208,7 +207,6 @@ E
 		        typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
-		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
 		        implicitConversion($1, $3, $$, " - ");
 		    }
 		    | E '*' E
@@ -216,7 +214,6 @@ E
 		        typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
-		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
 		        implicitConversion($1, $3, $$, " * ");
 		    }
 		    | E '/' E
@@ -224,7 +221,6 @@ E
 		        typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
-		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
 		        implicitConversion($1, $3, $$, " / ");
 		    }
 			| E TK_MAIOR E

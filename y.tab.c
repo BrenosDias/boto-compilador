@@ -648,16 +648,9 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-<<<<<<< HEAD
-       0,    62,    62,   104,   110,   115,   121,   125,   138,   148,
-     162,   179,   186,   194,   202,   210,   218,   230,   242,   254,
-     267,   279,   291,   304,   317,   330,   337,   344,   348,   371,
-     380,   387,   401
-=======
        0,    56,    56,   107,   113,   118,   124,   128,   141,   155,
      184,   191,   199,   207,   215,   223,   235,   247,   259,   271,
      283,   295,   299,   322,   331,   338,   352
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
 };
 #endif
 
@@ -1433,21 +1426,6 @@ yyreduce:
 
 
 		    }
-<<<<<<< HEAD
-#line 1419 "y.tab.c"
-    break;
-
-  case 11: /* EXPRESSAO: E  */
-#line 180 "sintatico.y"
-                    {
-		        yyval = yyvsp[0];
-		    }
-#line 1427 "y.tab.c"
-    break;
-
-  case 12: /* E: E '+' E  */
-#line 187 "sintatico.y"
-=======
 #line 1378 "y.tab.c"
     break;
 
@@ -1461,7 +1439,6 @@ yyreduce:
 
   case 11: /* E: E '+' E  */
 #line 192 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
@@ -1469,19 +1446,11 @@ yyreduce:
 		        string resultado;
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " + ");
 		    }
-<<<<<<< HEAD
-#line 1439 "y.tab.c"
-    break;
-
-  case 13: /* E: E '-' E  */
-#line 195 "sintatico.y"
-=======
 #line 1398 "y.tab.c"
     break;
 
   case 12: /* E: E '-' E  */
 #line 200 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
@@ -1489,19 +1458,11 @@ yyreduce:
 		        yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " - " + yyvsp[0].label + ";\n";
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " - ");
 		    }
-<<<<<<< HEAD
-#line 1451 "y.tab.c"
-    break;
-
-  case 14: /* E: E '*' E  */
-#line 203 "sintatico.y"
-=======
 #line 1410 "y.tab.c"
     break;
 
   case 13: /* E: E '*' E  */
 #line 208 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
@@ -1509,19 +1470,11 @@ yyreduce:
 		        yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " * " + yyvsp[0].label + ";\n";
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " * ");
 		    }
-<<<<<<< HEAD
-#line 1463 "y.tab.c"
-    break;
-
-  case 15: /* E: E '/' E  */
-#line 211 "sintatico.y"
-=======
 #line 1422 "y.tab.c"
     break;
 
   case 14: /* E: E '/' E  */
 #line 216 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
@@ -1529,19 +1482,11 @@ yyreduce:
 		        yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " / " + yyvsp[0].label + ";\n";
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " / ");
 		    }
-<<<<<<< HEAD
-#line 1475 "y.tab.c"
-    break;
-
-  case 16: /* E: E TK_MAIOR E  */
-#line 219 "sintatico.y"
-=======
 #line 1434 "y.tab.c"
     break;
 
   case 15: /* E: E TK_MAIOR E  */
 #line 224 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 				typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        insertTempsST(yyval.label, yyval.type);
@@ -1553,19 +1498,11 @@ yyreduce:
 		        yyval.label = gentempcode("boolean");
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " > " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1491 "y.tab.c"
-    break;
-
-  case 17: /* E: E TK_MENOR E  */
-#line 231 "sintatico.y"
-=======
 #line 1450 "y.tab.c"
     break;
 
   case 16: /* E: E TK_MENOR E  */
 #line 236 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 				typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        insertTempsST(yyval.label, yyval.type);
@@ -1577,19 +1514,11 @@ yyreduce:
 		        yyval.label = gentempcode("boolean");
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " < " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1507 "y.tab.c"
-    break;
-
-  case 18: /* E: E TK_DIFERENTE E  */
-#line 243 "sintatico.y"
-=======
 #line 1466 "y.tab.c"
     break;
 
   case 17: /* E: E TK_DIFERENTE E  */
 #line 248 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 				typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        insertTempsST(yyval.label, yyval.type);
@@ -1601,19 +1530,11 @@ yyreduce:
 		        yyval.label = gentempcode("boolean");
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " != " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1523 "y.tab.c"
-    break;
-
-  case 19: /* E: E TK_IGUAL_IGUAL E  */
-#line 255 "sintatico.y"
-=======
 #line 1482 "y.tab.c"
     break;
 
   case 18: /* E: E TK_IGUAL_IGUAL E  */
 #line 260 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 				typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        insertTempsST(yyval.label, yyval.type);
@@ -1626,19 +1547,11 @@ yyreduce:
 		        yyval.label = gentempcode("boolean");
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " == " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1540 "y.tab.c"
-    break;
-
-  case 20: /* E: E TK_MENOR_IGUAL E  */
-#line 268 "sintatico.y"
-=======
 #line 1498 "y.tab.c"
     break;
 
   case 19: /* E: E TK_MENOR_IGUAL E  */
 #line 272 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 				typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        insertTempsST(yyval.label, yyval.type);
@@ -1650,19 +1563,11 @@ yyreduce:
 		        yyval.label = gentempcode("boolean");
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " <= " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1556 "y.tab.c"
-    break;
-
-  case 21: /* E: E TK_MAIOR_IGUAL E  */
-#line 280 "sintatico.y"
-=======
 #line 1514 "y.tab.c"
     break;
 
   case 20: /* E: E TK_MAIOR_IGUAL E  */
 #line 284 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 				typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        insertTempsST(yyval.label, yyval.type);
@@ -1674,94 +1579,6 @@ yyreduce:
 		        yyval.label = gentempcode("boolean");
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " >= " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1572 "y.tab.c"
-    break;
-
-  case 22: /* E: TK_NOT E  */
-#line 292 "sintatico.y"
-                    {
-				yyval.type = "int";
-		        yyval.label = gentempcode("boolean");
-
-				auto it = symbolTable.find(yyvsp[0].label);
-				if (it != symbolTable.end()) {
-					if (it->second.temp[0] != 'b') {
-						yyerror("Operação not requer operandos do tipo bool.");
-					}
-				} 
-				yyval.traducao = yyvsp[0].traducao  + "\t" + yyval.label + " = " + "!" + yyvsp[0].label + ";\n";
-		    }
-#line 1589 "y.tab.c"
-    break;
-
-  case 23: /* E: E TK_AND E  */
-#line 305 "sintatico.y"
-                    {
-				yyval.type = "int";
-		        yyval.label = gentempcode("boolean");
-
-				auto it = symbolTable.find(yyvsp[-1].label);
-				if (it != symbolTable.end()) {
-					if (it->second.temp[0] != 'b') {
-						yyerror("Operação not requer operandos do tipo bool.");
-					}
-				} 
-				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " && " + yyvsp[0].label + ";\n";
-		    }
-#line 1606 "y.tab.c"
-    break;
-
-  case 24: /* E: E TK_OR E  */
-#line 318 "sintatico.y"
-                    {
-				yyval.type = "int";
-		        yyval.label = gentempcode("boolean");
-
-				auto it = symbolTable.find(yyvsp[-1].label);
-				if (it != symbolTable.end()) {
-					if (it->second.temp[0] != 'b') {
-						yyerror("Operação not requer operandos do tipo bool.");
-					}
-				} 
-				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " || " + yyvsp[0].label + ";\n";
-		    }
-#line 1623 "y.tab.c"
-    break;
-
-  case 25: /* E: TK_TIPO_INT '(' E ')'  */
-#line 331 "sintatico.y"
-                    {
-				yyval.type = "int";
-				yyval.label = gentempcode("int");
-
-				yyval.traducao = yyvsp[-1].traducao  + "\t" + yyval.label + " = " + "(int)" + yyvsp[-1].label + ";\n";
-		    }
-#line 1634 "y.tab.c"
-    break;
-
-  case 26: /* E: TK_TIPO_FLOAT '(' E ')'  */
-#line 338 "sintatico.y"
-                    {
-				yyval.type = "float";
-				yyval.label = gentempcode("float");
-
-				yyval.traducao = yyvsp[-1].traducao  + "\t" + yyval.label + " = " + "(float)" + yyvsp[-1].label + ";\n";
-		    }
-#line 1645 "y.tab.c"
-    break;
-
-  case 27: /* E: '(' E ')'  */
-#line 345 "sintatico.y"
-                    {
-		        yyval = yyvsp[-1];
-		    }
-#line 1653 "y.tab.c"
-    break;
-
-  case 28: /* E: TK_ID  */
-#line 349 "sintatico.y"
-=======
 #line 1530 "y.tab.c"
     break;
 
@@ -1775,7 +1592,6 @@ yyreduce:
 
   case 22: /* E: TK_ID  */
 #line 300 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 		        auto it = symbolTable.find(yyvsp[0].label);
 		        if (it != symbolTable.end()) {
@@ -1798,19 +1614,11 @@ yyreduce:
 		            yyerror("Variável não declarada.");
 		        }
 		    }
-<<<<<<< HEAD
-#line 1680 "y.tab.c"
-    break;
-
-  case 29: /* E: TK_INT  */
-#line 372 "sintatico.y"
-=======
 #line 1565 "y.tab.c"
     break;
 
   case 23: /* E: TK_INT  */
 #line 323 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 		        yyval.type = "int";
 		        yyval.label = gentempcode(yyval.type);
@@ -1818,38 +1626,22 @@ yyreduce:
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1692 "y.tab.c"
-    break;
-
-  case 30: /* E: TK_FLOAT  */
-#line 381 "sintatico.y"
-=======
 #line 1577 "y.tab.c"
     break;
 
   case 24: /* E: TK_FLOAT  */
 #line 332 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 		        yyval.type = "float";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1703 "y.tab.c"
-    break;
-
-  case 31: /* E: TK_BOOLEAN  */
-#line 388 "sintatico.y"
-=======
 #line 1588 "y.tab.c"
     break;
 
   case 25: /* E: TK_BOOLEAN  */
 #line 339 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {	
 		        yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -1863,38 +1655,22 @@ yyreduce:
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1721 "y.tab.c"
-    break;
-
-  case 32: /* E: TK_CHAR  */
-#line 402 "sintatico.y"
-=======
 #line 1606 "y.tab.c"
     break;
 
   case 26: /* E: TK_CHAR  */
 #line 353 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
                     {
 		        yyval.type = "char";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1732 "y.tab.c"
-    break;
-
-
-#line 1736 "y.tab.c"
-=======
 #line 1617 "y.tab.c"
     break;
 
 
 #line 1621 "y.tab.c"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
 
       default: break;
     }
@@ -2087,11 +1863,7 @@ yyreturnlab:
   return yyresult;
 }
 
-<<<<<<< HEAD
-#line 411 "sintatico.y"
-=======
 #line 362 "sintatico.y"
->>>>>>> 90f407d (meia conversao implicitae refactory de funcoes)
 
 
 #include "lex.yy.c"
