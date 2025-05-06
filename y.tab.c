@@ -107,8 +107,9 @@ void checkUndefinedTypes();
 void insertTempsST(const string& nome, const string& tipo);
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel);
 void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2);
+void reportSemanticError(string type1, string type3, string text);
 
-#line 112 "y.tab.c"
+#line 113 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -616,9 +617,14 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
+<<<<<<< HEAD
        0,    54,    54,   105,   111,   116,   122,   126,   139,   153,
      170,   177,   185,   193,   201,   209,   213,   236,   245,   252,
      266
+=======
+       0,    54,    54,    89,    95,   100,   106,   110,   123,   137,
+     154,   161,   169,   177,   185,   193,   197,   210,   217,   224
+>>>>>>> 1b203cf (Feat: Adicionado mensagem de erro para operacoes com char)
 };
 #endif
 
@@ -1248,6 +1254,7 @@ yyreduce:
 
 				cout << codigo << endl;
 			}
+<<<<<<< HEAD
 #line 1252 "y.tab.c"
     break;
 
@@ -1321,6 +1328,81 @@ yyreduce:
 		        if (it == symbolTable.end()) {
 		            yyerror("Variável do lado esquerdo não declarada.");
 		        }
+=======
+#line 1231 "y.tab.c"
+    break;
+
+  case 3: /* BLOCO: '{' COMANDOS '}'  */
+#line 90 "sintatico.y"
+                        {
+				yyval.traducao = yyvsp[-1].traducao;
+			}
+#line 1239 "y.tab.c"
+    break;
+
+  case 4: /* COMANDOS: COMANDO COMANDOS  */
+#line 96 "sintatico.y"
+                        {
+				yyval.traducao = yyvsp[-1].traducao + yyvsp[0].traducao;
+			}
+#line 1247 "y.tab.c"
+    break;
+
+  case 5: /* COMANDOS: %empty  */
+#line 100 "sintatico.y"
+                        {
+				yyval.traducao = "";
+			}
+#line 1255 "y.tab.c"
+    break;
+
+  case 6: /* COMANDO: EXPRESSAO ';'  */
+#line 107 "sintatico.y"
+    {
+        yyval = yyvsp[-1];
+    }
+#line 1263 "y.tab.c"
+    break;
+
+  case 7: /* COMANDO: TK_ID  */
+#line 111 "sintatico.y"
+    {
+        auto it = symbolTable.find(yyvsp[0].label);
+        if (it != symbolTable.end()) {
+            yyval.type = it->second.tipo;
+            string origem = it->second.temp.empty() ? yyvsp[0].label : it->second.temp;
+            yyval.label = gentempcode(yyval.type);
+            insertTempsST(yyval.label, yyval.type);
+            yyval.traducao = "\t" + yyval.label + " = " + origem + ";\n";
+        } else {
+            yyerror("Variável não declarada.");
+        }
+    }
+#line 1280 "y.tab.c"
+    break;
+
+  case 8: /* COMANDO: TK_VAR TK_ID ';'  */
+#line 124 "sintatico.y"
+    {
+        Symbol val;
+        val.nome = yyvsp[-1].label;
+        val.tipo = "undefined";
+        val.temp = "";
+        symbolTable.insert({val.nome, val});
+        yyval.traducao = "";
+        yyval.label = "";
+    }
+#line 1294 "y.tab.c"
+    break;
+
+  case 9: /* EXPRESSAO: TK_ID '=' E  */
+#line 138 "sintatico.y"
+    {
+        auto it = symbolTable.find(yyvsp[-2].label);
+        if (it == symbolTable.end()) {
+            yyerror("Variável do lado esquerdo não declarada.");
+        }
+>>>>>>> 1b203cf (Feat: Adicionado mensagem de erro para operacoes com char)
 
 		        if (it->second.tipo == "undefined") {
 		            it->second.tipo = yyvsp[0].type;
@@ -1328,6 +1410,7 @@ yyreduce:
 
 		        it->second.temp = yyvsp[0].label;
 
+<<<<<<< HEAD
 		        yyval.type = yyvsp[0].type;
 		        yyval.traducao = yyvsp[0].traducao + "\t" + yyvsp[-2].label + " = " + yyvsp[0].label + ";\n";
 		        yyval.label = yyvsp[-2].label;
@@ -1389,6 +1472,94 @@ yyreduce:
 		        implicitConversion(yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label, yyvsp[-2].traducao, yyvsp[0].traducao, yyval.label, yyval.traducao, " / ");
 		    }
 #line 1392 "y.tab.c"
+=======
+        yyval.type = yyvsp[0].type;
+        yyval.traducao = yyvsp[0].traducao + "\t" + yyvsp[-2].label + " = " + yyvsp[0].label + ";\n";
+        yyval.label = yyvsp[-2].label;
+    }
+#line 1315 "y.tab.c"
+    break;
+
+  case 10: /* EXPRESSAO: E  */
+#line 155 "sintatico.y"
+    {
+        yyval = yyvsp[0];
+    }
+#line 1323 "y.tab.c"
+    break;
+
+  case 11: /* E: E '+' E  */
+#line 162 "sintatico.y"
+    {
+        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type);
+        yyval.label = gentempcode(yyval.type);
+        insertTempsST(yyval.label, yyval.type);
+        string resultado;
+        implicitConversion(yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label, yyvsp[-2].traducao, yyvsp[0].traducao, yyval.label, yyval.traducao, " + ");
+    }
+#line 1335 "y.tab.c"
+    break;
+
+  case 12: /* E: E '-' E  */
+#line 170 "sintatico.y"
+    {
+        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type);
+        yyval.label = gentempcode(yyval.type);
+        insertTempsST(yyval.label, yyval.type);
+        yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " - " + yyvsp[0].label + ";\n";
+        implicitConversion(yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label, yyvsp[-2].traducao, yyvsp[0].traducao, yyval.label, yyval.traducao, " - ");
+    }
+#line 1347 "y.tab.c"
+    break;
+
+  case 13: /* E: E '*' E  */
+#line 178 "sintatico.y"
+    {
+        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type);
+        yyval.label = gentempcode(yyval.type);
+        insertTempsST(yyval.label, yyval.type);
+        yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " * " + yyvsp[0].label + ";\n";
+        implicitConversion(yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label, yyvsp[-2].traducao, yyvsp[0].traducao, yyval.label, yyval.traducao, " * ");
+    }
+#line 1359 "y.tab.c"
+    break;
+
+  case 14: /* E: E '/' E  */
+#line 186 "sintatico.y"
+    {
+        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type);
+        yyval.label = gentempcode(yyval.type);
+        insertTempsST(yyval.label, yyval.type);
+        yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " / " + yyvsp[0].label + ";\n";
+        implicitConversion(yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label, yyvsp[-2].traducao, yyvsp[0].traducao, yyval.label, yyval.traducao, " / ");
+    }
+#line 1371 "y.tab.c"
+    break;
+
+  case 15: /* E: '(' E ')'  */
+#line 194 "sintatico.y"
+    {
+        yyval = yyvsp[-1];
+    }
+#line 1379 "y.tab.c"
+    break;
+
+  case 16: /* E: TK_ID  */
+#line 198 "sintatico.y"
+    {
+        auto it = symbolTable.find(yyvsp[0].label);
+        if (it != symbolTable.end()) {
+            yyval.type = it->second.tipo;
+            yyval.label = gentempcode(yyval.type);
+            insertTempsST(yyval.label, yyval.type);
+            string origem = it->second.temp.empty() ? yyvsp[0].label : it->second.temp;
+            yyval.traducao = "\t" + yyval.label + " = " + origem + ";\n";
+        } else {
+            yyerror("Variável não declarada.");
+        }
+    }
+#line 1396 "y.tab.c"
+>>>>>>> 1b203cf (Feat: Adicionado mensagem de erro para operacoes com char)
     break;
 
   case 15: /* E: '(' E ')'  */
@@ -1427,6 +1598,7 @@ yyreduce:
     break;
 
   case 17: /* E: TK_INT  */
+<<<<<<< HEAD
 #line 237 "sintatico.y"
                     {
 		        yyval.type = "int";
@@ -1480,6 +1652,42 @@ yyreduce:
 
 
 #line 1483 "y.tab.c"
+=======
+#line 211 "sintatico.y"
+    {
+        yyval.type = "int";
+        yyval.label = gentempcode(yyval.type);
+        insertTempsST(yyval.label, yyval.type);
+        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
+    }
+#line 1407 "y.tab.c"
+    break;
+
+  case 18: /* E: TK_FLOAT  */
+#line 218 "sintatico.y"
+    {
+        yyval.type = "float";
+        yyval.label = gentempcode(yyval.type);
+        insertTempsST(yyval.label, yyval.type);
+        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
+    }
+#line 1418 "y.tab.c"
+    break;
+
+  case 19: /* E: TK_CHAR  */
+#line 225 "sintatico.y"
+    {
+        yyval.type = "char";
+        yyval.label = gentempcode(yyval.type);
+        insertTempsST(yyval.label, yyval.type);
+        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
+    }
+#line 1429 "y.tab.c"
+    break;
+
+
+#line 1433 "y.tab.c"
+>>>>>>> 1b203cf (Feat: Adicionado mensagem de erro para operacoes com char)
 
       default: break;
     }
@@ -1672,7 +1880,11 @@ yyreturnlab:
   return yyresult;
 }
 
+<<<<<<< HEAD
 #line 276 "sintatico.y"
+=======
+#line 233 "sintatico.y"
+>>>>>>> 1b203cf (Feat: Adicionado mensagem de erro para operacoes com char)
 
 
 #include "lex.yy.c"
@@ -1700,6 +1912,7 @@ string gentempcode(string tipo) {
     return temp;
 }
 
+<<<<<<< HEAD
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel){
 
 
@@ -1725,6 +1938,22 @@ void typeValue(string& resultType,  string& leftType,  string& rightType,  strin
         resultType = "int";
     } else if (leftType == "char" && rightType == "char") {
         resultType = "int"; // soma de dois chars resulta em int
+=======
+
+void typeValue(string& result, const string& left, const string& right){
+
+    if (left == "char" || right == "char")
+        {
+            yyerror("Não é permitido operações com char");
+        }
+
+    if (left == "float" || right == "float") {
+        result = "float";
+    } else if (left == "int" || right == "int") {
+        result = "int";
+    } else if (left == "char" && right == "char") {
+        result = "int"; // soma de dois chars resulta em int
+>>>>>>> 1b203cf (Feat: Adicionado mensagem de erro para operacoes com char)
     } else {
         resultType = "undefined";
     }

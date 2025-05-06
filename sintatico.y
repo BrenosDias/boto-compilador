@@ -37,6 +37,7 @@ void checkUndefinedTypes();
 void insertTempsST(const string& nome, const string& tipo);
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel);
 void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2);
+void reportSemanticError(string type1, string type3, string text);
 %}
 
 
@@ -300,6 +301,7 @@ string gentempcode(string tipo) {
     return temp;
 }
 
+<<<<<<< HEAD
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel){
 
 
@@ -325,6 +327,22 @@ void typeValue(string& resultType,  string& leftType,  string& rightType,  strin
         resultType = "int";
     } else if (leftType == "char" && rightType == "char") {
         resultType = "int"; // soma de dois chars resulta em int
+=======
+
+void typeValue(string& result, const string& left, const string& right){
+
+    if (left == "char" || right == "char")
+        {
+            yyerror("Não é permitido operações com char");
+        }
+
+    if (left == "float" || right == "float") {
+        result = "float";
+    } else if (left == "int" || right == "int") {
+        result = "int";
+    } else if (left == "char" && right == "char") {
+        result = "int"; // soma de dois chars resulta em int
+>>>>>>> 1b203cf (Feat: Adicionado mensagem de erro para operacoes com char)
     } else {
         resultType = "undefined";
     }

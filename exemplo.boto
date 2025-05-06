@@ -1,8 +1,21 @@
 int main() {
+<<<<<<< HEAD
 
 	var b;
 	var c;
 
  	b = false;
  	c = b + true;
+=======
+  var a;
+  var b;
+  var c;
+  a = 'a';
+  b = 'b';
+
+  c = a - b;
+
+
+  
+>>>>>>> 1b203cf (Feat: Adicionado mensagem de erro para operacoes com char)
 }
