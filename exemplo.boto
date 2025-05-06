@@ -3,6 +3,7 @@ int main() {
 	var b;
 	var c;
 
- 	b = false;
- 	c = b + true;
-}
+ 	b = 'B';
+ 	c = b + 'C';
+
+  }

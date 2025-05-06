@@ -37,6 +37,7 @@ void checkUndefinedTypes();
 void insertTempsST(const string& nome, const string& tipo);
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel);
 void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2);
+void reportSemanticError(string type1, string type3, string text);
 %}
 
 
@@ -319,19 +320,21 @@ void typeValue(string& resultType,  string& leftType,  string& rightType,  strin
 	    }
 	}
 
+    if (leftType == "char" || rightType == "char")
+    {
+        yyerror("Não é permitido operações com char");
+    }
+
     if (leftType == "float" || rightType == "float") {
         resultType = "float";
     } else if (leftType == "int" || rightType == "int") {
         resultType = "int";
     } else if (leftType == "char" && rightType == "char") {
         resultType = "int"; // soma de dois chars resulta em int
-    } else {
-        resultType = "undefined";
     }
-}
 
-void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2)
-{
+}
+void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2){
     string resultado;
 
 
