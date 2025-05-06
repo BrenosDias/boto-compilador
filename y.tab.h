@@ -54,16 +54,22 @@ extern int yydebug;
     YYEOF = 0,                     /* "end of file"  */
     YYerror = 256,                 /* error  */
     YYUNDEF = 257,                 /* "invalid token"  */
-    TK_INT = 258,                  /* TK_INT  */
-    TK_FLOAT = 259,                /* TK_FLOAT  */
-    TK_CHAR = 260,                 /* TK_CHAR  */
-    TK_BOOLEAN = 261,              /* TK_BOOLEAN  */
-    TK_MAIN = 262,                 /* TK_MAIN  */
-    TK_ID = 263,                   /* TK_ID  */
-    TK_TIPO_INT = 264,             /* TK_TIPO_INT  */
-    TK_VAR = 265,                  /* TK_VAR  */
-    TK_FIM = 266,                  /* TK_FIM  */
-    TK_ERROR = 267                 /* TK_ERROR  */
+    TK_MAIOR = 258,                /* TK_MAIOR  */
+    TK_MAIOR_IGUAL = 259,          /* TK_MAIOR_IGUAL  */
+    TK_MENOR = 260,                /* TK_MENOR  */
+    TK_MENOR_IGUAL = 261,          /* TK_MENOR_IGUAL  */
+    TK_IGUAL_IGUAL = 262,          /* TK_IGUAL_IGUAL  */
+    TK_DIFERENTE = 263,            /* TK_DIFERENTE  */
+    TK_INT = 264,                  /* TK_INT  */
+    TK_FLOAT = 265,                /* TK_FLOAT  */
+    TK_CHAR = 266,                 /* TK_CHAR  */
+    TK_BOOLEAN = 267,              /* TK_BOOLEAN  */
+    TK_MAIN = 268,                 /* TK_MAIN  */
+    TK_ID = 269,                   /* TK_ID  */
+    TK_TIPO_INT = 270,             /* TK_TIPO_INT  */
+    TK_VAR = 271,                  /* TK_VAR  */
+    TK_FIM = 272,                  /* TK_FIM  */
+    TK_ERROR = 273                 /* TK_ERROR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -72,16 +78,22 @@ extern int yydebug;
 #define YYEOF 0
 #define YYerror 256
 #define YYUNDEF 257
-#define TK_INT 258
-#define TK_FLOAT 259
-#define TK_CHAR 260
-#define TK_BOOLEAN 261
-#define TK_MAIN 262
-#define TK_ID 263
-#define TK_TIPO_INT 264
-#define TK_VAR 265
-#define TK_FIM 266
-#define TK_ERROR 267
+#define TK_MAIOR 258
+#define TK_MAIOR_IGUAL 259
+#define TK_MENOR 260
+#define TK_MENOR_IGUAL 261
+#define TK_IGUAL_IGUAL 262
+#define TK_DIFERENTE 263
+#define TK_INT 264
+#define TK_FLOAT 265
+#define TK_CHAR 266
+#define TK_BOOLEAN 267
+#define TK_MAIN 268
+#define TK_ID 269
+#define TK_TIPO_INT 270
+#define TK_VAR 271
+#define TK_FIM 272
+#define TK_ERROR 273
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

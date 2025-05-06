@@ -1,9 +1,5 @@
 int main() {
+  var a;
+  a = 1.3 <= 2;
 
-	var b;
-	var c;
-
- 	b = 'B';
- 	c = b + 'C';
-
-  }
+}
