@@ -31,7 +31,7 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 {DELIM} 	{}
 
-{CHAR} { yylval.label = yytext; return TK_CHAR; }
+{CHAR}      {yylval.label = yytext; return TK_CHAR;}
 
 "main"		{return TK_MAIN;}
 
@@ -39,17 +39,24 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 "var"		{return TK_VAR;}
 
-{MAIOR_IGUAL}   { return TK_MAIOR_IGUAL; }
+"not"       {return TK_NOT;}
 
-{MENOR_IGUAL}   { return TK_MENOR_IGUAL; }
+"and"       {return TK_AND;}
 
-{IGUAL_IGUAL}   { return TK_IGUAL_IGUAL; }
+"or"        {return TK_OR;}
 
-{DIFERENTE}     { return TK_DIFERENTE; }
+{MAIOR_IGUAL}   { return TK_MAIOR_IGUAL;}
 
-{MAIOR_QUE}     { return TK_MAIOR; }
+{MENOR_IGUAL}   { return TK_MENOR_IGUAL;}
 
-{MENOR_QUE}     { return TK_MENOR; }
+{IGUAL_IGUAL}   { return TK_IGUAL_IGUAL;}
+
+{DIFERENTE}     { return TK_DIFERENTE;}
+
+{MAIOR_QUE}     { return TK_MAIOR;}
+
+{MENOR_QUE}     { return TK_MENOR;}
+
 
 
 [(){}[\];,]	{ return *yytext; }

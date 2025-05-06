@@ -40,6 +40,7 @@ void implicitConversion(string type1, string type3, string label1, string label3
 void reportSemanticError(string type1, string type3, string text);
 %}
 
+%token TK_NOT TK_OR TK_AND
 %token TK_MAIOR TK_MAIOR_IGUAL TK_MENOR TK_MENOR_IGUAL TK_IGUAL_IGUAL TK_DIFERENTE
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOLEAN
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
@@ -47,7 +48,11 @@ void reportSemanticError(string type1, string type3, string text);
 
 %start S
 
-%left TK_MAIOR TK_MAIOR_IGUAL TK_MENOR TK_MENOR_IGUAL TK_IGUAL_IGUAL TK_DIFERENTE
+%left TK_OR
+%left TK_AND
+%left TK_NOT
+%left TK_IGUAL_IGUAL TK_DIFERENTE
+%left TK_MAIOR TK_MAIOR_IGUAL TK_MENOR TK_MENOR_IGUAL 
 %left '+' '-'
 %left '*' '/'
 
@@ -246,12 +251,10 @@ E
 		    }
 			| E TK_IGUAL_IGUAL E
 		    {
-				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
-		        insertTempsST($$.label, $$.type);
-				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
-				{
-					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
+				if($$.label == "1"){
+					yyerror("AAA FOI");
 				}
+
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " == " + $3.label + ";\n";
@@ -279,6 +282,45 @@ E
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " >= " + $3.label + ";\n";
+		    }
+			| TK_NOT E 
+		    {
+				$$.type = "int";
+		        $$.label = gentempcode("boolean");
+
+				auto it = symbolTable.find($2.label);
+				if (it != symbolTable.end()) {
+					if (it->second.temp[0] != 'b') {
+						yyerror("Operação not requer operandos do tipo bool.");
+					}
+				} 
+				$$.traducao = $2.traducao  + "\t" + $$.label + " = " + "!" + $2.label + ";\n";
+		    }
+			| E TK_AND E 
+		    {
+				$$.type = "int";
+		        $$.label = gentempcode("boolean");
+
+				auto it = symbolTable.find($2.label);
+				if (it != symbolTable.end()) {
+					if (it->second.temp[0] != 'b') {
+						yyerror("Operação not requer operandos do tipo bool.");
+					}
+				} 
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " && " + $3.label + ";\n";
+		    }
+			| E TK_OR E 
+		    {
+				$$.type = "int";
+		        $$.label = gentempcode("boolean");
+
+				auto it = symbolTable.find($2.label);
+				if (it != symbolTable.end()) {
+					if (it->second.temp[0] != 'b') {
+						yyerror("Operação not requer operandos do tipo bool.");
+					}
+				} 
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " || " + $3.label + ";\n";
 		    }
 		    | '(' E ')'
 		    {
