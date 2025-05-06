@@ -145,6 +145,16 @@ COMANDO
 		        $$.traducao = "";
 		        $$.label = "";
 		    }
+			| TK_VAR TK_ID '=' E ';' 
+		    {
+		        Symbol val;
+		        val.nome = $2.label;
+		        val.tipo = $4.type;
+		        val.temp = $4.label;
+		        symbolTable.insert({val.nome, val});
+				$$.traducao = $4.traducao + "\t" + $2.label + " = " + $4.label + ";\n";
+		        $$.label = "";
+		    }
 		    ;
 
 // EXPRESSAO separa atribuições de E
