@@ -36,7 +36,7 @@ void printSymbolTable();
 void checkUndefinedTypes();
 void insertTempsST(const string& nome, const string& tipo);
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel);
-void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2);
+void implicitConversion(atributos& esquerda, atributos& direita, atributos& final , string operacao);
 void reportSemanticError(string type1, string type3, string text);
 %}
 
@@ -175,6 +175,18 @@ EXPRESSAO
 		        $$.type = $3.type;
 		        $$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
 		        $$.label = $1.label;
+
+		        if(it->second.tipo != $3.type)
+		        {	
+        			string auxTipo = "("+ it->second.tipo +") " + $3.label;
+        			string temp = gentempcode(it->second.tipo);
+					string traducaoAux = "\t" + temp + " = " + auxTipo + ";\n";
+
+					$$.type = $1.type;
+					$$.traducao = $3.traducao + traducaoAux + "\t" + $1.label + " = " + $3.label + ";\n";
+		        }
+
+
 		    }
 		    | E
 		    {
@@ -189,7 +201,7 @@ E
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
 		        string resultado;
-		        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " + ");
+		        implicitConversion($1, $3, $$, " + ");
 		    }
 		    | E '-' E
 		    {
@@ -197,7 +209,7 @@ E
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
 		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
-		        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " - ");
+		        implicitConversion($1, $3, $$, " - ");
 		    }
 		    | E '*' E
 		    {
@@ -205,7 +217,7 @@ E
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
 		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
-		        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " * ");
+		        implicitConversion($1, $3, $$, " * ");
 		    }
 		    | E '/' E
 		    {
@@ -213,7 +225,7 @@ E
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
 		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
-		        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " / ");
+		        implicitConversion($1, $3, $$, " / ");
 		    }
 			| E TK_MAIOR E
 		    {
@@ -468,25 +480,28 @@ void typeValue(string& resultType,  string& leftType,  string& rightType,  strin
     }
 
 }
-void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2){
+void implicitConversion(atributos& esquerda, atributos& direita, atributos& final , string operacao){
     string resultado;
+    string temp;
+    string traducaoAux;
 
-
-    if (type1 == "int" && type3 == "float") {
-        string auxFloat = "(float) " + label1;
-        string aux = label3;
-        resultado = resultLabel + " = " + auxFloat + type2 + aux;
-        traducaoFinal = traducao1 + traducao3 + "\t" + resultado + ";\n";
+    if (esquerda.type == "int" && direita.type == "float") {
+        string auxFloat = "(float) " + esquerda.label;
+        temp = gentempcode("float");
+		traducaoAux = "\t" + temp + " = " + auxFloat + ";\n";
+        resultado = final.label + " = " + temp + operacao + direita.label;
+        final.traducao =  esquerda.traducao + direita.traducao + traducaoAux + "\t" + resultado + ";\n";
     }
-    else if (type1 == "float" && type3 == "int") {
-        string aux = label1;
-        string auxFloat = "(float) " + label3;
-        resultado = resultLabel + " = " + aux + type2 + auxFloat;
-        traducaoFinal = traducao1 + traducao3 + "\t" + resultado + ";\n";
+    else if (esquerda.type == "float" && direita.type == "int") {
+        string auxFloat = "(float) " + direita.label;
+		temp = gentempcode("float");
+		traducaoAux = "\t" + temp + " = " + auxFloat + ";\n";
+        resultado = final.label + " = " + temp + operacao + auxFloat;
+        final.traducao =  esquerda.traducao + direita.traducao + traducaoAux + "\t" + resultado + ";\n";
     }
     else {
-        resultado = resultLabel + " = " + label1 + type2 + label3;
-        traducaoFinal = traducao1 + traducao3 + "\t" + resultado + ";\n";
+        resultado = final.label + " = " + esquerda.label + operacao + direita.label;
+        final.traducao = esquerda.traducao + direita.traducao + "\t" + resultado + ";\n";
     }
 }
 
