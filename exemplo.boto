@@ -1,4 +1,12 @@
 int main() {
   var a;
+  var b;
+  var c;
   a = 'a';
+  b = 'b';
+
+  c = a - b;
+
+
+  
 }

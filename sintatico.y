@@ -37,6 +37,7 @@ void checkUndefinedTypes();
 void insertTempsST(const string& nome, const string& tipo);
 void typeValue(std::string& result, const std::string& left, const std::string& right);
 void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2);
+void reportSemanticError(string type1, string type3, string text);
 %}
 
 %token TK_INT TK_FLOAT TK_CHAR
@@ -248,7 +249,14 @@ string gentempcode(string tipo) {
     return temp;
 }
 
-void typeValue(std::string& result, const std::string& left, const std::string& right){
+
+void typeValue(string& result, const string& left, const string& right){
+
+    if (left == "char" || right == "char")
+        {
+            yyerror("Não é permitido operações com char");
+        }
+
     if (left == "float" || right == "float") {
         result = "float";
     } else if (left == "int" || right == "int") {
