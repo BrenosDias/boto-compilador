@@ -35,15 +35,12 @@ string gentempcode(string tipo);
 void printSymbolTable();
 void checkUndefinedTypes();
 void insertTempsST(const string& nome, const string& tipo);
-void typeValue(std::string& result, const std::string& left, const std::string& right);
+void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel);
 void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2);
 %}
 
-<<<<<<< HEAD
-%token TK_INT TK_FLOAT TK_CHAR
-=======
-%token TK_INT TK_FLOAT TK_BOOLEAN
->>>>>>> ba27dd1 (boolean semi-pronto)
+
+%token TK_INT TK_FLOAT TK_CHAR TK_BOOLEAN
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
 
@@ -177,107 +174,37 @@ EXPRESSAO
 		    ;
 // Expressões matemáticas e terminais
 E 
-<<<<<<< HEAD
-    : E '+' E
-    {
-        typeValue($$.type, $1.type, $3.type);
-        $$.label = gentempcode($$.type);
-        insertTempsST($$.label, $$.type);
-        string resultado;
-        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " + ");
-    }
-    | E '-' E
-    {
-        typeValue($$.type, $1.type, $3.type);
-        $$.label = gentempcode($$.type);
-        insertTempsST($$.label, $$.type);
-        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
-        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " - ");
-    }
-    | E '*' E
-    {
-        typeValue($$.type, $1.type, $3.type);
-        $$.label = gentempcode($$.type);
-        insertTempsST($$.label, $$.type);
-        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
-        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " * ");
-    }
-    | E '/' E
-    {
-        typeValue($$.type, $1.type, $3.type);
-        $$.label = gentempcode($$.type);
-        insertTempsST($$.label, $$.type);
-        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
-        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " / ");
-    }
-    | '(' E ')'
-    {
-        $$ = $2;
-    }
-    | TK_ID
-    {
-        auto it = symbolTable.find($1.label);
-        if (it != symbolTable.end()) {
-            $$.type = it->second.tipo;
-            $$.label = gentempcode($$.type);
-            insertTempsST($$.label, $$.type);
-            string origem = it->second.temp.empty() ? $1.label : it->second.temp;
-            $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
-        } else {
-            yyerror("Variável não declarada.");
-        }
-    }
-    | TK_INT
-    {
-        $$.type = "int";
-        $$.label = gentempcode($$.type);
-        insertTempsST($$.label, $$.type);
-        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
-    }
-    | TK_FLOAT
-    {
-        $$.type = "float";
-        $$.label = gentempcode($$.type);
-        insertTempsST($$.label, $$.type);
-        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
-    }
-    | TK_CHAR
-    {
-        $$.type = "char";
-        $$.label = gentempcode($$.type);
-        insertTempsST($$.label, $$.type);
-        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
-    }
-    ;
-=======
 		    : E '+' E
 		    {
-		        typeValue($$.type, $1.type, $3.type);
-		        
+		        typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
-		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " + " + $3.label + ";\n";
+		        string resultado;
+		        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " + ");
 		    }
 		    | E '-' E
 		    {
-		        typeValue($$.type, $1.type, $3.type);
+		        typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
 		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
+		        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " - ");
 		    }
 		    | E '*' E
 		    {
-		        typeValue($$.type, $1.type, $3.type);
+		        typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
 		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
+		        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " * ");
 		    }
 		    | E '/' E
 		    {
-		        typeValue($$.type, $1.type, $3.type);
+		        typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
 		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
+		        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " / ");
 		    }
 		    | '(' E ')'
 		    {
@@ -287,8 +214,18 @@ E
 		    {
 		        auto it = symbolTable.find($1.label);
 		        if (it != symbolTable.end()) {
-		            $$.type = it->second.tipo;
+		        	string tipo;
+		            if(it->second.temp[0] == 'b'){
+
+		            	$$.type = "boolean";
+		            }
+		            else{
+		            	$$.type = it->second.tipo;
+		            }
+		            
+
 		            $$.label = gentempcode($$.type);
+
 		            insertTempsST($$.label, $$.type);
 		            string origem = it->second.temp.empty() ? $1.label : it->second.temp;
 		            $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
@@ -300,9 +237,11 @@ E
 		    {
 		        $$.type = "int";
 		        $$.label = gentempcode($$.type);
+
 		        insertTempsST($$.label, $$.type);
 		        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 		    }
+
 		    | TK_FLOAT
 		    {
 		        $$.type = "float";
@@ -314,6 +253,7 @@ E
 		    {	
 		        $$.type = "int";
 		        $$.label = gentempcode("boolean");
+
 		        string label;
 		        if($1.label == "true"){
 		        	label = "1";
@@ -323,8 +263,15 @@ E
 		        insertTempsST($$.label, $$.type);
 		        $$.traducao = "\t" + $$.label + " = " + label + ";\n";
 		    }
+		    | TK_CHAR
+		    {
+		        $$.type = "char";
+		        $$.label = gentempcode($$.type);
+		        insertTempsST($$.label, $$.type);
+		        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
+		    }
 		    ;
->>>>>>> ba27dd1 (boolean semi-pronto)
+
 
 %%
 
@@ -344,16 +291,6 @@ string gentempcode(string tipo) {
     	tipo = "int";
     }
 
-    // if(tipo == "boolean"){
-
-    //    	temp = "c" + to_string(var_temp_qnt);
-    // 	tipo = "int";
-    // } else {
-
-    // 	temp = "t" + to_string(var_temp_qnt);
-    // }
-
-	// temp = "t" + to_string(var_temp_qnt);
     Symbol val; 
     val.nome = temp;
     val.tipo = tipo;
@@ -363,21 +300,40 @@ string gentempcode(string tipo) {
     return temp;
 }
 
-void typeValue(std::string& result, const std::string& left, const std::string& right){
-    if (left == "float" || right == "float") {
-        result = "float";
-    } else if (left == "int" || right == "int") {
-        result = "int";
-    } else if (left == "char" && right == "char") {
-        result = "int"; // soma de dois chars resulta em int
+void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel){
+
+
+	auto itLeft = symbolTable.find(leftLabel);
+	if (itLeft != symbolTable.end()) {
+	    Symbol simbolo = itLeft->second;
+	    if (simbolo.temp[0] == 'b') {
+	        yyerror("Não é permitido operações com Booleanos");
+	    }
+	}
+
+	auto itRight = symbolTable.find(rightLabel);
+	if (itRight != symbolTable.end()) {
+	    Symbol simbolo = itRight->second;
+	    if (simbolo.temp[0] == 'b') {
+	        yyerror("Não é permitido operações com Booleanos");
+	    }
+	}
+
+    if (leftType == "float" || rightType == "float") {
+        resultType = "float";
+    } else if (leftType == "int" || rightType == "int") {
+        resultType = "int";
+    } else if (leftType == "char" && rightType == "char") {
+        resultType = "int"; // soma de dois chars resulta em int
     } else {
-        result = "undefined";
+        resultType = "undefined";
     }
 }
 
 void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2)
 {
     string resultado;
+
 
     if (type1 == "int" && type3 == "float") {
         string auxFloat = "(float) " + label1;

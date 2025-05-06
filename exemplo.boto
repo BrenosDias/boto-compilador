@@ -1,10 +1,8 @@
 int main() {
 
-	var a;
 	var b;
 	var c;
 
- 	a = 2;
-	b = false;
-	c = a + b;
+ 	b = false;
+ 	c = b + true;
 }

@@ -12,12 +12,8 @@ LETRA [A-Za-z_]
 DELIM {ESPACO}+
 INT {DIGITO}+
 REAL {INT}+("."{INT}+)?
-<<<<<<< HEAD
 CHAR \'[ -~]\'
-=======
-CHAR \'({LETRA}|{INT})\'
 BOOLEAN true|false
->>>>>>> ba27dd1 (boolean semi-pronto)
 ID {LETRA}({LETRA}|{INT})*
 
 %%
