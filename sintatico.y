@@ -72,7 +72,7 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 
 					bool encontrado = false;
 					for (const Symbol &temp : tempsVector) {
-						if (temp.nome == simbolo.nome) {
+						if (temp.nome == simbolo.nome && temp.tipo != "undefinaded") {
 							encontrado = true;
 							break;
 						}
