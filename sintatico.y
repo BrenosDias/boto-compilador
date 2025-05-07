@@ -27,7 +27,6 @@ struct Symbol {
 
 int var_temp_qnt;
 unordered_map<string, Symbol> symbolTable;
-vector<Symbol> tempsVector;
 
 int yylex(void);
 void yyerror(string);
@@ -69,25 +68,12 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 
 				
 
-				// Declara apenas variáveis temporárias
-				for (auto &t : tempsVector) {
-					codigo += "\t" + t.tipo + " " + t.nome + ";\n";
-				}
 
-				for (auto &par : symbolTable) {
+
+				for(auto &par : symbolTable) {
 					const Symbol &simbolo = par.second;
 
-					bool encontrado = false;
-					for (const Symbol &temp : tempsVector) {
-						if (temp.nome == simbolo.nome && temp.tipo != "undefinaded") {
-							encontrado = true;
-							break;
-						}
-					}
-
-					if (!encontrado) {
-						codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
-					}
+					codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
 				}
 
 				codigo += "\n";
@@ -474,12 +460,6 @@ string gentempcode(string tipo) {
     	tipo = "int";
     }
 
-    Symbol val; 
-    val.nome = temp;
-    val.tipo = tipo;
-	val.temp = temp;
-
-    tempsVector.push_back(val);
     return temp;
 }
 
