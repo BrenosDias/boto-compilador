@@ -649,9 +649,15 @@ static const yytype_int8 yytranslate[] =
 static const yytype_int16 yyrline[] =
 {
        0,    62,    62,   104,   110,   115,   121,   125,   138,   148,
+<<<<<<< HEAD
      162,   191,   198,   205,   212,   219,   226,   238,   250,   262,
      275,   287,   299,   312,   325,   338,   348,   358,   362,   385,
      393,   400,   414
+=======
+     162,   226,   233,   241,   249,   257,   265,   277,   289,   301,
+     314,   326,   338,   351,   364,   377,   384,   391,   395,   418,
+     427,   434,   448
+>>>>>>> 42beea0 (conversao implicita completa)
 };
 #endif
 
@@ -1407,16 +1413,26 @@ yyreduce:
 
 		        if (it->second.tipo == "undefined") {
 		            it->second.tipo = yyvsp[0].type;
+		            it->second.temp = yyvsp[0].label;
+
 		        }
 
-		        it->second.temp = yyvsp[0].label;
 
-		        yyval.type = yyvsp[0].type;
-		        yyval.traducao = yyvsp[0].traducao + "\t" + yyvsp[-2].label + " = " + yyvsp[0].label + ";\n";
-		        yyval.label = yyvsp[-2].label;
 
-		        if(it->second.tipo != yyvsp[0].type)
-		        {	
+
+		        if(it->second.tipo == yyvsp[0].type && it->second.temp[0] == yyvsp[0].label[0]){
+					
+		        	cout << "\nMesmo tipo" << endl;
+		        	it->second.temp = yyvsp[0].label;
+			        yyval.type = yyvsp[0].type;
+			        yyval.traducao = yyvsp[0].traducao + "\t" + yyvsp[-2].label + " = " + yyvsp[0].label + ";\n";
+			        yyval.label = yyvsp[-2].label;	
+
+		        }
+		        else if(it->second.tipo == "int" && it->second.temp[0] != 'b'){
+		        	cout << "\nInt normal temp = " + it->second.temp  << endl;
+					it->second.temp = yyvsp[0].label;
+
         			string auxTipo = "("+ it->second.tipo +") " + yyvsp[0].label;
         			string temp = gentempcode(it->second.tipo);
 					string traducaoAux = "\t" + temp + " = " + auxTipo + ";\n";
@@ -1424,17 +1440,59 @@ yyreduce:
 					yyval.type = yyvsp[-2].type;
 					yyval.traducao = yyvsp[0].traducao + traducaoAux + "\t" + yyvsp[-2].label + " = " + yyvsp[0].label + ";\n";
 		        }
+		        else if(it->second.tipo == "float" && yyvsp[0].type != "int"||yyvsp[0].type != "float"){
+		        	cout << "\nFloat" << endl;
+					it->second.temp = yyvsp[0].label;
+
+		        	string auxTipo = "("+ it->second.tipo +") " + yyvsp[0].label;
+        			string temp = gentempcode(it->second.tipo);
+					string traducaoAux = "\t" + temp + " = " + auxTipo + ";\n";
+
+					yyval.type = yyvsp[-2].type;
+					yyval.traducao = yyvsp[0].traducao + traducaoAux + "\t" + yyvsp[-2].label + " = " + yyvsp[0].label + ";\n";
+		        }
+		        else if((it->second.temp[0] == 'b' || it->second.tipo == "char") && yyvsp[0].type == "int"){
+		        	cout << "Boolean ou  char" << endl;
+					it->second.temp = yyvsp[0].label;
+		  
+		        	string auxTipo = "("+ it->second.tipo +") " + yyvsp[0].label;
+        			string temp = gentempcode(it->second.tipo);
+					string traducaoAux = "\t" + temp + " = " + auxTipo + ";\n";
+
+					yyval.type = yyvsp[-2].type;
+					yyval.traducao = yyvsp[0].traducao + traducaoAux + "\t" + yyvsp[-2].label + " = " + yyvsp[0].label + ";\n";
+		       
+		        }else{
+		        	yyerror("Variável recebendo valores de tipos não conversiveis");
+		        }
 
 
 		    }
+<<<<<<< HEAD
 #line 1431 "y.tab.c"
     break;
 
   case 11: /* EXPRESSAO: E  */
 #line 192 "sintatico.y"
+=======
+#line 1466 "y.tab.c"
+    break;
+
+  case 11: /* EXPRESSAO: E  */
+#line 227 "sintatico.y"
                     {
 		        yyval = yyvsp[0];
 		    }
+#line 1474 "y.tab.c"
+    break;
+
+  case 12: /* E: E '+' E  */
+#line 234 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
+                    {
+		        yyval = yyvsp[0];
+		    }
+<<<<<<< HEAD
 #line 1439 "y.tab.c"
     break;
 
@@ -1451,39 +1509,70 @@ yyreduce:
 
   case 13: /* E: E '-' E  */
 #line 206 "sintatico.y"
+=======
+#line 1486 "y.tab.c"
+    break;
+
+  case 13: /* E: E '-' E  */
+#line 242 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " - ");
 		    }
+<<<<<<< HEAD
 #line 1461 "y.tab.c"
     break;
 
   case 14: /* E: E '*' E  */
 #line 213 "sintatico.y"
+=======
+#line 1498 "y.tab.c"
+    break;
+
+  case 14: /* E: E '*' E  */
+#line 250 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " * ");
 		    }
+<<<<<<< HEAD
 #line 1472 "y.tab.c"
     break;
 
   case 15: /* E: E '/' E  */
 #line 220 "sintatico.y"
+=======
+#line 1510 "y.tab.c"
+    break;
+
+  case 15: /* E: E '/' E  */
+#line 258 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " / ");
 		    }
+<<<<<<< HEAD
 #line 1483 "y.tab.c"
     break;
 
   case 16: /* E: E TK_MAIOR E  */
 #line 227 "sintatico.y"
+=======
+#line 1522 "y.tab.c"
+    break;
+
+  case 16: /* E: E TK_MAIOR E  */
+#line 266 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 				typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        insertTempsST(yyval.label, yyval.type);
@@ -1495,11 +1584,19 @@ yyreduce:
 		        yyval.label = gentempcode("boolean");
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " > " + yyvsp[0].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1499 "y.tab.c"
     break;
 
   case 17: /* E: E TK_MENOR E  */
 #line 239 "sintatico.y"
+=======
+#line 1538 "y.tab.c"
+    break;
+
+  case 17: /* E: E TK_MENOR E  */
+#line 278 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 				typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        insertTempsST(yyval.label, yyval.type);
@@ -1511,11 +1608,19 @@ yyreduce:
 		        yyval.label = gentempcode("boolean");
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " < " + yyvsp[0].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1515 "y.tab.c"
     break;
 
   case 18: /* E: E TK_DIFERENTE E  */
 #line 251 "sintatico.y"
+=======
+#line 1554 "y.tab.c"
+    break;
+
+  case 18: /* E: E TK_DIFERENTE E  */
+#line 290 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 				typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        insertTempsST(yyval.label, yyval.type);
@@ -1527,11 +1632,19 @@ yyreduce:
 		        yyval.label = gentempcode("boolean");
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " != " + yyvsp[0].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1531 "y.tab.c"
     break;
 
   case 19: /* E: E TK_IGUAL_IGUAL E  */
 #line 263 "sintatico.y"
+=======
+#line 1570 "y.tab.c"
+    break;
+
+  case 19: /* E: E TK_IGUAL_IGUAL E  */
+#line 302 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 				typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        insertTempsST(yyval.label, yyval.type);
@@ -1544,11 +1657,19 @@ yyreduce:
 		        yyval.label = gentempcode("boolean");
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " == " + yyvsp[0].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1548 "y.tab.c"
     break;
 
   case 20: /* E: E TK_MENOR_IGUAL E  */
 #line 276 "sintatico.y"
+=======
+#line 1587 "y.tab.c"
+    break;
+
+  case 20: /* E: E TK_MENOR_IGUAL E  */
+#line 315 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 				typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        insertTempsST(yyval.label, yyval.type);
@@ -1560,11 +1681,19 @@ yyreduce:
 		        yyval.label = gentempcode("boolean");
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " <= " + yyvsp[0].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1564 "y.tab.c"
     break;
 
   case 21: /* E: E TK_MAIOR_IGUAL E  */
 #line 288 "sintatico.y"
+=======
+#line 1603 "y.tab.c"
+    break;
+
+  case 21: /* E: E TK_MAIOR_IGUAL E  */
+#line 327 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 				typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        insertTempsST(yyval.label, yyval.type);
@@ -1576,11 +1705,19 @@ yyreduce:
 		        yyval.label = gentempcode("boolean");
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " >= " + yyvsp[0].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1580 "y.tab.c"
     break;
 
   case 22: /* E: TK_NOT E  */
 #line 300 "sintatico.y"
+=======
+#line 1619 "y.tab.c"
+    break;
+
+  case 22: /* E: TK_NOT E  */
+#line 339 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -1593,11 +1730,19 @@ yyreduce:
 				} 
 				yyval.traducao = yyvsp[0].traducao  + "\t" + yyval.label + " = " + "!" + yyvsp[0].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1597 "y.tab.c"
     break;
 
   case 23: /* E: E TK_AND E  */
 #line 313 "sintatico.y"
+=======
+#line 1636 "y.tab.c"
+    break;
+
+  case 23: /* E: E TK_AND E  */
+#line 352 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -1610,11 +1755,19 @@ yyreduce:
 				} 
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " && " + yyvsp[0].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1614 "y.tab.c"
     break;
 
   case 24: /* E: E TK_OR E  */
 #line 326 "sintatico.y"
+=======
+#line 1653 "y.tab.c"
+    break;
+
+  case 24: /* E: E TK_OR E  */
+#line 365 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -1627,11 +1780,19 @@ yyreduce:
 				} 
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " || " + yyvsp[0].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1631 "y.tab.c"
     break;
 
   case 25: /* E: TK_TIPO_INT '(' E ')'  */
 #line 339 "sintatico.y"
+=======
+#line 1670 "y.tab.c"
+    break;
+
+  case 25: /* E: TK_TIPO_INT '(' E ')'  */
+#line 378 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 				if(yyvsp[-1].type == "char"){
 					yyerror("Não é possível essa conversão.");
@@ -1641,11 +1802,19 @@ yyreduce:
 
 				yyval.traducao = yyvsp[-1].traducao  + "\t" + yyval.label + " = " + "(int)" + yyvsp[-1].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1645 "y.tab.c"
     break;
 
   case 26: /* E: TK_TIPO_FLOAT '(' E ')'  */
 #line 349 "sintatico.y"
+=======
+#line 1681 "y.tab.c"
+    break;
+
+  case 26: /* E: TK_TIPO_FLOAT '(' E ')'  */
+#line 385 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 				if(yyvsp[-1].type == "char"){
 					yyerror("Não é possível essa conversão.");
@@ -1655,6 +1824,7 @@ yyreduce:
 
 				yyval.traducao = yyvsp[-1].traducao  + "\t" + yyval.label + " = " + "(float)" + yyvsp[-1].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1659 "y.tab.c"
     break;
 
@@ -1668,6 +1838,21 @@ yyreduce:
 
   case 28: /* E: TK_ID  */
 #line 363 "sintatico.y"
+=======
+#line 1692 "y.tab.c"
+    break;
+
+  case 27: /* E: '(' E ')'  */
+#line 392 "sintatico.y"
+                    {
+		        yyval = yyvsp[-1];
+		    }
+#line 1700 "y.tab.c"
+    break;
+
+  case 28: /* E: TK_ID  */
+#line 396 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 		        auto it = symbolTable.find(yyvsp[0].label);
 		        if (it != symbolTable.end()) {
@@ -1690,33 +1875,57 @@ yyreduce:
 		            yyerror("Variável não declarada.");
 		        }
 		    }
+<<<<<<< HEAD
 #line 1694 "y.tab.c"
     break;
 
   case 29: /* E: TK_INT  */
 #line 386 "sintatico.y"
+=======
+#line 1727 "y.tab.c"
+    break;
+
+  case 29: /* E: TK_INT  */
+#line 419 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 		        yyval.type = "int";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1705 "y.tab.c"
     break;
 
   case 30: /* E: TK_FLOAT  */
 #line 394 "sintatico.y"
+=======
+#line 1739 "y.tab.c"
+    break;
+
+  case 30: /* E: TK_FLOAT  */
+#line 428 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 		        yyval.type = "float";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1716 "y.tab.c"
     break;
 
   case 31: /* E: TK_BOOLEAN  */
 #line 401 "sintatico.y"
+=======
+#line 1750 "y.tab.c"
+    break;
+
+  case 31: /* E: TK_BOOLEAN  */
+#line 435 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {	
 		        yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -1730,22 +1939,38 @@ yyreduce:
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1734 "y.tab.c"
     break;
 
   case 32: /* E: TK_CHAR  */
 #line 415 "sintatico.y"
+=======
+#line 1768 "y.tab.c"
+    break;
+
+  case 32: /* E: TK_CHAR  */
+#line 449 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
                     {
 		        yyval.type = "char";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
+<<<<<<< HEAD
 #line 1745 "y.tab.c"
     break;
 
 
 #line 1749 "y.tab.c"
+=======
+#line 1779 "y.tab.c"
+    break;
+
+
+#line 1783 "y.tab.c"
+>>>>>>> 42beea0 (conversao implicita completa)
 
       default: break;
     }
@@ -1938,7 +2163,11 @@ yyreturnlab:
   return yyresult;
 }
 
+<<<<<<< HEAD
 #line 424 "sintatico.y"
+=======
+#line 458 "sintatico.y"
+>>>>>>> 42beea0 (conversao implicita completa)
 
 
 #include "lex.yy.c"
@@ -2008,14 +2237,14 @@ void implicitConversion(atributos& esquerda, atributos& direita, atributos& fina
         string auxFloat = "(float) " + esquerda.label;
         temp = gentempcode("float");
 		traducaoAux = "\t" + temp + " = " + auxFloat + ";\n";
-        resultado = final.label + " = " + temp + operacao + direita.label;
+        resultado = final.label + " = " + temp + operacao + esquerda.label;
         final.traducao =  esquerda.traducao + direita.traducao + traducaoAux + "\t" + resultado + ";\n";
     }
     else if (esquerda.type == "float" && direita.type == "int") {
         string auxFloat = "(float) " + direita.label;
 		temp = gentempcode("float");
 		traducaoAux = "\t" + temp + " = " + auxFloat + ";\n";
-        resultado = final.label + " = " + temp + operacao + auxFloat;
+        resultado = final.label + " = " + temp + operacao + direita.label;
         final.traducao =  esquerda.traducao + direita.traducao + traducaoAux + "\t" + resultado + ";\n";
     }
     else {

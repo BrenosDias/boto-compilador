@@ -168,22 +168,57 @@ EXPRESSAO
 
 		        if (it->second.tipo == "undefined") {
 		            it->second.tipo = $3.type;
+		            it->second.temp = $3.label;
+
 		        }
 
-		        it->second.temp = $3.label;
 
-		        $$.type = $3.type;
-		        $$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
-		        $$.label = $1.label;
 
-		        if(it->second.tipo != $3.type)
-		        {	
+
+		        if(it->second.tipo == $3.type && it->second.temp[0] == $3.label[0]){
+					
+		        	cout << "\nMesmo tipo" << endl;
+		        	it->second.temp = $3.label;
+			        $$.type = $3.type;
+			        $$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
+			        $$.label = $1.label;	
+
+		        }
+		        else if(it->second.tipo == "int" && it->second.temp[0] != 'b'){
+		        	cout << "\nInt normal temp = " + it->second.temp  << endl;
+					it->second.temp = $3.label;
+
         			string auxTipo = "("+ it->second.tipo +") " + $3.label;
         			string temp = gentempcode(it->second.tipo);
 					string traducaoAux = "\t" + temp + " = " + auxTipo + ";\n";
 
 					$$.type = $1.type;
 					$$.traducao = $3.traducao + traducaoAux + "\t" + $1.label + " = " + $3.label + ";\n";
+		        }
+		        else if(it->second.tipo == "float" && $3.type != "int"||$3.type != "float"){
+		        	cout << "\nFloat" << endl;
+					it->second.temp = $3.label;
+
+		        	string auxTipo = "("+ it->second.tipo +") " + $3.label;
+        			string temp = gentempcode(it->second.tipo);
+					string traducaoAux = "\t" + temp + " = " + auxTipo + ";\n";
+
+					$$.type = $1.type;
+					$$.traducao = $3.traducao + traducaoAux + "\t" + $1.label + " = " + $3.label + ";\n";
+		        }
+		        else if((it->second.temp[0] == 'b' || it->second.tipo == "char") && $3.type == "int"){
+		        	cout << "Boolean ou  char" << endl;
+					it->second.temp = $3.label;
+		  
+		        	string auxTipo = "("+ it->second.tipo +") " + $3.label;
+        			string temp = gentempcode(it->second.tipo);
+					string traducaoAux = "\t" + temp + " = " + auxTipo + ";\n";
+
+					$$.type = $1.type;
+					$$.traducao = $3.traducao + traducaoAux + "\t" + $1.label + " = " + $3.label + ";\n";
+		       
+		        }else{
+		        	yyerror("Variável recebendo valores de tipos não conversiveis");
 		        }
 
 
@@ -497,7 +532,7 @@ void implicitConversion(atributos& esquerda, atributos& direita, atributos& fina
         string auxFloat = "(float) " + direita.label;
 		temp = gentempcode("float");
 		traducaoAux = "\t" + temp + " = " + auxFloat + ";\n";
-        resultado = final.label + " = " + temp + operacao + auxFloat;
+        resultado = final.label + " = " + temp + operacao + esquerda.label;
         final.traducao =  esquerda.traducao + direita.traducao + traducaoAux + "\t" + resultado + ";\n";
     }
     else {
