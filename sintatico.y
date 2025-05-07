@@ -337,6 +337,9 @@ E
 		    }
 			| TK_TIPO_INT '(' E ')' 
 		    {
+				if($3.type == "char"){
+					yyerror("Não é possível essa conversão.");
+				}
 				$$.type = "int";
 				$$.label = gentempcode("int");
 
@@ -344,6 +347,9 @@ E
 		    }
 			| TK_TIPO_FLOAT '(' E ')' 
 		    {
+				if($3.type == "char"){
+					yyerror("Não é possível essa conversão.");
+				}
 				$$.type = "float";
 				$$.label = gentempcode("float");
 
@@ -380,7 +386,6 @@ E
 		    {
 		        $$.type = "int";
 		        $$.label = gentempcode($$.type);
-
 		        insertTempsST($$.label, $$.type);
 		        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 		    }
