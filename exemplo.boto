@@ -1,9 +1,0 @@
-int main() {
-
-  var a;
-  var b;
-
-  a = true;
-
-
-}
