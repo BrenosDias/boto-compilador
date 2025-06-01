@@ -50,13 +50,20 @@ void saiEscopo();
 void declaraVariavel(Symbol& simbolo);
 %}
 
-
+%token TK_TIPO_FLOAT
+%token TK_NOT TK_OR TK_AND
+%token TK_MAIOR TK_MAIOR_IGUAL TK_MENOR TK_MENOR_IGUAL TK_IGUAL_IGUAL TK_DIFERENTE
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOLEAN
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
 
 %start S
 
+%left TK_OR
+%left TK_AND
+%left TK_NOT
+%left TK_IGUAL_IGUAL TK_DIFERENTE
+%left TK_MAIOR TK_MAIOR_IGUAL TK_MENOR TK_MENOR_IGUAL 
 %left '+' '-'
 %left '*' '/'
 
@@ -74,10 +81,7 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 
 				
 
-				// Declara apenas variáveis temporárias
-				for (auto &t : tempsVector) {
-					codigo += "\t" + t.tipo + " " + t.nome + ";\n";
-				}
+
 
 				// Iterate through each scope in the symbolTable
 				for (const auto& escopoAtual : symbolTable.escopos) {
@@ -175,6 +179,16 @@ COMANDO
 		        $$.traducao = "";
 		        $$.label = "";
 		    }
+			| TK_VAR TK_ID '=' E ';' 
+		    {
+		        Symbol val;
+		        val.nome = $2.label;
+		        val.tipo = $4.type;
+		        val.temp = $4.label;
+		        symbolTable.insert({val.nome, val});
+				$$.traducao = $4.traducao + "\t" + $2.label + " = " + $4.label + ";\n";
+		        $$.label = "";
+		    }
 		    ;
 
 // EXPRESSAO separa atribuições de E
@@ -200,13 +214,60 @@ EXPRESSAO
 
 		        if (it->second.tipo == "undefined") {
 		            it->second.tipo = $3.type;
+		            it->second.temp = $3.label;
+
 		        }
 
-		        it->second.temp = $3.label;
 
-		        $$.type = $3.type;
-		        $$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
-		        $$.label = $1.label;
+
+
+		        if(it->second.tipo == $3.type && it->second.temp[0] == $3.label[0]){
+					
+		        	cout << "\nMesmo tipo" << endl;
+		        	it->second.temp = $3.label;
+			        $$.type = $3.type;
+			        $$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
+			        $$.label = $1.label;	
+
+		        }
+		        else if(it->second.tipo == "int" && it->second.temp[0] != 'b'){
+		        	cout << "\nInt normal temp = " + it->second.temp  << endl;
+					it->second.temp = $3.label;
+
+        			string auxTipo = "("+ it->second.tipo +") " + $3.label;
+        			string temp = gentempcode(it->second.tipo);
+					string traducaoAux = "\t" + temp + " = " + auxTipo + ";\n";
+
+					$$.type = $1.type;
+					$$.traducao = $3.traducao + traducaoAux + "\t" + $1.label + " = " + $3.label + ";\n";
+		        }
+		        else if(it->second.tipo == "float" && $3.type != "int"||$3.type != "float"){
+		        	cout << "\nFloat" << endl;
+					it->second.temp = $3.label;
+
+		        	string auxTipo = "("+ it->second.tipo +") " + $3.label;
+        			string temp = gentempcode(it->second.tipo);
+					string traducaoAux = "\t" + temp + " = " + auxTipo + ";\n";
+
+					$$.type = $1.type;
+					$$.traducao = $3.traducao + traducaoAux + "\t" + $1.label + " = " + $3.label + ";\n";
+		        }
+		        else if((it->second.temp[0] == 'b' || it->second.tipo == "char") && $3.type == "int"){
+		        	cout << "Boolean ou  char" << endl;
+					it->second.temp = $3.label;
+		  
+		        	string auxTipo = "("+ it->second.tipo +") " + $3.label;
+        			string temp = gentempcode(it->second.tipo);
+					string traducaoAux = "\t" + temp + " = " + auxTipo + ";\n";
+
+					$$.type = $1.type;
+					$$.traducao = $3.traducao + traducaoAux + "\t" + $1.label + " = " + $3.label + ";\n";
+		       
+		        }else{
+		        	yyerror("Variável recebendo valores de tipos não conversiveis");
+		        }
+
+
 		    }
 		    | E
 		    {
@@ -220,32 +281,160 @@ E
 		        typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
-		        string resultado;
-		        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " + ");
+		        implicitConversion($1, $3, $$, " + ");
 		    }
 		    | E '-' E
 		    {
 		        typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
-		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " - " + $3.label + ";\n";
-		        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " - ");
+		        implicitConversion($1, $3, $$, " - ");
 		    }
 		    | E '*' E
 		    {
 		        typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
-		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " * " + $3.label + ";\n";
-		        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " * ");
+		        implicitConversion($1, $3, $$, " * ");
 		    }
 		    | E '/' E
 		    {
 		        typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
 		        $$.label = gentempcode($$.type);
 		        insertTempsST($$.label, $$.type);
-		        $$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " / " + $3.label + ";\n";
-		        implicitConversion($1.type, $3.type, $1.label, $3.label, $1.traducao, $3.traducao, $$.label, $$.traducao, " / ");
+		        implicitConversion($1, $3, $$, " / ");
+		    }
+			| E TK_MAIOR E
+		    {
+				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
+		        insertTempsST($$.label, $$.type);
+				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
+				{
+					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
+				}
+				$$.type = "int";
+		        $$.label = gentempcode("boolean");
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " > " + $3.label + ";\n";
+		    }
+			| E TK_MENOR E
+		    {
+				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
+		        insertTempsST($$.label, $$.type);
+				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
+				{
+					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
+				}
+				$$.type = "int";
+		        $$.label = gentempcode("boolean");
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " < " + $3.label + ";\n";
+		    }
+			| E TK_DIFERENTE E
+		    {
+				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
+		        insertTempsST($$.label, $$.type);
+				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
+				{
+					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
+				}
+				$$.type = "int";
+		        $$.label = gentempcode("boolean");
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " != " + $3.label + ";\n";
+		    }
+			| E TK_IGUAL_IGUAL E
+		    {
+				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
+		        insertTempsST($$.label, $$.type);
+				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
+				{
+					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
+				}
+
+				$$.type = "int";
+		        $$.label = gentempcode("boolean");
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " == " + $3.label + ";\n";
+		    }
+			| E TK_MENOR_IGUAL E
+		    {
+				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
+		        insertTempsST($$.label, $$.type);
+				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
+				{
+					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
+				}
+				$$.type = "int";
+		        $$.label = gentempcode("boolean");
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " <= " + $3.label + ";\n";
+		    }
+			| E TK_MAIOR_IGUAL E
+		    {
+				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
+		        insertTempsST($$.label, $$.type);
+				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
+				{
+					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
+				}
+				$$.type = "int";
+		        $$.label = gentempcode("boolean");
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " >= " + $3.label + ";\n";
+		    }
+			| TK_NOT E 
+		    {
+				$$.type = "int";
+		        $$.label = gentempcode("boolean");
+
+				auto it = symbolTable.find($2.label);
+				if (it != symbolTable.end()) {
+					if (it->second.temp[0] != 'b') {
+						yyerror("Operação not requer operandos do tipo bool.");
+					}
+				} 
+				$$.traducao = $2.traducao  + "\t" + $$.label + " = " + "!" + $2.label + ";\n";
+		    }
+			| E TK_AND E 
+		    {
+				$$.type = "int";
+		        $$.label = gentempcode("boolean");
+
+				auto it = symbolTable.find($2.label);
+				if (it != symbolTable.end()) {
+					if (it->second.temp[0] != 'b') {
+						yyerror("Operação not requer operandos do tipo bool.");
+					}
+				} 
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " && " + $3.label + ";\n";
+		    }
+			| E TK_OR E 
+		    {
+				$$.type = "int";
+		        $$.label = gentempcode("boolean");
+
+				auto it = symbolTable.find($2.label);
+				if (it != symbolTable.end()) {
+					if (it->second.temp[0] != 'b') {
+						yyerror("Operação not requer operandos do tipo bool.");
+					}
+				} 
+				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " || " + $3.label + ";\n";
+		    }
+			| TK_TIPO_INT '(' E ')' 
+		    {
+				if($3.type == "char"){
+					yyerror("Não é possível essa conversão.");
+				}
+				$$.type = "int";
+				$$.label = gentempcode("int");
+
+				$$.traducao = $3.traducao  + "\t" + $$.label + " = " + "(int)" + $3.label + ";\n";
+		    }
+			| TK_TIPO_FLOAT '(' E ')' 
+		    {
+				if($3.type == "char"){
+					yyerror("Não é possível essa conversão.");
+				}
+				$$.type = "float";
+				$$.label = gentempcode("float");
+
+				$$.traducao = $3.traducao  + "\t" + $$.label + " = " + "(float)" + $3.label + ";\n";
 		    }
 		    | '(' E ')'
 		    {
@@ -287,7 +476,6 @@ E
 		    {
 		        $$.type = "int";
 		        $$.label = gentempcode($$.type);
-
 		        insertTempsST($$.label, $$.type);
 		        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 		    }
@@ -341,12 +529,6 @@ string gentempcode(string tipo) {
     	tipo = "int";
     }
 
-    Symbol val; 
-    val.nome = temp;
-    val.tipo = tipo;
-	val.temp = temp;
-
-    tempsVector.push_back(val);
     return temp;
 }
 
@@ -378,31 +560,31 @@ void typeValue(string& resultType,  string& leftType,  string& rightType,  strin
         resultType = "int";
     } else if (leftType == "char" && rightType == "char") {
         resultType = "int"; // soma de dois chars resulta em int
-    } else {
-        resultType = "undefined";
     }
+
 }
-
-void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2)
-{
+void implicitConversion(atributos& esquerda, atributos& direita, atributos& final , string operacao){
     string resultado;
+    string temp;
+    string traducaoAux;
 
-
-    if (type1 == "int" && type3 == "float") {
-        string auxFloat = "(float) " + label1;
-        string aux = label3;
-        resultado = resultLabel + " = " + auxFloat + type2 + aux;
-        traducaoFinal = traducao1 + traducao3 + "\t" + resultado + ";\n";
+    if (esquerda.type == "int" && direita.type == "float") {
+        string auxFloat = "(float) " + esquerda.label;
+        temp = gentempcode("float");
+		traducaoAux = "\t" + temp + " = " + auxFloat + ";\n";
+        resultado = final.label + " = " + temp + operacao + direita.label;
+        final.traducao =  esquerda.traducao + direita.traducao + traducaoAux + "\t" + resultado + ";\n";
     }
-    else if (type1 == "float" && type3 == "int") {
-        string aux = label1;
-        string auxFloat = "(float) " + label3;
-        resultado = resultLabel + " = " + aux + type2 + auxFloat;
-        traducaoFinal = traducao1 + traducao3 + "\t" + resultado + ";\n";
+    else if (esquerda.type == "float" && direita.type == "int") {
+        string auxFloat = "(float) " + direita.label;
+		temp = gentempcode("float");
+		traducaoAux = "\t" + temp + " = " + auxFloat + ";\n";
+        resultado = final.label + " = " + temp + operacao + esquerda.label;
+        final.traducao =  esquerda.traducao + direita.traducao + traducaoAux + "\t" + resultado + ";\n";
     }
     else {
-        resultado = resultLabel + " = " + label1 + type2 + label3;
-        traducaoFinal = traducao1 + traducao3 + "\t" + resultado + ";\n";
+        resultado = final.label + " = " + esquerda.label + operacao + direita.label;
+        final.traducao = esquerda.traducao + direita.traducao + "\t" + resultado + ";\n";
     }
 }
 

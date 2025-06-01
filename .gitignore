@@ -2,9 +2,15 @@ lex.yy.c
 
 y.tab.c
 
+<<<<<<< HEAD
 y.tab.h
 
 exemplo.boto
 
 glf
 
+=======
+exemplo.boto
+
+glf
+>>>>>>> refatoracao-tempTable
