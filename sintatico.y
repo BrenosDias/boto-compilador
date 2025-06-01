@@ -481,8 +481,6 @@ int main(int argc, char* argv[])
 {
 	var_temp_qnt = 0;
 
-	entraEscopo();
-
     // Symbol val;
     // val.nome = "mari";
     // val.tipo = "undefined";
