@@ -25,10 +25,17 @@ struct Symbol {
 	string temp;
 }; 
 
+struct TabelaSimbolos
+{
+	vector<unordered_map<string, Symbol>> escopos;
+	int quantidade;
+};
+
 int var_temp_qnt;
-unordered_map<string, Symbol> symbolTable;
+// unordered_map<string, Symbol> symbolTable;
 vector<Symbol> tempsVector;
 
+TabelaSimbolos symbolTable;
 int yylex(void);
 void yyerror(string);
 string gentempcode(string tipo);
@@ -38,6 +45,9 @@ void insertTempsST(const string& nome, const string& tipo);
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel);
 void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2);
 void reportSemanticError(string type1, string type3, string text);
+void entraEscopo();
+void saiEscopo();
+void declaraVariavel(Symbol& simbolo);
 %}
 
 
@@ -54,6 +64,8 @@ void reportSemanticError(string type1, string type3, string text);
 
 S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 			{
+				entraEscopo();
+
 				string codigo = "/*Compilador boto*/\n"
 								"#include <iostream>\n"
 								"#include<string.h>\n"
@@ -67,22 +79,27 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 					codigo += "\t" + t.tipo + " " + t.nome + ";\n";
 				}
 
-				for (auto &par : symbolTable) {
-					const Symbol &simbolo = par.second;
+				// Iterate through each scope in the symbolTable
+				for (const auto& escopoAtual : symbolTable.escopos) {
+					// Iterate through each symbol (key-value pair) within the current scope map
+					for (const auto& par : escopoAtual) {
+						const Symbol& simbolo = par.second;
 
-					bool encontrado = false;
-					for (const Symbol &temp : tempsVector) {
-						if (temp.nome == simbolo.nome && temp.tipo != "undefinaded") {
-							encontrado = true;
-							break;
+						bool encontrado = false;
+						for (const Symbol& temp : tempsVector) {
+							// Assuming 'temp.nome' is the unique identifier for comparison
+							// and 'temp.tipo' needs to be defined
+							if (temp.nome == simbolo.nome && temp.tipo != "undefined") {
+								encontrado = true;
+								break;
+							}
+						}
+
+						if (!encontrado) {
+							codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
 						}
 					}
-
-					if (!encontrado) {
-						codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
-					}
 				}
-
 				// for (auto &par : symbolTable) {
 				// 	const Symbol &simbolo = par.second;
 
@@ -126,16 +143,27 @@ COMANDO
 		    }
 		    | TK_ID
 		    {
-		        auto it = symbolTable.find($1.label);
-		        if (it != symbolTable.end()) {
-		            $$.type = it->second.tipo;
-		            string origem = it->second.temp.empty() ? $1.label : it->second.temp;
-		            $$.label = gentempcode($$.type);
-		            insertTempsST($$.label, $$.type);
-		            $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
-		        } else {
-		            yyerror("Variável não declarada.");
+
+		        bool achou = false;
+		        for (int i = symbolTable.quantidade - 1; i >= 0; --i) {
+		            auto& escopoAtual = symbolTable.escopos[i]; 
+
+		            auto it = escopoAtual.find($1.label);
+		            if (it != escopoAtual.end()) {
+		                $$.type = it->second.tipo;
+		                string origem = it->second.temp.empty() ? $1.label : it->second.temp;
+		                $$.label = gentempcode($$.type);
+		                insertTempsST($$.label, $$.type); 
+		                $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
+		                achou = true;
+		                break;
+		            }
 		        }
+		        if (!achou)
+		        {
+		        	yyerror("Variável não declarada.");
+		        }
+
 		    }
 		    | TK_VAR TK_ID ';'
 		    {
@@ -143,7 +171,7 @@ COMANDO
 		        val.nome = $2.label;
 		        val.tipo = "undefined";
 		        val.temp = "";
-		        symbolTable.insert({val.nome, val});
+		        declaraVariavel(val);
 		        $$.traducao = "";
 		        $$.label = "";
 		    }
@@ -152,10 +180,22 @@ COMANDO
 // EXPRESSAO separa atribuições de E
 EXPRESSAO
 		    : TK_ID '=' E
-		    {
-		        auto it = symbolTable.find($1.label);
-		        if (it == symbolTable.end()) {
-		            yyerror("Variável do lado esquerdo não declarada.");
+		    {	
+        		auto it = symbolTable.escopos.begin()->end(); 
+		    	bool achou = false;
+		        for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+		            auto& escopoAtual = symbolTable.escopos[i]; 
+		            it = escopoAtual.find($1.label);
+
+		            if (it != escopoAtual.end()) {
+		            	achou = true;
+		            	break;
+		            }
+		        }
+
+		        if (!achou)
+		        {
+		        	yyerror("Variável do lado esquerdo não declarada.");
 		        }
 
 		        if (it->second.tipo == "undefined") {
@@ -213,26 +253,35 @@ E
 		    }
 		    | TK_ID
 		    {
-		        auto it = symbolTable.find($1.label);
-		        if (it != symbolTable.end()) {
-		        	string tipo;
-		            if(it->second.temp[0] == 'b'){
 
-		            	$$.type = "boolean";
+		        bool achou = false; 
+
+		        for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+		            auto& escopoAtual = symbolTable.escopos[i];
+
+		            auto it = escopoAtual.find($1.label);
+		            if (it != escopoAtual.end()) {
+		                string tipo;
+
+		                if (it->second.temp[0] == 'b') {
+		                    $$.type = "boolean";
+		                } else {
+		                    $$.type = it->second.tipo;
+		                }
+
+		                $$.label = gentempcode($$.type);
+		                insertTempsST($$.label, $$.type);
+		                string origem = it->second.temp.empty() ? $1.label : it->second.temp;
+		                $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
+
+		                achou = true; 
+		                break;       
 		            }
-		            else{
-		            	$$.type = it->second.tipo;
-		            }
-		            
-
-		            $$.label = gentempcode($$.type);
-
-		            insertTempsST($$.label, $$.type);
-		            string origem = it->second.temp.empty() ? $1.label : it->second.temp;
-		            $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
-		        } else {
-		            yyerror("Variável não declarada.");
 		        }
+
+		        if (!achou) {
+		            yyerror("Variável não declarada.");
+		        }		        
 		    }
 		    | TK_INT
 		    {
@@ -301,24 +350,26 @@ string gentempcode(string tipo) {
     return temp;
 }
 
-<<<<<<< HEAD
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel){
 
 
-	auto itLeft = symbolTable.find(leftLabel);
-	if (itLeft != symbolTable.end()) {
-	    Symbol simbolo = itLeft->second;
-	    if (simbolo.temp[0] == 'b') {
-	        yyerror("Não é permitido operações com Booleanos");
-	    }
-	}
+	for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+	    auto& escopoAtual = symbolTable.escopos[i];
+		auto itLeft = escopoAtual.find(leftLabel);
+		if (itLeft != escopoAtual.end()) {
+		    Symbol simbolo = itLeft->second;
+		    if (simbolo.temp[0] == 'b') {
+		        yyerror("Não é permitido operações com Booleanos");
+		    }
+		}
 
-	auto itRight = symbolTable.find(rightLabel);
-	if (itRight != symbolTable.end()) {
-	    Symbol simbolo = itRight->second;
-	    if (simbolo.temp[0] == 'b') {
-	        yyerror("Não é permitido operações com Booleanos");
-	    }
+		auto itRight = escopoAtual.find(rightLabel);
+		if (itRight != escopoAtual.end()) {
+		    Symbol simbolo = itRight->second;
+		    if (simbolo.temp[0] == 'b') {
+		        yyerror("Não é permitido operações com Booleanos");
+		    }
+		}
 	}
 
     if (leftType == "float" || rightType == "float") {
@@ -327,22 +378,6 @@ void typeValue(string& resultType,  string& leftType,  string& rightType,  strin
         resultType = "int";
     } else if (leftType == "char" && rightType == "char") {
         resultType = "int"; // soma de dois chars resulta em int
-=======
-
-void typeValue(string& result, const string& left, const string& right){
-
-    if (left == "char" || right == "char")
-        {
-            yyerror("Não é permitido operações com char");
-        }
-
-    if (left == "float" || right == "float") {
-        result = "float";
-    } else if (left == "int" || right == "int") {
-        result = "int";
-    } else if (left == "char" && right == "char") {
-        result = "int"; // soma de dois chars resulta em int
->>>>>>> 1b203cf (Feat: Adicionado mensagem de erro para operacoes com char)
     } else {
         resultType = "undefined";
     }
@@ -371,7 +406,22 @@ void implicitConversion(string type1, string type3, string label1, string label3
     }
 }
 
+void entraEscopo(){
+	unordered_map<string, Symbol> escopo;
+	symbolTable.escopos.push_back(escopo);
+	symbolTable.quantidade++;
+}
 
+void saiEscopo(){
+	symbolTable.escopos.pop_back();
+	symbolTable.quantidade--;
+}
+
+void declaraVariavel(Symbol& var){
+
+
+	symbolTable.escopos[symbolTable.quantidade - 1][var.nome] = var;
+}
 
 void insertTempsST(const string& nome, const string& tipo)
 {
@@ -380,35 +430,69 @@ void insertTempsST(const string& nome, const string& tipo)
     simbolo.tipo = tipo;
     simbolo.temp = nome;
 
-    symbolTable.insert({nome, simbolo});
+	symbolTable.escopos[symbolTable.quantidade - 1][simbolo.nome] = simbolo;
+
+    // symbolTable.insert({nome, simbolo});
 }
 
-void checkUndefinedTypes() {
-    for (const auto& par : symbolTable) {
-        const Symbol& simbolo = par.second;
-        if (simbolo.tipo == "undefined" && (simbolo.nome.empty() || simbolo.nome[0] != 't')) {
-            cerr << "Erro: Variável '" << simbolo.nome << "' usada sem tipo definido.\n";
-            exit(1);
+
+void checkUndefinedTypes(const TabelaSimbolos& symbolTable) { 
+
+    for (const auto& scope_map : symbolTable.escopos) {
+        for (const auto& par : scope_map) {
+            const Symbol& simbolo = par.second; 
+
+            if (simbolo.tipo == "undefined" && !simbolo.nome.empty() && simbolo.nome[0] != 't') {
+                std::cerr << "Erro: Variável '" << simbolo.nome << "' usada sem tipo definido.\n";
+                exit(1); 
+            }
         }
     }
 }
 
 void printSymbolTable() {
-	cout << "\n========= SYMBOL TABLE =========" << endl;
-		for (const auto& entry : symbolTable) 
-		{
-			cout << "Nome: " << entry.second.nome
-				<< ", Tipo: " << entry.second.tipo
-				<< ", Temp: " << entry.second.temp << endl;
-		}
-	cout << "================================\n" << endl;
+    cout << "\n========= SYMBOL TABLE =========" << endl;
+
+    if (symbolTable.escopos.empty()) {
+        cout << "A tabela de símbolos está vazia." << endl;
+        cout << "================================\n" << endl;
+        return;
+    }
+
+    for (size_t i = 0; i < symbolTable.escopos.size(); ++i) {
+        cout << "--- ESCOPO " << i << " ---" << endl;
+        const auto& current_scope_map = symbolTable.escopos[i];
+
+        if (current_scope_map.empty()) {
+            cout << "  (Escopo vazio)" << endl;
+        } else {
+            for (const auto& entry : current_scope_map) {
+                const Symbol& simbolo = entry.second; 
+                cout << "  Nome: " << simbolo.nome
+                          << ", Tipo: " << simbolo.tipo
+                          << ", Temp: " << simbolo.temp << endl;
+            }
+        }
+    }
+    cout << "================================\n" << endl;
 }
 
 int main(int argc, char* argv[])
 {
 	var_temp_qnt = 0;
 
+	entraEscopo();
+
+    // Symbol val;
+    // val.nome = "mari";
+    // val.tipo = "undefined";
+    // val.temp = "EU TE AMO";
+    // symbolTable.insert({val.nome, val});
+
+    // declaraVariavel(val);
+	// cout << symbolTable.escopos[0][val.nome].temp << endl;
 	yyparse();
+
 	printSymbolTable();
 
 	return 0;
