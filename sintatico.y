@@ -233,26 +233,26 @@ EXPRESSAO
 
 				$$.traducao = $3.traducao + "\tprintf(\"" + formato + "\", " + $3.label + ");\n";
 			}
-			| TK_INPUT '(' E ')' {
+			| TK_ID '=' TK_INPUT '(' ')' 
+			{
+				string tipo = searchType($1.label); // Busca o tipo da variável
 
-				string formato = "";
-
-				// Verificar o tipo da variável no analisador semântico
-				string tipo = searchType($3.label);
-
-				if (tipo == "int") {
-					formato = "%d";
-				} else if (tipo == "float") {
-					formato = "%f";
-				} else if (tipo == "char") {
-					formato = " %c"; // espaço antes para consumir possíveis \n anteriores
-				} else if (tipo == "string") {
-					formato = "%s";
-				} else {
-					yyerror("Tipo inválido no input.");
+				 if (tipo == "undefined") {
+					tipo = "int";
+					symbolTable[$1.label].tipo = tipo;
 				}
 
-				$$.traducao = "\tscanf(\"" + formato + "\", &" + $3.label + ");\n";
+				if (tipo == "int") {
+					$$.traducao = "\tscanf(\"%d\", &" + $1.label + ");\n";
+				} else if (tipo == "float") {
+					$$.traducao = "\tscanf(\"%f\", &" + $1.label + ");\n";
+				} else if (tipo == "char") {
+					$$.traducao = "\tscanf(\" %c\", &" + $1.label + ");\n";
+				} else {
+					yyerror("Tipo inválido para input.");
+				}
+
+				$$.label = $1.label;
 			}
 		    ;
 // Expressões matemáticas e terminais
