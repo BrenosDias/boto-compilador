@@ -37,6 +37,7 @@ void insertTempsST(const string& nome, const string& tipo);
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel);
 void implicitConversion(atributos& esquerda, atributos& direita, atributos& final , string operacao);
 void reportSemanticError(string type1, string type3, string text);
+string searchType(const string& label);
 %}
 
 %token TK_TIPO_FLOAT
@@ -45,7 +46,7 @@ void reportSemanticError(string type1, string type3, string text);
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOLEAN
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
-%token TK_PRINT
+%token TK_PRINT TK_INPUT
 
 %start S
 
@@ -218,9 +219,7 @@ EXPRESSAO
 
 				string formato = "";
 
-				std::cout << "\n" << $3.type << std::endl;
-
-				 if ($3.type == "int" ) {
+				if ($3.type == "int" ) {
 					formato = "%d";
 				} else if ($3.type == "float") {
 					formato = "%f";
@@ -233,6 +232,27 @@ EXPRESSAO
 				}
 
 				$$.traducao = $3.traducao + "\tprintf(\"" + formato + "\", " + $3.label + ");\n";
+			}
+			| TK_INPUT '(' E ')' {
+
+				string formato = "";
+
+				// Verificar o tipo da variável no analisador semântico
+				string tipo = searchType($3.label);
+
+				if (tipo == "int") {
+					formato = "%d";
+				} else if (tipo == "float") {
+					formato = "%f";
+				} else if (tipo == "char") {
+					formato = " %c"; // espaço antes para consumir possíveis \n anteriores
+				} else if (tipo == "string") {
+					formato = "%s";
+				} else {
+					yyerror("Tipo inválido no input.");
+				}
+
+				$$.traducao = "\tscanf(\"" + formato + "\", &" + $3.label + ");\n";
 			}
 		    ;
 // Expressões matemáticas e terminais
@@ -563,6 +583,17 @@ void checkUndefinedTypes() {
         }
     }
 }
+
+string searchType(const string& label) {
+    auto it = symbolTable.find(label);
+    if (it != symbolTable.end()) {
+        return it->second.tipo;
+    } else {
+        yyerror("Variável '" + label + "' não declarada.");
+        return "undefined"; 
+    }
+}
+
 
 void printSymbolTable() {
 	cout << "\n========= SYMBOL TABLE =========" << endl;
