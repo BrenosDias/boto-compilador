@@ -45,6 +45,7 @@ void reportSemanticError(string type1, string type3, string text);
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOLEAN
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
+%token TK_PRINT
 
 %start S
 
@@ -67,7 +68,6 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 								"int main(void) {\n";
 
 				
-
 
 
 				for(auto &par : symbolTable) {
@@ -162,8 +162,6 @@ EXPRESSAO
 		        }
 
 
-
-
 		        if(it->second.tipo == $3.type && it->second.temp[0] == $3.label[0]){
 					
 		        	cout << "\nMesmo tipo" << endl;
@@ -216,6 +214,26 @@ EXPRESSAO
 		    {
 		        $$ = $1;
 		    }
+			| TK_PRINT '(' E ')' {
+
+				string formato = "";
+
+				std::cout << "\n" << $3.type << std::endl;
+
+				 if ($3.type == "int" ) {
+					formato = "%d";
+				} else if ($3.type == "float") {
+					formato = "%f";
+				} else if ($3.type == "string") {
+					formato = "%s";
+				} else if ($3.type == "char") {
+					formato = "%c";
+				} else {
+					yyerror("Tipo inválido no print.");
+				}
+
+				$$.traducao = $3.traducao + "\tprintf(\"" + formato + "\", " + $3.label + ");\n";
+			}
 		    ;
 // Expressões matemáticas e terminais
 E 
@@ -390,14 +408,14 @@ E
 		        	string tipo;
 		            if(it->second.temp[0] == 'b'){
 
-		            	$$.type = "boolean";
+		            	$$.type = "int";
 		            }
 		            else{
 		            	$$.type = it->second.tipo;
 		            }
 		            
 
-		            $$.label = gentempcode($$.type);
+		            $$.label = gentempcode("boolean");
 
 		            insertTempsST($$.label, $$.type);
 		            string origem = it->second.temp.empty() ? $1.label : it->second.temp;

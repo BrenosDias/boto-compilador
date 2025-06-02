@@ -46,6 +46,8 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 "or"        {return TK_OR;}
 
+"print"     {return TK_PRINT;}
+
 {MAIOR_IGUAL}   { return TK_MAIOR_IGUAL;}
 
 {MENOR_IGUAL}   { return TK_MENOR_IGUAL;}
