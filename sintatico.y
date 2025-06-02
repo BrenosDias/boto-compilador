@@ -43,7 +43,7 @@ void printSymbolTable();
 void checkUndefinedTypes();
 void insertTempsST(const string& nome, const string& tipo);
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel);
-void implicitConversion(string type1, string type3, string label1, string label3, string traducao1, string traducao3, string resultLabel, string &traducaoFinal, string type2);
+void implicitConversion(atributos& esquerda, atributos& direita, atributos& final , string operacao);
 void reportSemanticError(string type1, string type3, string text);
 void entraEscopo();
 void saiEscopo();
@@ -56,6 +56,8 @@ void declaraVariavel(Symbol& simbolo);
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOLEAN
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
+%token TK_PRINT
+
 
 %start S
 
@@ -71,7 +73,7 @@ void declaraVariavel(Symbol& simbolo);
 
 S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 			{
-				entraEscopo();
+				// entraEscopo();
 
 				string codigo = "/*Compilador boto*/\n"
 								"#include <iostream>\n"
@@ -121,6 +123,7 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 							"\n}";
 
 				cout << codigo << endl;
+
 			}
 			;
 
@@ -185,7 +188,8 @@ COMANDO
 		        val.nome = $2.label;
 		        val.tipo = $4.type;
 		        val.temp = $4.label;
-		        symbolTable.insert({val.nome, val});
+				
+		        declaraVariavel(val);
 				$$.traducao = $4.traducao + "\t" + $2.label + " = " + $4.label + ";\n";
 		        $$.label = "";
 		    }
@@ -217,8 +221,6 @@ EXPRESSAO
 		            it->second.temp = $3.label;
 
 		        }
-
-
 
 
 		        if(it->second.tipo == $3.type && it->second.temp[0] == $3.label[0]){
@@ -269,6 +271,28 @@ EXPRESSAO
 
 
 		    }
+		    | TK_PRINT '(' E ')' {
+
+                string formato = "";
+
+                std::cout << "\n" << $3.type << std::endl;
+
+                 if ($3.type == "int" ) {
+                    formato = "%d";
+                } else if ($3.label[0] == 'b') {
+                    formato = "%d";
+                } else if ($3.type == "float") {
+                    formato = "%f";
+                }else if ($3.type == "string") {
+                    formato = "%s";
+                } else if ($3.type == "char") {
+                    formato = "%c";
+                } else {
+                    yyerror("Tipo inválido no print.");
+                }
+
+                $$.traducao = $3.traducao + "\tprintf(\"" + formato + "\", " + $3.label + ");\n";
+            }
 		    | E
 		    {
 		        $$ = $1;
@@ -382,12 +406,16 @@ E
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
 
-				auto it = symbolTable.find($2.label);
-				if (it != symbolTable.end()) {
-					if (it->second.temp[0] != 'b') {
-						yyerror("Operação not requer operandos do tipo bool.");
+		        for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+		            auto& escopoAtual = symbolTable.escopos[i]; 
+		            auto it = escopoAtual.find($2.label);
+
+					if (it != escopoAtual.end()) {
+						if (it->second.temp[0] != 'b') {
+							yyerror("Operação not requer operandos do tipo bool.");
+						}
 					}
-				} 
+		        }
 				$$.traducao = $2.traducao  + "\t" + $$.label + " = " + "!" + $2.label + ";\n";
 		    }
 			| E TK_AND E 
@@ -395,12 +423,16 @@ E
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
 
-				auto it = symbolTable.find($2.label);
-				if (it != symbolTable.end()) {
-					if (it->second.temp[0] != 'b') {
-						yyerror("Operação not requer operandos do tipo bool.");
+		        for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+		            auto& escopoAtual = symbolTable.escopos[i]; 
+		            auto it = escopoAtual.find($2.label);
+
+					if (it != escopoAtual.end()) {
+						if (it->second.temp[0] != 'b') {
+							yyerror("Operação not requer operandos do tipo bool.");
+						}
 					}
-				} 
+		        }
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " && " + $3.label + ";\n";
 		    }
 			| E TK_OR E 
@@ -408,12 +440,16 @@ E
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
 
-				auto it = symbolTable.find($2.label);
-				if (it != symbolTable.end()) {
-					if (it->second.temp[0] != 'b') {
-						yyerror("Operação not requer operandos do tipo bool.");
+		        for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+		            auto& escopoAtual = symbolTable.escopos[i]; 
+		            auto it = escopoAtual.find($2.label);
+
+					if (it != escopoAtual.end()) {
+						if (it->second.temp[0] != 'b') {
+							yyerror("Operação not requer operandos do tipo bool.");
+						}
 					}
-				} 
+		        }
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " || " + $3.label + ";\n";
 		    }
 			| TK_TIPO_INT '(' E ')' 
@@ -453,12 +489,12 @@ E
 		                string tipo;
 
 		                if (it->second.temp[0] == 'b') {
-		                    $$.type = "boolean";
+		                    $$.type = "int";
 		                } else {
 		                    $$.type = it->second.tipo;
 		                }
 
-		                $$.label = gentempcode($$.type);
+		                $$.label = gentempcode("boolean");
 		                insertTempsST($$.label, $$.type);
 		                string origem = it->second.temp.empty() ? $1.label : it->second.temp;
 		                $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
@@ -662,6 +698,7 @@ void printSymbolTable() {
 int main(int argc, char* argv[])
 {
 	var_temp_qnt = 0;
+	entraEscopo();
 
     // Symbol val;
     // val.nome = "mari";

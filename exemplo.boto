@@ -1,9 +1,8 @@
 int main() {
 
-  var a;
   var b;
 
-  a = true;
+  b = 1>2;
 
-  b = 3.14 + 2;
+  print(b);
 }
