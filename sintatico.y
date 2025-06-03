@@ -193,7 +193,33 @@ COMANDO
 				$$.traducao = $4.traducao + "\t" + $2.label + " = " + $4.label + ";\n";
 		        $$.label = "";
 		    }
+		    | PUSH_ESCOPO COMANDOS POP_ESCOPO
+		    {
+		    	$$.traducao = $2.traducao;
+		    }
+		    |ESTRUTURA_DE_CONTROLE
+		    {
+		    	$$ = $1;
+		    }
 		    ;
+
+PUSH_ESCOPO : '{' 
+			{
+				entraEscopo();
+			}
+			;
+
+POP_ESCOPO  : '}'
+			{
+				saiEscopo();
+			}
+			;
+
+ESTRUTURA_DE_CONTROLE : '+'
+			{
+				$$ = $1;
+				//BOTEI ALGO ALEATORIO SÓ PRA NÃO DAR ERRRO
+			}
 
 // EXPRESSAO separa atribuições de E
 EXPRESSAO
