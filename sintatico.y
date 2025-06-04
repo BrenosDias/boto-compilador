@@ -48,6 +48,7 @@ void reportSemanticError(string type1, string type3, string text);
 void entraEscopo();
 void saiEscopo();
 void declaraVariavel(Symbol& simbolo);
+string genlabel();
 %}
 
 %token TK_TIPO_FLOAT
@@ -57,6 +58,7 @@ void declaraVariavel(Symbol& simbolo);
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
 %token TK_PRINT
+%token TK_WHILE
 
 
 %start S
@@ -215,11 +217,43 @@ POP_ESCOPO  : '}'
 			}
 			;
 
-ESTRUTURA_DE_CONTROLE : '+'
+ESTRUTURA_DE_CONTROLE 
+			: TK_WHILE '(' E ')' COMANDO
 			{
-				$$ = $1;
-				//BOTEI ALGO ALEATORIO SÓ PRA NÃO DAR ERRRO
+				if ($3.label[0] != 'b'){
+					yyerror("Essa expressao nao e um boolean");
+				}
+
+				// // Gerando labels para início e fim do while
+				// string inicioWhile = genlabel();
+				// string fimWhile = genlabel();
+
+				// // Armazena os labels no .label, separados por espaço
+				// $$.label = inicioWhile + " " + fimWhile;
+
+				// // Cria uma variável temporária para controle do desvio
+				// string temp = gentempcode("boolean");
+
+				// // Garante que essa variável temporária esteja na tabela de símbolos
+				// insertTempsST(temp, "int");
+
+				// // Extraindo os labels de início e fim
+				// string inicioWhileLabel = $$.label.substr(0, $$.label.find(" "));
+				// string fimWhileLabel = $$.label.substr($$.label.find(" ") + 1);
+
+				// // Construção da tradução em três endereços
+				// string traducao;
+				// traducao += inicioWhileLabel + ":\n";                      // Label do início do while
+				// traducao += $3.traducao;                                    // Tradução da expressão condicional
+				// traducao += temp + " = !" + $3.label + ";\n";              // Se condição falsa, vai para fim
+				// traducao += "if (" + temp + ") goto " + fimWhileLabel + ";\n";
+				// traducao += $5.traducao;                                    // Tradução do corpo do while
+				// traducao += "goto " + inicioWhileLabel + ";\n";            // Volta para testar condição novamente
+				// traducao += fimWhileLabel + ":\n";                          // Label do fim do while
+
+				// $$.traducao = traducao;
 			}
+			;
 
 // EXPRESSAO separa atribuições de E
 EXPRESSAO
@@ -356,7 +390,7 @@ E
 		    }
 			| E TK_MAIOR E
 		    {
-				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
+				implicitConversion($1, $3, $$, " >= ");
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
@@ -368,7 +402,7 @@ E
 		    }
 			| E TK_MENOR E
 		    {
-				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
+				implicitConversion($1, $3, $$, " >= ");
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
@@ -380,7 +414,7 @@ E
 		    }
 			| E TK_DIFERENTE E
 		    {
-				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
+				implicitConversion($1, $3, $$, " >= ");
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
@@ -392,7 +426,7 @@ E
 		    }
 			| E TK_IGUAL_IGUAL E
 		    {
-				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
+				implicitConversion($1, $3, $$, " >= ");
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
@@ -405,7 +439,7 @@ E
 		    }
 			| E TK_MENOR_IGUAL E
 		    {
-				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
+				implicitConversion($1, $3, $$, " >= ");
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
@@ -417,7 +451,8 @@ E
 		    }
 			| E TK_MAIOR_IGUAL E
 		    {
-				typeValue($$.type, $1.type, $3.type, $1.label, $3.label);
+				implicitConversion($1, $3, $$, " >= ");
+				
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
@@ -603,7 +638,9 @@ void typeValue(string& resultType,  string& leftType,  string& rightType,  strin
 		if (itLeft != escopoAtual.end()) {
 		    Symbol simbolo = itLeft->second;
 		    if (simbolo.temp[0] == 'b') {
-		        yyerror("Não é permitido operações com Booleanos");
+				printf("%c 1", simbolo.temp[1]);
+		        //yyerror("Não é permitido operações com Booleanos");
+
 		    }
 		}
 
@@ -611,18 +648,19 @@ void typeValue(string& resultType,  string& leftType,  string& rightType,  strin
 		if (itRight != escopoAtual.end()) {
 		    Symbol simbolo = itRight->second;
 		    if (simbolo.temp[0] == 'b') {
+				printf("%c 2", simbolo.temp[0]);
 		        yyerror("Não é permitido operações com Booleanos");
 		    }
 		}
 	}
 
-    if (leftType == "float" || rightType == "float") {
-        resultType = "float";
-    } else if (leftType == "int" || rightType == "int") {
-        resultType = "int";
-    } else if (leftType == "char" && rightType == "char") {
-        resultType = "int"; // soma de dois chars resulta em int
-    }
+    // if (leftType == "float" || rightType == "float") {
+    //     resultType = "float";
+    // } else if (leftType == "int" || rightType == "int") {
+    //     resultType = "int";
+    // } else if (leftType == "char" && rightType == "char") {
+    //     resultType = "int"; // soma de dois chars resulta em int
+    // }
 
 }
 void implicitConversion(atributos& esquerda, atributos& direita, atributos& final , string operacao){
@@ -692,6 +730,12 @@ void checkUndefinedTypes(const TabelaSimbolos& symbolTable) {
             }
         }
     }
+}
+
+int labelCount = 0;
+
+string genlabel() {
+    return "L" + to_string(labelCount++);
 }
 
 void printSymbolTable() {

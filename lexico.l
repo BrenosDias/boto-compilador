@@ -48,6 +48,8 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 "print"     {return TK_PRINT;}
 
+"while"     {return TK_WHILE;}
+
 {MAIOR_IGUAL}   { return TK_MAIOR_IGUAL;}
 
 {MENOR_IGUAL}   { return TK_MENOR_IGUAL;}
