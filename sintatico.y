@@ -224,34 +224,26 @@ ESTRUTURA_DE_CONTROLE
 					yyerror("Essa expressao nao e um boolean");
 				}
 
-				// // Gerando labels para início e fim do while
-				// string inicioWhile = genlabel();
-				// string fimWhile = genlabel();
+				string temp = gentempcode("int");
+				insertTempsST(temp, "int");
+				
+				// Extraindo os labels de início e fim
+				string inicioWhileLabel = genlabel();
+				string fimWhileLabel = genlabel();
 
-				// // Armazena os labels no .label, separados por espaço
-				// $$.label = inicioWhile + " " + fimWhile;
 
-				// // Cria uma variável temporária para controle do desvio
-				// string temp = gentempcode("boolean");
+				string traducao;
 
-				// // Garante que essa variável temporária esteja na tabela de símbolos
-				// insertTempsST(temp, "int");
+				traducao += inicioWhileLabel + ": \n";
+				traducao += $3.traducao;
+				traducao += temp + " = !(" + $3.label + "); \n";
+				traducao += "if (" + temp + ") goto " + fimWhileLabel + ";\n";
+				traducao += $5.traducao;
+				traducao += "goto " + inicioWhileLabel + ";\n";
+				traducao += fimWhileLabel + ": \n";
 
-				// // Extraindo os labels de início e fim
-				// string inicioWhileLabel = $$.label.substr(0, $$.label.find(" "));
-				// string fimWhileLabel = $$.label.substr($$.label.find(" ") + 1);
 
-				// // Construção da tradução em três endereços
-				// string traducao;
-				// traducao += inicioWhileLabel + ":\n";                      // Label do início do while
-				// traducao += $3.traducao;                                    // Tradução da expressão condicional
-				// traducao += temp + " = !" + $3.label + ";\n";              // Se condição falsa, vai para fim
-				// traducao += "if (" + temp + ") goto " + fimWhileLabel + ";\n";
-				// traducao += $5.traducao;                                    // Tradução do corpo do while
-				// traducao += "goto " + inicioWhileLabel + ";\n";            // Volta para testar condição novamente
-				// traducao += fimWhileLabel + ":\n";                          // Label do fim do while
-
-				// $$.traducao = traducao;
+				$$.traducao = traducao;
 			}
 			;
 
@@ -402,11 +394,11 @@ E
 		    }
 			| E TK_MENOR E
 		    {
-				implicitConversion($1, $3, $$, " >= ");
+				implicitConversion($1, $3, $$, " < ");
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
-					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
+					yyerror("Operação '<' requer operandos do tipo inteiro ou float.");
 				}
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
@@ -414,11 +406,11 @@ E
 		    }
 			| E TK_DIFERENTE E
 		    {
-				implicitConversion($1, $3, $$, " >= ");
+				implicitConversion($1, $3, $$, " ! ");
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
-					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
+					yyerror("Operação '!' requer operandos do tipo inteiro ou float.");
 				}
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
@@ -426,11 +418,11 @@ E
 		    }
 			| E TK_IGUAL_IGUAL E
 		    {
-				implicitConversion($1, $3, $$, " >= ");
+				implicitConversion($1, $3, $$, " == ");
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
-					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
+					yyerror("Operação '==' requer operandos do tipo inteiro ou float.");
 				}
 
 				$$.type = "int";
@@ -439,11 +431,11 @@ E
 		    }
 			| E TK_MENOR_IGUAL E
 		    {
-				implicitConversion($1, $3, $$, " >= ");
+				implicitConversion($1, $3, $$, " <= ");
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
-					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
+					yyerror("Operação '<=' requer operandos do tipo inteiro ou float.");
 				}
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
@@ -456,7 +448,7 @@ E
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
-					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
+					yyerror("Operação '>=' requer operandos do tipo inteiro ou float.");
 				}
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
@@ -551,11 +543,13 @@ E
 
 		                if (it->second.temp[0] == 'b') {
 		                    $$.type = "int";
+							$$.label = gentempcode("boolean");
 		                } else {
 		                    $$.type = it->second.tipo;
+							$$.label = gentempcode($$.type);
 		                }
 
-		                $$.label = gentempcode("boolean");
+		                
 		                insertTempsST($$.label, $$.type);
 		                string origem = it->second.temp.empty() ? $1.label : it->second.temp;
 		                $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
@@ -623,6 +617,7 @@ string gentempcode(string tipo) {
     	temp = "t" + to_string(var_temp_qnt);
     }else{
     	temp = "b" + to_string(var_temp_qnt);
+		//printf("temp = %s\n", temp);
     	tipo = "int";
     }
 
@@ -639,7 +634,7 @@ void typeValue(string& resultType,  string& leftType,  string& rightType,  strin
 		    Symbol simbolo = itLeft->second;
 		    if (simbolo.temp[0] == 'b') {
 				printf("%c 1", simbolo.temp[1]);
-		        //yyerror("Não é permitido operações com Booleanos");
+		        yyerror("Não é permitido operações com Booleanos");
 
 		    }
 		}
