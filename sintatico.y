@@ -190,9 +190,10 @@ COMANDO
 		        val.nome = $2.label;
 		        val.tipo = $4.type;
 		        val.temp = $4.label;
-				
+		        cout << "\nNome "+val.nome << endl;
+				cout << "\nTemp "+val.temp << endl;
 		        declaraVariavel(val);
-				$$.traducao = $4.traducao + "\t" + $2.label + " = " + $4.label + ";\n";
+				$$.traducao = $4.traducao;
 		        $$.label = "";
 		    }
 		    | PUSH_ESCOPO COMANDOS POP_ESCOPO
@@ -224,6 +225,7 @@ ESTRUTURA_DE_CONTROLE
 					yyerror("Essa expressao nao e um boolean");
 				}
 
+<<<<<<< HEAD
 				string temp = gentempcode("int");
 				insertTempsST(temp, "int");
 				
@@ -261,6 +263,36 @@ ESTRUTURA_DE_CONTROLE
 					traducao += ifLabel + ": \n";
 
 					$$.traducao = traducao;
+=======
+				// Gerando labels para início e fim do while
+				string inicioWhile = genlabel();
+				string fimWhile = genlabel();
+
+				// Armazena os labels no .label, separados por espaço
+				$$.label = inicioWhile + " " + fimWhile;
+
+				// Cria uma variável temporária para controle do desvio
+				string temp = gentempcode("boolean");
+
+				// Garante que essa variável temporária esteja na tabela de símbolos
+				insertTempsST(temp, "int");
+
+				// Extraindo os labels de início e fim
+				string inicioWhileLabel = $$.label.substr(0, $$.label.find(" "));
+				string fimWhileLabel = $$.label.substr($$.label.find(" ") + 1);
+
+				// Construção da tradução em três endereços
+				string traducao;
+				traducao += inicioWhileLabel + ":\n";                      // Label do início do while
+				traducao += $3.traducao;                                    // Tradução da expressão condicional
+				traducao += temp + " = !" + $3.label + ";\n";              // Se condição falsa, vai para fim
+				traducao += "if (" + temp + ") goto " + fimWhileLabel + ";\n";
+				traducao += $5.traducao;                                    // Tradução do corpo do while
+				traducao += "goto " + inicioWhileLabel + ";\n";            // Volta para testar condição novamente
+				traducao += fimWhileLabel + ":\n";                          // Label do fim do while
+
+				$$.traducao = traducao;
+>>>>>>> 985081b (variaveis temporarias concertadas)
 			}
 			;
 
@@ -295,44 +327,45 @@ EXPRESSAO
 		        if(it->second.tipo == $3.type && it->second.temp[0] == $3.label[0]){
 					
 		        	cout << "\nMesmo tipo" << endl;
-		        	it->second.temp = $3.label;
+
+		        	// it->second.temp = $3.label;
 			        $$.type = $3.type;
-			        $$.traducao = $3.traducao + "\t" + $1.label + " = " + $3.label + ";\n";
+			        $$.traducao = $3.traducao + "\t" + it->second.temp + " = " + $3.label + ";\n";
 			        $$.label = $1.label;	
 
 		        }
 		        else if(it->second.tipo == "int" && it->second.temp[0] != 'b'){
 		        	cout << "\nInt normal temp = " + it->second.temp  << endl;
-					it->second.temp = $3.label;
+					// it->second.temp = $3.label;
 
         			string auxTipo = "("+ it->second.tipo +") " + $3.label;
         			string temp = gentempcode(it->second.tipo);
 					string traducaoAux = "\t" + temp + " = " + auxTipo + ";\n";
 
 					$$.type = $1.type;
-					$$.traducao = $3.traducao + traducaoAux + "\t" + $1.label + " = " + $3.label + ";\n";
+					$$.traducao = $3.traducao + traducaoAux + "\t" + it->second.temp + " = " + $3.label + ";\n";
 		        }
 		        else if(it->second.tipo == "float" && $3.type != "int"||$3.type != "float"){
 		        	cout << "\nFloat" << endl;
-					it->second.temp = $3.label;
+					// it->second.temp = $3.label;
 
 		        	string auxTipo = "("+ it->second.tipo +") " + $3.label;
         			string temp = gentempcode(it->second.tipo);
 					string traducaoAux = "\t" + temp + " = " + auxTipo + ";\n";
 
 					$$.type = $1.type;
-					$$.traducao = $3.traducao + traducaoAux + "\t" + $1.label + " = " + $3.label + ";\n";
+					$$.traducao = $3.traducao + traducaoAux + "\t" + it->second.temp + " = " + $3.label + ";\n";
 		        }
 		        else if((it->second.temp[0] == 'b' || it->second.tipo == "char") && $3.type == "int"){
 		        	cout << "Boolean ou  char" << endl;
-					it->second.temp = $3.label;
+					// it->second.temp = $3.label;
 		  
 		        	string auxTipo = "("+ it->second.tipo +") " + $3.label;
         			string temp = gentempcode(it->second.tipo);
 					string traducaoAux = "\t" + temp + " = " + auxTipo + ";\n";
 
 					$$.type = $1.type;
-					$$.traducao = $3.traducao + traducaoAux + "\t" + $1.label + " = " + $3.label + ";\n";
+					$$.traducao = $3.traducao + traducaoAux + "\t" + it->second.temp + " = " + $3.label + ";\n";
 		       
 		        }else{
 		        	yyerror("Variável recebendo valores de tipos não conversiveis");
@@ -399,7 +432,7 @@ E
 		    }
 			| E TK_MAIOR E
 		    {
-				implicitConversion($1, $3, $$, " >= ");
+				implicitConversion($1, $3, $$, " > ");
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
@@ -410,7 +443,13 @@ E
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " > " + $3.label + ";\n";
 		    }
 			| E TK_MENOR E
+<<<<<<< HEAD
 		    {
+=======
+		    {	
+		    	cout << "\n Esq = "+ $1.label + "Dir = " + $3.label << endl;
+
+>>>>>>> 985081b (variaveis temporarias concertadas)
 				implicitConversion($1, $3, $$, " < ");
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
@@ -423,7 +462,11 @@ E
 		    }
 			| E TK_DIFERENTE E
 		    {
+<<<<<<< HEAD
 				implicitConversion($1, $3, $$, " ! ");
+=======
+				implicitConversion($1, $3, $$, " != ");
+>>>>>>> 985081b (variaveis temporarias concertadas)
 		        insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
@@ -561,12 +604,21 @@ E
 		                if (it->second.temp[0] == 'b') {
 		                    $$.type = "int";
 							$$.label = gentempcode("boolean");
+<<<<<<< HEAD
 		                } else {
 		                    $$.type = it->second.tipo;
 							$$.label = gentempcode($$.type);
 		                }
 
 		                
+=======
+
+		                } else {
+		                    $$.type = it->second.tipo;
+		                    $$.label = gentempcode($$.type);
+		                }
+
+>>>>>>> 985081b (variaveis temporarias concertadas)
 		                insertTempsST($$.label, $$.type);
 		                string origem = it->second.temp.empty() ? $1.label : it->second.temp;
 		                $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
@@ -637,6 +689,8 @@ string gentempcode(string tipo) {
 		//printf("temp = %s\n", temp);
     	tipo = "int";
     }
+
+	 cout << "\n" + temp << endl;
 
     return temp;
 }
@@ -791,7 +845,7 @@ int main(int argc, char* argv[])
     // declaraVariavel(val);
 	// cout << symbolTable.escopos[0][val.nome].temp << endl;
 	yyparse();
-
+	saiEscopo();
 	printSymbolTable();
 
 	return 0;
