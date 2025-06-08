@@ -1,18 +1,12 @@
 int main() {
+
+
   var a = 1;
 
-<<<<<<< HEAD
-  if(a<5){
-    a = 6;
-  }
-
-=======
-  var a = 5;
   
-  while(a<10){
+  if(a < 3){
       a = a + 1;  
       var b = 6;
   }
   
->>>>>>> 985081b (variaveis temporarias concertadas)
 }

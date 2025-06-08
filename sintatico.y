@@ -3,6 +3,7 @@
 #include <string>
 #include <sstream>
 #include<unordered_map>
+#include <set>
 #include<iostream>
 #include<vector>
 
@@ -32,10 +33,10 @@ struct TabelaSimbolos
 };
 
 int var_temp_qnt;
-// unordered_map<string, Symbol> symbolTable;
 vector<Symbol> tempsVector;
-
+set<string> tempsAdicionados;
 TabelaSimbolos symbolTable;
+
 int yylex(void);
 void yyerror(string);
 string gentempcode(string tipo);
@@ -87,35 +88,34 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 
 
 
-				// Iterate through each scope in the symbolTable
-				for (const auto& escopoAtual : symbolTable.escopos) {
-					// Iterate through each symbol (key-value pair) within the current scope map
-					for (const auto& par : escopoAtual) {
-						const Symbol& simbolo = par.second;
+				// // Iterate through each scope in the symbolTable
+				// for (const auto& escopoAtual : symbolTable.escopos) {
+				// 	// Iterate through each symbol (key-value pair) within the current scope map
+				// 	for (const auto& par : escopoAtual) {
+				// 		const Symbol& simbolo = par.second;
 
-						bool encontrado = false;
-						for (const Symbol& temp : tempsVector) {
-							// Assuming 'temp.nome' is the unique identifier for comparison
-							// and 'temp.tipo' needs to be defined
-							if (temp.nome == simbolo.nome && temp.tipo != "undefined") {
-								encontrado = true;
-								break;
-							}
-						}
+				// 		bool encontrado = false;
+				// 		for (const Symbol& temp : tempsVector) {
+				// 			// Assuming 'temp.nome' is the unique identifier for comparison
+				// 			// and 'temp.tipo' needs to be defined
+				// 			if (temp.nome == simbolo.nome && temp.tipo != "undefined") {
+				// 				encontrado = true;
+				// 				break;
+				// 			}
+				// 		}
 
-						if (!encontrado) {
-							codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
-						}
-					}
-				}
-				// for (auto &par : symbolTable) {
-				// 	const Symbol &simbolo = par.second;
-
-				// 	// Se o nome NÃO começa com 't', é uma variável do usuário (ex: a, b)
-				// 	if (!simbolo.nome.empty() && simbolo.nome[0] != 't') {
-				// 		codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
+				// 		if (!encontrado) {
+				// 			codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
+				// 		}
 				// 	}
 				// }
+
+				for (const Symbol& simbolo : tempsVector) {
+
+			        if (tempsAdicionados.insert(simbolo.temp).second) {
+			            codigo += "\t" + simbolo.tipo + " " + simbolo.temp + ";\n";
+			        }
+				}
 
 				codigo += "\n";
 
@@ -214,7 +214,7 @@ PUSH_ESCOPO : '{'
 
 POP_ESCOPO  : '}'
 			{
-				saiEscopo();
+				// saiEscopo();
 			}
 			;
 
@@ -225,7 +225,6 @@ ESTRUTURA_DE_CONTROLE
 					yyerror("Essa expressao nao e um boolean");
 				}
 
-<<<<<<< HEAD
 				string temp = gentempcode("int");
 				insertTempsST(temp, "int");
 				
@@ -247,7 +246,8 @@ ESTRUTURA_DE_CONTROLE
 
 				$$.traducao = traducao;
 			}
-			| TK_IF '(' E ')' COMANDO{
+			| TK_IF '(' E ')' COMANDO
+			{
 				if ($3.label[0] != 'b'){
 					yyerror("Essa expressao nao e um boolean");
 				}
@@ -263,36 +263,6 @@ ESTRUTURA_DE_CONTROLE
 					traducao += ifLabel + ": \n";
 
 					$$.traducao = traducao;
-=======
-				// Gerando labels para início e fim do while
-				string inicioWhile = genlabel();
-				string fimWhile = genlabel();
-
-				// Armazena os labels no .label, separados por espaço
-				$$.label = inicioWhile + " " + fimWhile;
-
-				// Cria uma variável temporária para controle do desvio
-				string temp = gentempcode("boolean");
-
-				// Garante que essa variável temporária esteja na tabela de símbolos
-				insertTempsST(temp, "int");
-
-				// Extraindo os labels de início e fim
-				string inicioWhileLabel = $$.label.substr(0, $$.label.find(" "));
-				string fimWhileLabel = $$.label.substr($$.label.find(" ") + 1);
-
-				// Construção da tradução em três endereços
-				string traducao;
-				traducao += inicioWhileLabel + ":\n";                      // Label do início do while
-				traducao += $3.traducao;                                    // Tradução da expressão condicional
-				traducao += temp + " = !" + $3.label + ";\n";              // Se condição falsa, vai para fim
-				traducao += "if (" + temp + ") goto " + fimWhileLabel + ";\n";
-				traducao += $5.traducao;                                    // Tradução do corpo do while
-				traducao += "goto " + inicioWhileLabel + ";\n";            // Volta para testar condição novamente
-				traducao += fimWhileLabel + ":\n";                          // Label do fim do while
-
-				$$.traducao = traducao;
->>>>>>> 985081b (variaveis temporarias concertadas)
 			}
 			;
 
@@ -433,53 +403,50 @@ E
 			| E TK_MAIOR E
 		    {
 				implicitConversion($1, $3, $$, " > ");
-		        insertTempsST($$.label, $$.type);
+				insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
 					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
 				}
 				$$.type = "int";
-		        $$.label = gentempcode("boolean");
+		        $$.label = gentempcode("boolean");		        
+				insertTempsST($$.label, $$.type);
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " > " + $3.label + ";\n";
 		    }
 			| E TK_MENOR E
-<<<<<<< HEAD
-		    {
-=======
+
 		    {	
 		    	cout << "\n Esq = "+ $1.label + "Dir = " + $3.label << endl;
 
->>>>>>> 985081b (variaveis temporarias concertadas)
+
 				implicitConversion($1, $3, $$, " < ");
-		        insertTempsST($$.label, $$.type);
+				insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
 					yyerror("Operação '<' requer operandos do tipo inteiro ou float.");
 				}
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
+		        insertTempsST($$.label, $$.type);
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " < " + $3.label + ";\n";
 		    }
 			| E TK_DIFERENTE E
 		    {
-<<<<<<< HEAD
-				implicitConversion($1, $3, $$, " ! ");
-=======
 				implicitConversion($1, $3, $$, " != ");
->>>>>>> 985081b (variaveis temporarias concertadas)
-		        insertTempsST($$.label, $$.type);
+				insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
 					yyerror("Operação '!' requer operandos do tipo inteiro ou float.");
 				}
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
+		        insertTempsST($$.label, $$.type);
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " != " + $3.label + ";\n";
 		    }
 			| E TK_IGUAL_IGUAL E
 		    {
 				implicitConversion($1, $3, $$, " == ");
-		        insertTempsST($$.label, $$.type);
+				insertTempsST($$.label, $$.type);
 				if(($1.type != "int" && $1.type != "float") || ($3.type != "int" && $3.type != "float"))
 				{
 					yyerror("Operação '==' requer operandos do tipo inteiro ou float.");
@@ -487,6 +454,7 @@ E
 
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
+		        insertTempsST($$.label, $$.type);
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " == " + $3.label + ";\n";
 		    }
 			| E TK_MENOR_IGUAL E
@@ -499,6 +467,7 @@ E
 				}
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
+		        insertTempsST($$.label, $$.type);
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " <= " + $3.label + ";\n";
 		    }
 			| E TK_MAIOR_IGUAL E
@@ -512,6 +481,7 @@ E
 				}
 				$$.type = "int";
 		        $$.label = gentempcode("boolean");
+		        insertTempsST($$.label, $$.type);
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " >= " + $3.label + ";\n";
 		    }
 			| TK_NOT E 
@@ -604,21 +574,12 @@ E
 		                if (it->second.temp[0] == 'b') {
 		                    $$.type = "int";
 							$$.label = gentempcode("boolean");
-<<<<<<< HEAD
+
 		                } else {
 		                    $$.type = it->second.tipo;
 							$$.label = gentempcode($$.type);
 		                }
 
-		                
-=======
-
-		                } else {
-		                    $$.type = it->second.tipo;
-		                    $$.label = gentempcode($$.type);
-		                }
-
->>>>>>> 985081b (variaveis temporarias concertadas)
 		                insertTempsST($$.label, $$.type);
 		                string origem = it->second.temp.empty() ? $1.label : it->second.temp;
 		                $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
@@ -769,6 +730,8 @@ void declaraVariavel(Symbol& var){
 
 
 	symbolTable.escopos[symbolTable.quantidade - 1][var.nome] = var;
+	tempsVector.push_back(var);
+
 }
 
 void insertTempsST(const string& nome, const string& tipo)
@@ -780,6 +743,7 @@ void insertTempsST(const string& nome, const string& tipo)
 
 	symbolTable.escopos[symbolTable.quantidade - 1][simbolo.nome] = simbolo;
 
+	tempsVector.push_back(simbolo);
     // symbolTable.insert({nome, simbolo});
 }
 

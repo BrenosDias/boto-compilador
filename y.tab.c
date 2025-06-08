@@ -73,6 +73,7 @@
 #include <string>
 #include <sstream>
 #include<unordered_map>
+#include <set>
 #include<iostream>
 #include<vector>
 
@@ -102,10 +103,10 @@ struct TabelaSimbolos
 };
 
 int var_temp_qnt;
-// unordered_map<string, Symbol> symbolTable;
 vector<Symbol> tempsVector;
-
+set<string> tempsAdicionados;
 TabelaSimbolos symbolTable;
+
 int yylex(void);
 void yyerror(string);
 string gentempcode(string tipo);
@@ -120,7 +121,7 @@ void saiEscopo();
 void declaraVariavel(Symbol& simbolo);
 string genlabel();
 
-#line 124 "y.tab.c"
+#line 125 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -675,16 +676,10 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    76,    76,   132,   138,   143,   149,   153,   177,   187,
-<<<<<<< HEAD
-     198,   202,   208,   214,   221,   248,   269,   343,   365,   372,
-     379,   386,   393,   400,   412,   424,   436,   449,   461,   474,
-     491,   508,   525,   535,   545,   549,   583,   591,   598,   612
-=======
-     199,   203,   209,   215,   222,   261,   336,   358,   365,   372,
-     379,   386,   393,   405,   419,   431,   444,   456,   469,   486,
-     503,   520,   530,   540,   544,   578,   586,   593,   607
->>>>>>> 985081b (variaveis temporarias concertadas)
+       0,    77,    77,   132,   138,   143,   149,   153,   177,   187,
+     199,   203,   209,   215,   222,   249,   271,   346,   368,   375,
+     382,   389,   396,   403,   416,   433,   446,   460,   473,   487,
+     504,   521,   538,   548,   558,   562,   596,   604,   611,   625
 };
 #endif
 
@@ -1331,7 +1326,7 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* S: TK_TIPO_INT TK_MAIN '(' ')' BLOCO  */
-#line 77 "sintatico.y"
+#line 78 "sintatico.y"
                         {
 				// entraEscopo();
 
@@ -1345,35 +1340,34 @@ yyreduce:
 
 
 
-				// Iterate through each scope in the symbolTable
-				for (const auto& escopoAtual : symbolTable.escopos) {
-					// Iterate through each symbol (key-value pair) within the current scope map
-					for (const auto& par : escopoAtual) {
-						const Symbol& simbolo = par.second;
+				// // Iterate through each scope in the symbolTable
+				// for (const auto& escopoAtual : symbolTable.escopos) {
+				// 	// Iterate through each symbol (key-value pair) within the current scope map
+				// 	for (const auto& par : escopoAtual) {
+				// 		const Symbol& simbolo = par.second;
 
-						bool encontrado = false;
-						for (const Symbol& temp : tempsVector) {
-							// Assuming 'temp.nome' is the unique identifier for comparison
-							// and 'temp.tipo' needs to be defined
-							if (temp.nome == simbolo.nome && temp.tipo != "undefined") {
-								encontrado = true;
-								break;
-							}
-						}
+				// 		bool encontrado = false;
+				// 		for (const Symbol& temp : tempsVector) {
+				// 			// Assuming 'temp.nome' is the unique identifier for comparison
+				// 			// and 'temp.tipo' needs to be defined
+				// 			if (temp.nome == simbolo.nome && temp.tipo != "undefined") {
+				// 				encontrado = true;
+				// 				break;
+				// 			}
+				// 		}
 
-						if (!encontrado) {
-							codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
-						}
-					}
-				}
-				// for (auto &par : symbolTable) {
-				// 	const Symbol &simbolo = par.second;
-
-				// 	// Se o nome NÃO começa com 't', é uma variável do usuário (ex: a, b)
-				// 	if (!simbolo.nome.empty() && simbolo.nome[0] != 't') {
-				// 		codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
+				// 		if (!encontrado) {
+				// 			codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
+				// 		}
 				// 	}
 				// }
+
+				for (const Symbol& simbolo : tempsVector) {
+
+			        if (tempsAdicionados.insert(simbolo.temp).second) {
+			            codigo += "\t" + simbolo.tipo + " " + simbolo.temp + ";\n";
+			        }
+				}
 
 				codigo += "\n";
 
@@ -1475,11 +1469,7 @@ yyreduce:
 				yyval.traducao = yyvsp[-1].traducao;
 		        yyval.label = "";
 		    }
-<<<<<<< HEAD
-#line 1472 "y.tab.c"
-=======
-#line 1458 "y.tab.c"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 1473 "y.tab.c"
     break;
 
   case 10: /* COMANDO: PUSH_ESCOPO COMANDOS POP_ESCOPO  */
@@ -1487,11 +1477,7 @@ yyreduce:
                     {
 		    	yyval.traducao = yyvsp[-1].traducao;
 		    }
-<<<<<<< HEAD
-#line 1480 "y.tab.c"
-=======
-#line 1466 "y.tab.c"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 1481 "y.tab.c"
     break;
 
   case 11: /* COMANDO: ESTRUTURA_DE_CONTROLE  */
@@ -1499,11 +1485,7 @@ yyreduce:
                     {
 		    	yyval = yyvsp[0];
 		    }
-<<<<<<< HEAD
-#line 1488 "y.tab.c"
-=======
-#line 1474 "y.tab.c"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 1489 "y.tab.c"
     break;
 
   case 12: /* PUSH_ESCOPO: '{'  */
@@ -1511,23 +1493,15 @@ yyreduce:
                         {
 				entraEscopo();
 			}
-<<<<<<< HEAD
-#line 1496 "y.tab.c"
-=======
-#line 1482 "y.tab.c"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 1497 "y.tab.c"
     break;
 
   case 13: /* POP_ESCOPO: '}'  */
 #line 216 "sintatico.y"
                         {
-				saiEscopo();
+				// saiEscopo();
 			}
-<<<<<<< HEAD
-#line 1504 "y.tab.c"
-=======
-#line 1490 "y.tab.c"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 1505 "y.tab.c"
     break;
 
   case 14: /* ESTRUTURA_DE_CONTROLE: TK_WHILE '(' E ')' COMANDO  */
@@ -1537,7 +1511,6 @@ yyreduce:
 					yyerror("Essa expressao nao e um boolean");
 				}
 
-<<<<<<< HEAD
 				string temp = gentempcode("int");
 				insertTempsST(temp, "int");
 				
@@ -1559,12 +1532,12 @@ yyreduce:
 
 				yyval.traducao = traducao;
 			}
-#line 1535 "y.tab.c"
+#line 1536 "y.tab.c"
     break;
 
   case 15: /* ESTRUTURA_DE_CONTROLE: TK_IF '(' E ')' COMANDO  */
-#line 248 "sintatico.y"
-                                                 {
+#line 250 "sintatico.y"
+                        {
 				if (yyvsp[-2].label[0] != 'b'){
 					yyerror("Essa expressao nao e um boolean");
 				}
@@ -1581,47 +1554,11 @@ yyreduce:
 
 					yyval.traducao = traducao;
 			}
-#line 1557 "y.tab.c"
+#line 1558 "y.tab.c"
     break;
 
   case 16: /* EXPRESSAO: TK_ID '=' E  */
-#line 270 "sintatico.y"
-=======
-				// Gerando labels para início e fim do while
-				string inicioWhile = genlabel();
-				string fimWhile = genlabel();
-
-				// Armazena os labels no .label, separados por espaço
-				yyval.label = inicioWhile + " " + fimWhile;
-
-				// Cria uma variável temporária para controle do desvio
-				string temp = gentempcode("boolean");
-
-				// Garante que essa variável temporária esteja na tabela de símbolos
-				insertTempsST(temp, "int");
-
-				// Extraindo os labels de início e fim
-				string inicioWhileLabel = yyval.label.substr(0, yyval.label.find(" "));
-				string fimWhileLabel = yyval.label.substr(yyval.label.find(" ") + 1);
-
-				// Construção da tradução em três endereços
-				string traducao;
-				traducao += inicioWhileLabel + ":\n";                      // Label do início do while
-				traducao += yyvsp[-2].traducao;                                    // Tradução da expressão condicional
-				traducao += temp + " = !" + yyvsp[-2].label + ";\n";              // Se condição falsa, vai para fim
-				traducao += "if (" + temp + ") goto " + fimWhileLabel + ";\n";
-				traducao += yyvsp[0].traducao;                                    // Tradução do corpo do while
-				traducao += "goto " + inicioWhileLabel + ";\n";            // Volta para testar condição novamente
-				traducao += fimWhileLabel + ":\n";                          // Label do fim do while
-
-				yyval.traducao = traducao;
-			}
-#line 1529 "y.tab.c"
-    break;
-
-  case 15: /* EXPRESSAO: TK_ID '=' E  */
-#line 262 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 272 "sintatico.y"
                     {	
         		auto it = symbolTable.escopos.begin()->end(); 
 		    	bool achou = false;
@@ -1696,19 +1633,11 @@ yyreduce:
 
 
 		    }
-<<<<<<< HEAD
-#line 1635 "y.tab.c"
+#line 1637 "y.tab.c"
     break;
 
   case 17: /* EXPRESSAO: TK_PRINT '(' E ')'  */
-#line 343 "sintatico.y"
-=======
-#line 1608 "y.tab.c"
-    break;
-
-  case 16: /* EXPRESSAO: TK_PRINT '(' E ')'  */
-#line 336 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 346 "sintatico.y"
                                          {
 
                 string formato = "";
@@ -1731,191 +1660,120 @@ yyreduce:
 
                 yyval.traducao = yyvsp[-1].traducao + "\tprintf(\"" + formato + "\", " + yyvsp[-1].label + ");\n";
             }
-<<<<<<< HEAD
-#line 1662 "y.tab.c"
+#line 1664 "y.tab.c"
     break;
 
   case 18: /* EXPRESSAO: E  */
-#line 366 "sintatico.y"
+#line 369 "sintatico.y"
                     {
 		        yyval = yyvsp[0];
 		    }
-#line 1670 "y.tab.c"
+#line 1672 "y.tab.c"
     break;
 
   case 19: /* E: E '+' E  */
-#line 373 "sintatico.y"
-=======
-#line 1635 "y.tab.c"
-    break;
-
-  case 17: /* EXPRESSAO: E  */
-#line 359 "sintatico.y"
-                    {
-		        yyval = yyvsp[0];
-		    }
-#line 1643 "y.tab.c"
-    break;
-
-  case 18: /* E: E '+' E  */
-#line 366 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 376 "sintatico.y"
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " + ");
 		    }
-<<<<<<< HEAD
-#line 1681 "y.tab.c"
+#line 1683 "y.tab.c"
     break;
 
   case 20: /* E: E '-' E  */
-#line 380 "sintatico.y"
-=======
-#line 1654 "y.tab.c"
-    break;
-
-  case 19: /* E: E '-' E  */
-#line 373 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 383 "sintatico.y"
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " - ");
 		    }
-<<<<<<< HEAD
-#line 1692 "y.tab.c"
+#line 1694 "y.tab.c"
     break;
 
   case 21: /* E: E '*' E  */
-#line 387 "sintatico.y"
-=======
-#line 1665 "y.tab.c"
-    break;
-
-  case 20: /* E: E '*' E  */
-#line 380 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 390 "sintatico.y"
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " * ");
 		    }
-<<<<<<< HEAD
-#line 1703 "y.tab.c"
+#line 1705 "y.tab.c"
     break;
 
   case 22: /* E: E '/' E  */
-#line 394 "sintatico.y"
-=======
-#line 1676 "y.tab.c"
-    break;
-
-  case 21: /* E: E '/' E  */
-#line 387 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 397 "sintatico.y"
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " / ");
 		    }
-<<<<<<< HEAD
-#line 1714 "y.tab.c"
+#line 1716 "y.tab.c"
     break;
 
   case 23: /* E: E TK_MAIOR E  */
-#line 401 "sintatico.y"
-=======
-#line 1687 "y.tab.c"
-    break;
-
-  case 22: /* E: E TK_MAIOR E  */
-#line 394 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 404 "sintatico.y"
                     {
 				implicitConversion(yyvsp[-2], yyvsp[0], yyval, " > ");
-		        insertTempsST(yyval.label, yyval.type);
+				insertTempsST(yyval.label, yyval.type);
 				if((yyvsp[-2].type != "int" && yyvsp[-2].type != "float") || (yyvsp[0].type != "int" && yyvsp[0].type != "float"))
 				{
 					yyerror("Operação '>' requer operandos do tipo inteiro ou float.");
 				}
 				yyval.type = "int";
-		        yyval.label = gentempcode("boolean");
+		        yyval.label = gentempcode("boolean");		        
+				insertTempsST(yyval.label, yyval.type);
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " > " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1730 "y.tab.c"
+#line 1733 "y.tab.c"
     break;
 
   case 24: /* E: E TK_MENOR E  */
-#line 413 "sintatico.y"
-                    {
-=======
-#line 1703 "y.tab.c"
-    break;
-
-  case 23: /* E: E TK_MENOR E  */
-#line 406 "sintatico.y"
+#line 418 "sintatico.y"
                     {	
 		    	cout << "\n Esq = "+ yyvsp[-2].label + "Dir = " + yyvsp[0].label << endl;
 
->>>>>>> 985081b (variaveis temporarias concertadas)
+
 				implicitConversion(yyvsp[-2], yyvsp[0], yyval, " < ");
-		        insertTempsST(yyval.label, yyval.type);
+				insertTempsST(yyval.label, yyval.type);
 				if((yyvsp[-2].type != "int" && yyvsp[-2].type != "float") || (yyvsp[0].type != "int" && yyvsp[0].type != "float"))
 				{
 					yyerror("Operação '<' requer operandos do tipo inteiro ou float.");
 				}
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
+		        insertTempsST(yyval.label, yyval.type);
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " < " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1746 "y.tab.c"
+#line 1753 "y.tab.c"
     break;
 
   case 25: /* E: E TK_DIFERENTE E  */
-#line 425 "sintatico.y"
-                    {
-				implicitConversion(yyvsp[-2], yyvsp[0], yyval, " ! ");
-=======
-#line 1721 "y.tab.c"
-    break;
-
-  case 24: /* E: E TK_DIFERENTE E  */
-#line 420 "sintatico.y"
+#line 434 "sintatico.y"
                     {
 				implicitConversion(yyvsp[-2], yyvsp[0], yyval, " != ");
->>>>>>> 985081b (variaveis temporarias concertadas)
-		        insertTempsST(yyval.label, yyval.type);
+				insertTempsST(yyval.label, yyval.type);
 				if((yyvsp[-2].type != "int" && yyvsp[-2].type != "float") || (yyvsp[0].type != "int" && yyvsp[0].type != "float"))
 				{
 					yyerror("Operação '!' requer operandos do tipo inteiro ou float.");
 				}
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
+		        insertTempsST(yyval.label, yyval.type);
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " != " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1762 "y.tab.c"
+#line 1770 "y.tab.c"
     break;
 
   case 26: /* E: E TK_IGUAL_IGUAL E  */
-#line 437 "sintatico.y"
-=======
-#line 1737 "y.tab.c"
-    break;
-
-  case 25: /* E: E TK_IGUAL_IGUAL E  */
-#line 432 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 447 "sintatico.y"
                     {
 				implicitConversion(yyvsp[-2], yyvsp[0], yyval, " == ");
-		        insertTempsST(yyval.label, yyval.type);
+				insertTempsST(yyval.label, yyval.type);
 				if((yyvsp[-2].type != "int" && yyvsp[-2].type != "float") || (yyvsp[0].type != "int" && yyvsp[0].type != "float"))
 				{
 					yyerror("Operação '==' requer operandos do tipo inteiro ou float.");
@@ -1923,21 +1781,14 @@ yyreduce:
 
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
+		        insertTempsST(yyval.label, yyval.type);
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " == " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1779 "y.tab.c"
+#line 1788 "y.tab.c"
     break;
 
   case 27: /* E: E TK_MENOR_IGUAL E  */
-#line 450 "sintatico.y"
-=======
-#line 1754 "y.tab.c"
-    break;
-
-  case 26: /* E: E TK_MENOR_IGUAL E  */
-#line 445 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 461 "sintatico.y"
                     {
 				implicitConversion(yyvsp[-2], yyvsp[0], yyval, " <= ");
 		        insertTempsST(yyval.label, yyval.type);
@@ -1947,21 +1798,14 @@ yyreduce:
 				}
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
+		        insertTempsST(yyval.label, yyval.type);
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " <= " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1795 "y.tab.c"
+#line 1805 "y.tab.c"
     break;
 
   case 28: /* E: E TK_MAIOR_IGUAL E  */
-#line 462 "sintatico.y"
-=======
-#line 1770 "y.tab.c"
-    break;
-
-  case 27: /* E: E TK_MAIOR_IGUAL E  */
-#line 457 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 474 "sintatico.y"
                     {
 				implicitConversion(yyvsp[-2], yyvsp[0], yyval, " >= ");
 				
@@ -1972,21 +1816,14 @@ yyreduce:
 				}
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
+		        insertTempsST(yyval.label, yyval.type);
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " >= " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1812 "y.tab.c"
+#line 1823 "y.tab.c"
     break;
 
   case 29: /* E: TK_NOT E  */
-#line 475 "sintatico.y"
-=======
-#line 1787 "y.tab.c"
-    break;
-
-  case 28: /* E: TK_NOT E  */
-#line 470 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 488 "sintatico.y"
                     {
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -2003,19 +1840,11 @@ yyreduce:
 		        }
 				yyval.traducao = yyvsp[0].traducao  + "\t" + yyval.label + " = " + "!" + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1833 "y.tab.c"
+#line 1844 "y.tab.c"
     break;
 
   case 30: /* E: E TK_AND E  */
-#line 492 "sintatico.y"
-=======
-#line 1808 "y.tab.c"
-    break;
-
-  case 29: /* E: E TK_AND E  */
-#line 487 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 505 "sintatico.y"
                     {
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -2032,19 +1861,11 @@ yyreduce:
 		        }
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " && " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1854 "y.tab.c"
+#line 1865 "y.tab.c"
     break;
 
   case 31: /* E: E TK_OR E  */
-#line 509 "sintatico.y"
-=======
-#line 1829 "y.tab.c"
-    break;
-
-  case 30: /* E: E TK_OR E  */
-#line 504 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 522 "sintatico.y"
                     {
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -2061,19 +1882,11 @@ yyreduce:
 		        }
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " || " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1875 "y.tab.c"
+#line 1886 "y.tab.c"
     break;
 
   case 32: /* E: TK_TIPO_INT '(' E ')'  */
-#line 526 "sintatico.y"
-=======
-#line 1850 "y.tab.c"
-    break;
-
-  case 31: /* E: TK_TIPO_INT '(' E ')'  */
-#line 521 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 539 "sintatico.y"
                     {
 				if(yyvsp[-1].type == "char"){
 					yyerror("Não é possível essa conversão.");
@@ -2083,19 +1896,11 @@ yyreduce:
 
 				yyval.traducao = yyvsp[-1].traducao  + "\t" + yyval.label + " = " + "(int)" + yyvsp[-1].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1889 "y.tab.c"
+#line 1900 "y.tab.c"
     break;
 
   case 33: /* E: TK_TIPO_FLOAT '(' E ')'  */
-#line 536 "sintatico.y"
-=======
-#line 1864 "y.tab.c"
-    break;
-
-  case 32: /* E: TK_TIPO_FLOAT '(' E ')'  */
-#line 531 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 549 "sintatico.y"
                     {
 				if(yyvsp[-1].type == "char"){
 					yyerror("Não é possível essa conversão.");
@@ -2105,35 +1910,19 @@ yyreduce:
 
 				yyval.traducao = yyvsp[-1].traducao  + "\t" + yyval.label + " = " + "(float)" + yyvsp[-1].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1903 "y.tab.c"
+#line 1914 "y.tab.c"
     break;
 
   case 34: /* E: '(' E ')'  */
-#line 546 "sintatico.y"
+#line 559 "sintatico.y"
                     {
 		        yyval = yyvsp[-1];
 		    }
-#line 1911 "y.tab.c"
+#line 1922 "y.tab.c"
     break;
 
   case 35: /* E: TK_ID  */
-#line 550 "sintatico.y"
-=======
-#line 1878 "y.tab.c"
-    break;
-
-  case 33: /* E: '(' E ')'  */
-#line 541 "sintatico.y"
-                    {
-		        yyval = yyvsp[-1];
-		    }
-#line 1886 "y.tab.c"
-    break;
-
-  case 34: /* E: TK_ID  */
-#line 545 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 563 "sintatico.y"
                     {
 
 		        bool achou = false; 
@@ -2148,21 +1937,12 @@ yyreduce:
 		                if (it->second.temp[0] == 'b') {
 		                    yyval.type = "int";
 							yyval.label = gentempcode("boolean");
-<<<<<<< HEAD
+
 		                } else {
 		                    yyval.type = it->second.tipo;
 							yyval.label = gentempcode(yyval.type);
 		                }
 
-		                
-=======
-
-		                } else {
-		                    yyval.type = it->second.tipo;
-		                    yyval.label = gentempcode(yyval.type);
-		                }
-
->>>>>>> 985081b (variaveis temporarias concertadas)
 		                insertTempsST(yyval.label, yyval.type);
 		                string origem = it->second.temp.empty() ? yyvsp[0].label : it->second.temp;
 		                yyval.traducao = "\t" + yyval.label + " = " + origem + ";\n";
@@ -2176,57 +1956,33 @@ yyreduce:
 		            yyerror("Variável não declarada.");
 		        }		        
 		    }
-<<<<<<< HEAD
-#line 1949 "y.tab.c"
+#line 1960 "y.tab.c"
     break;
 
   case 36: /* E: TK_INT  */
-#line 584 "sintatico.y"
-=======
-#line 1924 "y.tab.c"
-    break;
-
-  case 35: /* E: TK_INT  */
-#line 579 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 597 "sintatico.y"
                     {
 		        yyval.type = "int";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1960 "y.tab.c"
+#line 1971 "y.tab.c"
     break;
 
   case 37: /* E: TK_FLOAT  */
-#line 592 "sintatico.y"
-=======
-#line 1935 "y.tab.c"
-    break;
-
-  case 36: /* E: TK_FLOAT  */
-#line 587 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 605 "sintatico.y"
                     {
 		        yyval.type = "float";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1971 "y.tab.c"
+#line 1982 "y.tab.c"
     break;
 
   case 38: /* E: TK_BOOLEAN  */
-#line 599 "sintatico.y"
-=======
-#line 1946 "y.tab.c"
-    break;
-
-  case 37: /* E: TK_BOOLEAN  */
-#line 594 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 612 "sintatico.y"
                     {	
 		        yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -2240,38 +1996,22 @@ yyreduce:
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 1989 "y.tab.c"
+#line 2000 "y.tab.c"
     break;
 
   case 39: /* E: TK_CHAR  */
-#line 613 "sintatico.y"
-=======
-#line 1964 "y.tab.c"
-    break;
-
-  case 38: /* E: TK_CHAR  */
-#line 608 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 626 "sintatico.y"
                     {
 		        yyval.type = "char";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
-<<<<<<< HEAD
-#line 2000 "y.tab.c"
+#line 2011 "y.tab.c"
     break;
 
 
-#line 2004 "y.tab.c"
-=======
-#line 1975 "y.tab.c"
-    break;
-
-
-#line 1979 "y.tab.c"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 2015 "y.tab.c"
 
       default: break;
     }
@@ -2464,11 +2204,7 @@ yyreturnlab:
   return yyresult;
 }
 
-<<<<<<< HEAD
-#line 622 "sintatico.y"
-=======
-#line 617 "sintatico.y"
->>>>>>> 985081b (variaveis temporarias concertadas)
+#line 635 "sintatico.y"
 
 
 #include "lex.yy.c"
@@ -2567,6 +2303,8 @@ void declaraVariavel(Symbol& var){
 
 
 	symbolTable.escopos[symbolTable.quantidade - 1][var.nome] = var;
+	tempsVector.push_back(var);
+
 }
 
 void insertTempsST(const string& nome, const string& tipo)
@@ -2578,6 +2316,7 @@ void insertTempsST(const string& nome, const string& tipo)
 
 	symbolTable.escopos[symbolTable.quantidade - 1][simbolo.nome] = simbolo;
 
+	tempsVector.push_back(simbolo);
     // symbolTable.insert({nome, simbolo});
 }
 
