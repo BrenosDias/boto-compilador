@@ -58,7 +58,7 @@ string genlabel();
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
 %token TK_PRINT
-%token TK_WHILE
+%token TK_WHILE TK_IF TK_ELSE
 
 
 %start S
@@ -244,6 +244,23 @@ ESTRUTURA_DE_CONTROLE
 
 
 				$$.traducao = traducao;
+			}
+			| TK_IF '(' E ')' COMANDO{
+				if ($3.label[0] != 'b'){
+					yyerror("Essa expressao nao e um boolean");
+				}
+					string temp = gentempcode("int");        
+					insertTempsST(temp, "int");              
+					string ifLabel = genlabel();
+
+					string traducao = $3.traducao;
+
+					traducao += temp + " = !(" + $3.label + "); \n";
+					traducao += "if (" + temp + ") goto " + ifLabel + ";\n";
+					traducao += $5.traducao;
+					traducao += ifLabel + ": \n";
+
+					$$.traducao = traducao;
 			}
 			;
 
