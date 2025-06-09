@@ -50,9 +50,17 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 "while"     {return TK_WHILE;}
 
+"do"      {return TK_DO;}
+
 "if"        {return TK_IF;}
 
 "else"      {return TK_ELSE;}
+
+"break"      {return TK_BREAK;}
+
+"breakout"      {return TK_BREAKOUT;}
+
+"continue"      {return TK_CONTINUE;}
 
 {MAIOR_IGUAL}   { return TK_MAIOR_IGUAL;}
 

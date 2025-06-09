@@ -3,10 +3,11 @@ int main() {
 
   var a = 1;
 
+  do{
+    a = a + 1;
+  } while (a < 3);
+
+
   
-  if(a < 3){
-      a = a + 1;  
-      var b = 6;
-  }
   
 }

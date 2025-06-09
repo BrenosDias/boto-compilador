@@ -6,6 +6,7 @@
 #include <set>
 #include<iostream>
 #include<vector>
+#include <stack>
 
 #define YYSTYPE atributos
 
@@ -31,6 +32,18 @@ struct TabelaSimbolos
 	vector<unordered_map<string, Symbol>> escopos;
 	int quantidade;
 };
+
+// Estrutura para guardar os rótulos de um laço
+struct InfoLaco {
+    std::string inicio;
+    std::string fim;
+};
+
+// Pilha para os rótulos de saída (para o 'break') - continua igual
+std::stack<std::string> breakLabels;
+stack<string> continueLabels;
+// NOVA Pilha para gerenciar os laços ativos
+vector<InfoLaco> pilhaLacos;
 
 int var_temp_qnt;
 vector<Symbol> tempsVector;
@@ -59,7 +72,7 @@ string genlabel();
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
 %token TK_PRINT
-%token TK_WHILE TK_IF TK_ELSE
+%token TK_WHILE TK_DO TK_IF TK_ELSE TK_BREAK TK_CONTINUE TK_BREAKOUT
 
 
 %start S
@@ -204,6 +217,38 @@ COMANDO
 		    {
 		    	$$ = $1;
 		    }
+		    | TK_BREAK ';' 
+		    {
+		        if (breakLabels.empty()) {
+		            yyerror("Comando 'break' fora de um laço (while/for)");
+		            $$.traducao = "";
+		        } else {
+		            // Perfeito, continua funcionando!
+		            $$.traducao = "goto " + breakLabels.top() + ";\n";
+		        }
+		    }
+		    | TK_BREAKOUT ';'
+		    {
+		        // A verificação é na pilha de laços principal
+		        if (pilhaLacos.empty()) {
+		            yyerror("Comando 'breakout' fora de um laço");
+		            $$.traducao = "";
+		        } else {
+		            // Pega o primeiro elemento (o mais externo) com .front()
+		            $$.traducao = "goto " + pilhaLacos.front().fim + ";\n";
+		        }
+		    }		    
+		    | TK_CONTINUE ';' 
+		    {
+		        if (continueLabels.empty()) {
+		            yyerror("Comando 'continue' fora de um laço (while/for)");
+		            $$.traducao = "";
+		        } else {
+		            // Perfeito, continua funcionando!
+		            $$.traducao = "goto " + continueLabels.top() + ";\n";
+		        }
+		    }
+
 		    ;
 
 PUSH_ESCOPO : '{' 
@@ -214,14 +259,17 @@ PUSH_ESCOPO : '{'
 
 POP_ESCOPO  : '}'
 			{
-				// saiEscopo();
+				saiEscopo();
 			}
+
 			;
 
 ESTRUTURA_DE_CONTROLE 
-			: TK_WHILE '(' E ')' COMANDO
+			: TK_WHILE INICIO_LOOP '(' E ')' COMANDO
 			{
-				if ($3.label[0] != 'b'){
+				InfoLaco lacoAtual = pilhaLacos.back();
+
+				if ($4.label[0] != 'b'){
 					yyerror("Essa expressao nao e um boolean");
 				}
 
@@ -229,22 +277,65 @@ ESTRUTURA_DE_CONTROLE
 				insertTempsST(temp, "int");
 				
 				// Extraindo os labels de início e fim
-				string inicioWhileLabel = genlabel();
-				string fimWhileLabel = genlabel();
-
 
 				string traducao;
 
-				traducao += inicioWhileLabel + ": \n";
-				traducao += $3.traducao;
-				traducao += temp + " = !(" + $3.label + "); \n";
-				traducao += "if (" + temp + ") goto " + fimWhileLabel + ";\n";
-				traducao += $5.traducao;
-				traducao += "goto " + inicioWhileLabel + ";\n";
-				traducao += fimWhileLabel + ": \n";
+				traducao += lacoAtual.inicio + ": \n";
+				traducao += $4.traducao;
+				traducao += temp + " = !(" + $4.label + "); \n";
+				traducao += "if (" + temp + ") goto " + lacoAtual.fim + ";\n";
+				traducao += $6.traducao;
+				traducao += "goto " + lacoAtual.inicio + ";\n";
+				traducao += lacoAtual.fim + ": \n";
 
 
 				$$.traducao = traducao;
+
+		        if (!pilhaLacos.empty()) {
+		            pilhaLacos.pop_back();
+		       		cout << "pop pilha" << endl;
+
+		        }
+		        if (!breakLabels.empty()) {
+		            breakLabels.pop();
+		       		cout << "pop pilha" << endl;	
+		       	}			
+			}
+			|TK_DO INICIO_LOOP COMANDO TK_WHILE '(' E ')' ';'
+			{
+		        // Pega os rótulos da pilha, preparados pelo PREPARA_LACO
+		        InfoLaco lacoAtual = pilhaLacos.back();
+
+		        if ($6.label[0] != 'b'){ // $6 é o não-terminal E
+		            yyerror("Essa expressao nao e um boolean");
+		        }
+
+		        string traducao;
+
+		        // 1. Rótulo de início do laço
+		        traducao += lacoAtual.inicio + ":\n";
+
+		        // 2. Código do corpo (COMANDO), que é $3
+		        traducao += $3.traducao;
+
+		        // 3. Código da expressão condicional (E), que é $6
+		        traducao += $6.traducao;
+
+		        // 4. Salto condicional de volta para o início se a condição for VERDADEIRA
+		        traducao += "if (" + $6.label + ") goto " + lacoAtual.inicio + ";\n";
+
+		        // 5. Rótulo de fim, para onde o 'break' e 'breakout' pularão
+		        traducao += lacoAtual.fim + ":\n";
+
+		        $$.traducao = traducao;
+
+		        // 6. Limpeza das pilhas, exatamente como na regra do 'while'
+		        if (!pilhaLacos.empty()) {
+		            pilhaLacos.pop_back();
+		        }
+		        if (!breakLabels.empty()) {
+		            breakLabels.pop();
+		        }
 			}
 			| TK_IF '(' E ')' COMANDO
 			{
@@ -265,6 +356,25 @@ ESTRUTURA_DE_CONTROLE
 					$$.traducao = traducao;
 			}
 			;
+
+INICIO_LOOP
+		    : 
+		    {
+		        // 1. Cria os rótulos
+		        InfoLaco novoLaco;
+		        novoLaco.inicio = genlabel();
+		        novoLaco.fim = genlabel();
+
+		        // 2. Empilha o rótulo de FIM na pilha de breaks
+		        breakLabels.push(novoLaco.fim);
+
+		        continueLabels.push(novoLaco.inicio);
+
+		        // 3. Empilha a estrutura completa na pilha de laços
+		        pilhaLacos.push_back(novoLaco);    	
+		       	cout << "entrou no while" << endl;
+		    }
+		    ;
 
 // EXPRESSAO separa atribuições de E
 EXPRESSAO
@@ -364,7 +474,7 @@ EXPRESSAO
                 }
 
                 $$.traducao = $3.traducao + "\tprintf(\"" + formato + "\", " + $3.label + ");\n";
-            }
+            }         
 		    | E
 		    {
 		        $$ = $1;
