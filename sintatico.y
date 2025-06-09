@@ -25,6 +25,11 @@ struct Symbol {
 	string temp;
 }; 
 
+typedef struct {
+    char* str;
+    int length;
+} StringValue;
+
 int var_temp_qnt;
 unordered_map<string, Symbol> symbolTable;
 
@@ -37,6 +42,7 @@ void insertTempsST(const string& nome, const string& tipo);
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel);
 void implicitConversion(atributos& esquerda, atributos& direita, atributos& final , string operacao);
 void reportSemanticError(string type1, string type3, string text);
+StringValue strCopy(StringValue source);
 string searchType(const string& label);
 %}
 
@@ -47,6 +53,7 @@ string searchType(const string& label);
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
 %token TK_PRINT TK_INPUT
+%token TK_STRING
 
 %start S
 
@@ -157,11 +164,27 @@ EXPRESSAO
 		        }
 
 		        if (it->second.tipo == "undefined") {
-		            it->second.tipo = $3.type;
-		            it->second.temp = $3.label;
+					it->second.tipo = $3.type;
+					it->second.temp = $3.label;
+					cout << "LHS: " << it->second.tipo << ", RHS: " << $3.type << endl;
+				}
 
-		        }
+				// Agora: processa a atribuição se o tipo do LHS for string
+				if (it->second.tipo == "string") {
+					cout << "\nAtribuição de string com strCopy\n";
+					$$.type = "string";
 
+					if ($3.type != "string") {
+						yyerror("Atribuição inválida: string esperado");
+					}
+
+					$$.traducao = $3.traducao
+    					+ "\t" + $1.label + " = strCopy(" + $3.label + ");\n";
+						
+					$$.label = $1.label;
+				}
+
+				else {
 
 		        if(it->second.tipo == $3.type && it->second.temp[0] == $3.label[0]){
 					
@@ -208,8 +231,7 @@ EXPRESSAO
 		        }else{
 		        	yyerror("Variável recebendo valores de tipos não conversiveis");
 		        }
-
-
+				}
 		    }
 		    | E
 		    {
@@ -480,6 +502,72 @@ E
 		        insertTempsST($$.label, $$.type);
 		        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 		    }
+			| TK_STRING
+			{
+				$$.type = "string";
+				$$.label = gentempcode($$.type);
+				insertTempsST($$.label, $$.type);
+
+				std::string originalString = $1.label; // Ex: "\"hello\""
+				std::string traducao = "";
+
+				std::string valorSemAspas;
+				int size = 0;
+
+				// Lê caractere por caractere, desconsiderando as aspas e lidando com escapes
+				for (int i = 1; i < originalString.length() - 1; i++) {
+					char c = originalString[i];
+
+					if (c == '\\' && i + 1 < originalString.length() - 1) {
+						char next = originalString[i + 1];
+						if (next == 'n') {
+							valorSemAspas += '\n';
+						} else if (next == 't') {
+							valorSemAspas += '\t';
+						} else if (next == '\\') {
+							valorSemAspas += '\\';
+						} else if (next == '"') {
+							valorSemAspas += '"';
+						} else {
+							valorSemAspas += next;
+						}
+						i++; // pula o caractere escapado
+					} else {
+						valorSemAspas += c;
+					}
+
+					size++;
+				}
+
+				// Alocação da string (com +1 pro \0)
+				traducao += "\t" + $$.label + ".str = (char*) malloc(" + std::to_string(size + 1) + ");\n";
+
+				// Cópia dos caracteres
+				for (int i = 0; i < valorSemAspas.length(); i++) {
+					char c = valorSemAspas[i];
+
+					// Escapa corretamente caracteres especiais no código C
+					if (c == '\n') {
+						traducao += "\t" + $$.label + ".str[" + std::to_string(i) + "] = '\\n';\n";
+					} else if (c == '\t') {
+						traducao += "\t" + $$.label + ".str[" + std::to_string(i) + "] = '\\t';\n";
+					} else if (c == '\\') {
+						traducao += "\t" + $$.label + ".str[" + std::to_string(i) + "] = '\\\\';\n";
+					} else if (c == '\'') {
+						traducao += "\t" + $$.label + ".str[" + std::to_string(i) + "] = '\\'';\n";
+					} else {
+						traducao += "\t" + $$.label + ".str[" + std::to_string(i) + "] = '" + c + "';\n";
+					}
+				}
+
+				// Finaliza com \0
+				traducao += "\t" + $$.label + ".str[" + std::to_string(size) + "] = '\\0';\n";
+
+				// Define o tamanho
+				traducao += "\t" + $$.label + ".length = " + std::to_string(size) + ";\n";
+
+				$$.traducao = traducao;
+			}
 		    ;
 
 
@@ -502,6 +590,24 @@ string gentempcode(string tipo) {
     }
 
     return temp;
+}
+
+StringValue strCopy(StringValue source) {
+    StringValue dest;
+    dest.length = source.length;
+
+    // Aloca memória para os caracteres + '\0'
+    dest.str = (char*) malloc((dest.length + 1) * sizeof(char));
+
+    // Copia os caracteres
+    for (int i = 0; i < dest.length; i++) {
+        dest.str[i] = source.str[i];
+    }
+
+    // Finaliza com '\0'
+    dest.str[dest.length] = '\0';
+
+    return dest;
 }
 
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel){

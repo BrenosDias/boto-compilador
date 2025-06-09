@@ -75,7 +75,8 @@ extern int yydebug;
     TK_FIM = 276,                  /* TK_FIM  */
     TK_ERROR = 277,                /* TK_ERROR  */
     TK_PRINT = 278,                /* TK_PRINT  */
-    TK_INPUT = 279                 /* TK_INPUT  */
+    TK_INPUT = 279,                /* TK_INPUT  */
+    TK_STRING = 280                /* TK_STRING  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -106,6 +107,7 @@ extern int yydebug;
 #define TK_ERROR 277
 #define TK_PRINT 278
 #define TK_INPUT 279
+#define TK_STRING 280
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
