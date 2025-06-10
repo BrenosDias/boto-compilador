@@ -3,8 +3,11 @@ int main() {
 
   var a = 1;
 
-  for(var i = 0; i < 5; i = i + 1) {
-      var b;
+  if(a > 5){
+
+    a = 2;
+  } else{
+    a = 3;
   }
 
   

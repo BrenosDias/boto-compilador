@@ -2,15 +2,17 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include<unordered_map>
+#include <unordered_map>
 #include <set>
-#include<iostream>
-#include<vector>
+#include <iostream>
+#include <vector>
 #include <stack>
 
 #define YYSTYPE atributos
 
 using namespace std;
+
+using CaseInfo = std::pair<std::string, std::string>;
 
 int vet_cedulas[200];
 
@@ -39,13 +41,21 @@ struct InfoLaco {
     std::string fim;
 };
 
+struct SwitchContext {
+    std::string temp_var;      // Temp que guarda o valor da expressão do switch
+    std::string end_label;       // Rótulo para o 'break' pular
+    std::string default_label;   // Rótulo para o 'default' (pode ser o mesmo que end_label)
+    bool has_default = false;  // Flag para saber se um default foi definido
+    std::vector<CaseInfo> cases; // Vetor com todos os cases (valor, rótulo)
+};
+
+int var_temp_qnt;
 // Pilha para os rótulos de saída (para o 'break') - continua igual
 std::stack<std::string> breakLabels;
 stack<string> continueLabels;
 // NOVA Pilha para gerenciar os laços ativos
 vector<InfoLaco> pilhaLacos;
-
-int var_temp_qnt;
+std::stack<SwitchContext> switchStack;
 vector<Symbol> tempsVector;
 set<string> tempsAdicionados;
 TabelaSimbolos symbolTable;
@@ -72,7 +82,7 @@ string genlabel();
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
 %token TK_PRINT
-%token TK_WHILE TK_FOR TK_DO TK_IF TK_ELSE TK_BREAK TK_CONTINUE TK_BREAKOUT
+%token TK_WHILE TK_FOR TK_DO TK_IF TK_ELSE TK_BREAK TK_CONTINUE TK_BREAKOUT TK_SWITCH TK_CASE TK_DEFAULT
 
 
 %start S
@@ -462,6 +472,43 @@ ESTRUTURA_DE_CONTROLE
 
 					$$.traducao = traducao;
 			}
+			| TK_IF '(' E ')' COMANDO TK_ELSE COMANDO
+		    {
+		        if ($3.label[0] != 'b'){
+		            yyerror("Essa expressao nao e um boolean");
+		        }
+		        
+		        // 1. Gerar DOIS rótulos
+		        string elseLabel = genlabel();
+		        string fimIfLabel = genlabel();
+
+		        string temp = gentempcode("bool");
+		        insertTempsST(temp, "bool");
+
+		        string traducao;
+
+		        // 2. Tradução da condição
+		        traducao += $3.traducao;
+
+		        // 3. Salto para o ELSE se a condição for FALSA
+		        traducao += temp + " = !(" + $3.label + ");\n";
+		        traducao += "if (" + temp + ") goto " + elseLabel + ";\n";
+
+		        // 4. Código do bloco THEN ($5)
+		        traducao += $5.traducao;
+
+		        // 5. Salto INCONDICIONAL para o fim para pular o ELSE
+		        traducao += "\tgoto " + fimIfLabel + ";\n";
+
+		        // 6. Rótulo e código do bloco ELSE ($7)
+		        traducao += elseLabel + ":\n";
+		        traducao += $7.traducao;
+
+		        // 7. Rótulo final
+		        traducao += fimIfLabel + ":\n";
+
+		        $$.traducao = traducao;
+		    }
 			;
 
 INICIO_LOOP
@@ -482,6 +529,7 @@ INICIO_LOOP
 		       	cout << "entrou no while" << endl;
 		    }
 		    ;
+
 
 // EXPRESSAO separa atribuições de E
 EXPRESSAO
