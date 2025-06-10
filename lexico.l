@@ -58,6 +58,10 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 "else"      {return TK_ELSE;}
 
+"switch"    {return TK_SWITCH;}
+
+"case"      {return TK_CASE;}
+
 "break"      {return TK_BREAK;}
 
 "breakout"      {return TK_BREAKOUT;}
@@ -78,11 +82,8 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 
 
-[(){}[\];,]	{ return *yytext; }
+[(){};:,=+\-*/<>] { return yytext[0]; }
 
-[+\-*/]		{ return *yytext; }
-
-"="		    { return '='; }
 
 {CHAR}      {yylval.label = yytext; return TK_CHAR;}
 {INT}		{ yylval.label = yytext; return TK_INT; }

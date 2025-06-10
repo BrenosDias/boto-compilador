@@ -1,15 +1,11 @@
 int main() {
-
-
-  var a = 1;
-
-  if(a > 5){
-
-    a = 2;
-  } else{
-    a = 3;
-  }
-
-  
-  
+    var opcao;
+    opcao = 2;  
+    
+    switch (opcao) {
+    case 1:
+        var i = 3; 
+    case 2:
+        var mari = 5;
+    }
 }

@@ -10,9 +10,11 @@
 
 #define YYSTYPE atributos
 
+int yydebug = 1;
+
 using namespace std;
 
-using CaseInfo = std::pair<std::string, std::string>;
+using CaseInfo = pair<string, string>;
 
 int vet_cedulas[200];
 
@@ -37,25 +39,25 @@ struct TabelaSimbolos
 
 // Estrutura para guardar os rótulos de um laço
 struct InfoLaco {
-    std::string inicio;
-    std::string fim;
+    string inicio;
+    string fim;
 };
 
 struct SwitchContext {
-    std::string temp_var;      // Temp que guarda o valor da expressão do switch
-    std::string end_label;       // Rótulo para o 'break' pular
-    std::string default_label;   // Rótulo para o 'default' (pode ser o mesmo que end_label)
+    string temp_var;      // Temp que guarda o valor da expressão do switch
+    string end_label;       // Rótulo para o 'break' pular
+    string default_label;   // Rótulo para o 'default' (pode ser o mesmo que end_label)
     bool has_default = false;  // Flag para saber se um default foi definido
-    std::vector<CaseInfo> cases; // Vetor com todos os cases (valor, rótulo)
+    vector<CaseInfo> cases; // Vetor com todos os cases (valor, rótulo)
 };
 
 int var_temp_qnt;
 // Pilha para os rótulos de saída (para o 'break') - continua igual
-std::stack<std::string> breakLabels;
+stack<string> breakLabels;
 stack<string> continueLabels;
 // NOVA Pilha para gerenciar os laços ativos
 vector<InfoLaco> pilhaLacos;
-std::stack<SwitchContext> switchStack;
+stack<SwitchContext> switchStack;
 vector<Symbol> tempsVector;
 set<string> tempsAdicionados;
 TabelaSimbolos symbolTable;
@@ -82,7 +84,7 @@ string genlabel();
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
 %token TK_PRINT
-%token TK_WHILE TK_FOR TK_DO TK_IF TK_ELSE TK_BREAK TK_CONTINUE TK_BREAKOUT TK_SWITCH TK_CASE TK_DEFAULT
+%token TK_WHILE TK_FOR TK_DO TK_IF TK_BREAK TK_CONTINUE TK_BREAKOUT TK_SWITCH TK_CASE TK_DEFAULT
 
 
 %start S
@@ -95,6 +97,9 @@ string genlabel();
 %left '+' '-'
 %left '*' '/'
 
+
+%nonassoc LOWER_THAN_ELSE
+%nonassoc TK_ELSE
 %%
 
 S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
@@ -173,30 +178,30 @@ COMANDO
 		    {
 		        $$ = $1;
 		    }
-		    | TK_ID
-		    {
+		    // | TK_ID
+		    // {
 
-		        bool achou = false;
-		        for (int i = symbolTable.quantidade - 1; i >= 0; --i) {
-		            auto& escopoAtual = symbolTable.escopos[i]; 
+		    //     bool achou = false;
+		    //     for (int i = symbolTable.quantidade - 1; i >= 0; --i) {
+		    //         auto& escopoAtual = symbolTable.escopos[i]; 
 
-		            auto it = escopoAtual.find($1.label);
-		            if (it != escopoAtual.end()) {
-		                $$.type = it->second.tipo;
-		                string origem = it->second.temp.empty() ? $1.label : it->second.temp;
-		                $$.label = gentempcode($$.type);
-		                insertTempsST($$.label, $$.type); 
-		                $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
-		                achou = true;
-		                break;
-		            }
-		        }
-		        if (!achou)
-		        {
-		        	yyerror("Variável não declarada.");
-		        }
+		    //         auto it = escopoAtual.find($1.label);
+		    //         if (it != escopoAtual.end()) {
+		    //             $$.type = it->second.tipo;
+		    //             string origem = it->second.temp.empty() ? $1.label : it->second.temp;
+		    //             $$.label = gentempcode($$.type);
+		    //             insertTempsST($$.label, $$.type); 
+		    //             $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
+		    //             achou = true;
+		    //             break;
+		    //         }
+		    //     }
+		    //     if (!achou)
+		    //     {
+		    //     	yyerror("Variável não declarada.");
+		    //     }
 
-		    }
+		    // }
 		    | TK_VAR TK_ID ';'
 		    {
 		        Symbol val;
@@ -454,7 +459,7 @@ ESTRUTURA_DE_CONTROLE
 		        }
 		    }
 		    ;
-			| TK_IF '(' E ')' COMANDO
+			| TK_IF '(' E ')' COMANDO %prec LOWER_THAN_ELSE
 			{
 				if ($3.label[0] != 'b'){
 					yyerror("Essa expressao nao e um boolean");
@@ -509,7 +514,104 @@ ESTRUTURA_DE_CONTROLE
 
 		        $$.traducao = traducao;
 		    }
+		    |SWITCH
+		    {
+		    	$$ = $1;	
+		    }
 			;
+
+SWITCH
+		    : SWITCH_HEADER LISTA_CASES '}'
+		    {
+		        // AÇÃO DE MONTAGEM FINAL
+		        SwitchContext ctx = switchStack.top(); // Pega o contexto que foi criado em SWITCH_HEADER
+		        string switch_code;
+
+		        // --- Monta a Tabela de Saltos ---
+		        for (const auto& case_info : ctx.cases) {
+		            switch_code += "if (" + ctx.temp_var + " == " + case_info.first + ") goto " + case_info.second + ";\n";
+		        }
+		        
+		        // --- Salto para default ou para o fim ---
+		        if (ctx.has_default) {
+		            switch_code += "goto " + ctx.default_label + ";\n\n";
+		        } else {
+		            switch_code += "goto " + ctx.end_label + ";\n\n";
+		        }
+
+		        // --- Anexa o código dos blocos de case (vindo de LISTA_CASES) ---
+		        switch_code += $2.traducao; // Agora é $2 porque LISTA_CASES é o segundo símbolo
+
+		        // --- Rótulo final ---
+		        switch_code += ctx.end_label + ":\n";
+
+		        // $1 (SWITCH_HEADER) não tem tradução, mas precisamos da tradução da expressão E
+		        // Para isso, o SWITCH_HEADER precisa passar a tradução de E para cima.
+		        // Vamos ajustar SWITCH_HEADER para isso.
+		        $$.traducao = $1.traducao + switch_code;
+
+		        // --- Limpeza das pilhas ---
+		        switchStack.pop();
+		        breakLabels.pop();
+		    }
+		    ;
+
+SWITCH_HEADER
+		    : TK_SWITCH '(' E ')' '{'
+		    {
+		        // AÇÃO DE PREPARO
+		        SwitchContext ctx;
+		        ctx.temp_var = $3.label;
+		        ctx.end_label = genlabel();
+		        switchStack.push(ctx);
+
+		        breakLabels.push(switchStack.top().end_label);
+
+		        $$.traducao = $3.traducao;
+		    }
+		    ;
+
+LISTA_CASES
+		    : CASE_BLOCO LISTA_CASES
+		    {
+		    	$$.traducao = $1.traducao + $2.traducao;
+		    }     
+		    | 
+		    {
+		         $$.traducao = ""; 
+		    }
+		    ;
+
+CASE_BLOCO
+		    : LABEL_CASE ':' COMANDOS
+		    {
+		         $$.traducao = $1.traducao + $3.traducao; 
+		    }
+		    ;
+
+LABEL_CASE
+		    : TK_CASE TK_INT
+		    {
+	            if (switchStack.empty()) { yyerror("case fora de um switch."); } 
+	            else {
+	                string case_val = $2.label;
+	                string case_label = genlabel();
+	                switchStack.top().cases.push_back({case_val, case_label});
+	                $$.traducao = case_label + ":\n";
+	            }
+		    }
+		    | TK_DEFAULT
+	        {
+	            if (switchStack.empty()) { yyerror("default fora de um switch."); }
+	            else if (switchStack.top().has_default) { yyerror("múltiplos defaults em um switch."); }
+	            else {
+	                string default_label = genlabel();
+	                switchStack.top().default_label = default_label;
+	                switchStack.top().has_default = true;
+	                $$.traducao = default_label + ":\n";
+	            }
+	        }
+		    ;		    
 
 INICIO_LOOP
 		    : 
@@ -612,7 +714,7 @@ EXPRESSAO
 
                 string formato = "";
 
-                std::cout << "\n" << $3.type << std::endl;
+                cout << "\n" << $3.type << endl;
 
                  if ($3.type == "int" ) {
                     formato = "%d";
@@ -856,7 +958,9 @@ E
 
 		        if (!achou) {
 		            yyerror("Variável não declarada.");
-		        }		        
+		        }
+
+
 		    }
 		    | TK_INT
 		    {
@@ -1020,7 +1124,7 @@ void checkUndefinedTypes(const TabelaSimbolos& symbolTable) {
             const Symbol& simbolo = par.second; 
 
             if (simbolo.tipo == "undefined" && !simbolo.nome.empty() && simbolo.nome[0] != 't') {
-                std::cerr << "Erro: Variável '" << simbolo.nome << "' usada sem tipo definido.\n";
+                cerr << "Erro: Variável '" << simbolo.nome << "' usada sem tipo definido.\n";
                 exit(1); 
             }
         }
