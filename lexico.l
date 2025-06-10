@@ -50,6 +50,8 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 "while"     {return TK_WHILE;}
 
+"for"     {return TK_FOR;}
+
 "do"      {return TK_DO;}
 
 "if"        {return TK_IF;}

@@ -72,7 +72,7 @@ string genlabel();
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
 %token TK_PRINT
-%token TK_WHILE TK_DO TK_IF TK_ELSE TK_BREAK TK_CONTINUE TK_BREAKOUT
+%token TK_WHILE TK_FOR TK_DO TK_IF TK_ELSE TK_BREAK TK_CONTINUE TK_BREAKOUT
 
 
 %start S
@@ -123,12 +123,12 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 				// 	}
 				// }
 
-				for (const Symbol& simbolo : tempsVector) {
-
-			        if (tempsAdicionados.insert(simbolo.temp).second) {
-			            codigo += "\t" + simbolo.tipo + " " + simbolo.temp + ";\n";
-			        }
-				}
+			for (const Symbol& simbolo : tempsVector) {
+			    // SÓ DECLARE a variável se o tipo for conhecido (diferente de "undefined")
+			    if (simbolo.tipo != "undefined" && tempsAdicionados.insert(simbolo.temp).second) {
+			        codigo += "\t" + simbolo.tipo + " " + simbolo.temp + ";\n";
+			    }
+			}
 
 				codigo += "\n";
 
@@ -261,9 +261,64 @@ POP_ESCOPO  : '}'
 			{
 				saiEscopo();
 			}
-
 			;
 
+FOR_DECL_OU_EXPR
+		    : TK_VAR TK_ID '=' E  // Ex: var a = 0
+		    {
+		        // Ação semântica para declarar a variável
+		        Symbol val;
+		        val.nome = $2.label;
+		        val.tipo = $4.type;
+		        val.temp = $4.label;
+		        declaraVariavel(val);
+		        $$.traducao = $4.traducao; // Passa a tradução da inicialização
+		        $$.label = "";
+		    }
+		    | EXPRESSAO            // Ex: a = 0 (se 'a' já existe)
+		    {
+		        $$ = $1;
+		    }
+		    ;
+
+FOR_INIT
+		    : FOR_DECL_OU_EXPR
+		    {
+		        $$.traducao = $1.traducao; 
+		    }
+		    | /* epsilon */
+		    {
+		        $$.traducao = ""; 
+		    }
+		    ;
+
+FOR_COND
+		    : E 
+		    { 
+		    	$$.traducao = $1.traducao; 
+		    	$$.label = $1.label; 
+			}
+		    | 
+		    {
+		        // Se a condição for vazia, o laço é infinito (condição sempre verdadeira).
+		        // Geramos um booleano temporário com valor 'true'.
+		        string temp_true = gentempcode("bool");
+		        insertTempsST(temp_true, "bool");
+		        $$.traducao = temp_true + " = 1;\n"; // 1 para 'true'
+		        $$.label = temp_true;
+		    }
+		    ;
+
+FOR_INCR
+		    : EXPRESSAO  
+		    {
+		     	$$.traducao = $1.traducao; 
+		 	}
+		    | 
+		    {
+		     	$$.traducao = ""; 
+		    }
+		    ;
 ESTRUTURA_DE_CONTROLE 
 			: TK_WHILE INICIO_LOOP '(' E ')' COMANDO
 			{
@@ -337,6 +392,58 @@ ESTRUTURA_DE_CONTROLE
 		            breakLabels.pop();
 		        }
 			}
+			| TK_FOR '(' FOR_INIT ';' FOR_COND ';' FOR_INCR ')' INICIO_LOOP COMANDO
+		    {
+		        // Pega os rótulos preparados pelo PREPARA_LACO ($9)
+		        InfoLaco lacoAtual = pilhaLacos.back();
+
+		        // Pega o código de cada parte
+		        string init_code = $3.traducao;
+		        string cond_code = $5.traducao;
+		        string cond_label = $5.label;
+		        string incr_code = $7.traducao;
+		        string body_code = $10.traducao;
+
+		        string traducao;
+
+		        // 1. Código da inicialização (executado uma vez, fora do laço)
+		        traducao += init_code;
+
+		        // 2. Rótulo de início do laço
+		        traducao += lacoAtual.inicio + ":\n";
+
+		        // 3. Código da condição
+		        traducao += cond_code;
+
+		        // 4. Verificação da condição (salta para o fim se for falsa)
+		        string temp = gentempcode("bool");
+		        insertTempsST(temp, "bool");
+		        traducao += temp + " = !(" + cond_label + ");\n";
+		        traducao += "if (" + temp + ") goto " + lacoAtual.fim + ";\n";
+
+		        // 5. Código do corpo
+		        traducao += body_code;
+
+		        // 6. Código do incremento
+		        traducao += incr_code;
+
+		        // 7. Salto incondicional de volta para o início
+		        traducao += "goto " + lacoAtual.inicio + ";\n";
+
+		        // 8. Rótulo de fim (para onde o break e o if_false pulam)
+		        traducao += lacoAtual.fim + ":\n";
+
+		        $$.traducao = traducao;
+
+		        // 9. Limpeza das pilhas
+		        if (!pilhaLacos.empty()) {
+		            pilhaLacos.pop_back();
+		        }
+		        if (!breakLabels.empty()) {
+		            breakLabels.pop();
+		        }
+		    }
+		    ;
 			| TK_IF '(' E ')' COMANDO
 			{
 				if ($3.label[0] != 'b'){
