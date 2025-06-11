@@ -70,12 +70,16 @@ string searchType(const string& label);
 S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 			{
 				string codigo = "/*Compilador boto*/\n"
-								"#include <iostream>\n"
-								"#include<string.h>\n"
-								"#include<stdio.h>\n"
-								"int main(void) {\n";
-
-				
+					"#include <iostream>\n"
+					"#include <string.h>\n"
+					"#include <stdio.h>\n"
+					"\n"
+					"typedef struct {\n"
+					"    char* str;\n"
+					"    int length;\n"
+					"} String;\n"
+					"\n"
+					"int main(void) {\n";
 
 
 				for(auto &par : symbolTable) {
