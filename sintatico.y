@@ -114,9 +114,14 @@ S 			:LISTA_DECLARACOES_GLOBAIS FUNCAO_MAIN
 		    {
 
 			    string codigo = "/*Compilador boto*/\n"
-			                    "#include <iostream>\n"
-			                    "#include<string.h>\n"
-			                    "#include<stdio.h>\n\n";
+					"#include <iostream>\n"
+					"#include <string.h>\n"
+					"#include <stdio.h>\n"
+					"\n"
+					"typedef struct {\n"
+					"    char* str;\n"
+					"    int length;\n"
+					"} String;\n";
 
 			    set<string> tempsGlobaisDeclarados;
 
@@ -264,11 +269,17 @@ COMANDO
 		        $$.label = "";
 
 				if ($4.type == "String") {
-					// Gera a tradução com strCopy
-					$$.traducao = $4.traducao + "\t" + $4.label + " = strCopy(" + $4.label + ");\n";
+					// Atribuição de string com strcpy
+					$$.traducao = $4.traducao
+						+ "\tstrcpy(" + $2.label + ".str, " + $4.label + ".str);\n"
+						+ "\t" + $2.label + ".length = " + $4.label + ".length;\n";
+					$$.label = $2.label;
+					$$.type = "String";
 				} else {
-					// Para os outros tipos, atribuição direta
-					$$.traducao = $4.traducao;
+					// Atribuição comum
+					$$.traducao = $4.traducao + "\t" + $2.label + " = " + $4.label + ";\n";
+					$$.label = $2.label;
+					$$.type = $4.type;
 				}
 
 		    }
@@ -708,19 +719,20 @@ EXPRESSAO
 					cout << "LHS: " << it->second.tipo << ", RHS: " << $3.type << endl;
 				}
 
-				// Agora: processa a atribuição se o tipo do LHS for string
+				
 				if (it->second.tipo == "String") {
 					cout << "\nAtribuição de string com strCopy\n";
 					$$.type = "string";
 
-					if ($3.type != "string") {
+					if ($3.type != "String") {
 						yyerror("Atribuição inválida: string esperado");
 					}
 
 					$$.traducao = $3.traducao
-    					+ "\t" + $1.label + " = strCopy(" + $3.label + ");\n";
-						
+						+ "\tstrcpy(" + $1.label + ".str, " + $3.label + ".str);\n"
+						+ "\t" + $1.label + ".length = " + $3.label + ".length;\n";
 					$$.label = $1.label;
+					$$.type = "String";
 				}
 
 				else {

@@ -1,8 +1,11 @@
 int main() {
 
 var a = "hello";
-var b = a;
-var c = "";
+var b;
+b = a;
+var c = "variavel maneira $";
+b = c;
+var d = "";
 
 
 }
