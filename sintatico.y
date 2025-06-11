@@ -285,7 +285,13 @@ COMANDO
 					$$.type = "String";
 				} else {
 					// Atribuição comum
-					$$.traducao = $4.traducao + "\t" + $2.label + " = " + $4.label + ";\n";
+					if(val.temp == $4.label){
+						$$.traducao = "";
+					}
+					else{
+						$$.traducao = $4.traducao;
+					}
+					
 					$$.label = $2.label;
 					$$.type = $4.type;
 				}
@@ -722,8 +728,16 @@ EXPRESSAO
 		        }
 
 		        if (it->second.tipo == "undefined") {
-					it->second.tipo = $3.type;
-					it->second.temp = $3.label;
+					;
+					if($3.type == "boolean"){
+						it->second.tipo = "int";
+						it->second.temp = gentempcode("boolean");
+
+					}else{
+						it->second.tipo = $3.type;
+						it->second.temp = gentempcode($3.type);
+					}
+					
 					cout << "LHS: " << it->second.tipo << ", RHS: " << $3.type << endl;
 				}
 
@@ -737,8 +751,8 @@ EXPRESSAO
 					}
 
 					$$.traducao = $3.traducao
-						+ "\tstrcpy(" + $1.label + ".str, " + $3.label + ".str);\n"
-						+ "\t" + $1.label + ".length = " + $3.label + ".length;\n";
+						+ "\tstrcpy(" + it->second.temp + ".str, " + $3.label + ".str);\n"
+						+ "\t" + it->second.temp + ".length = " + $3.label + ".length;\n";
 					$$.label = $1.label;
 					$$.type = "String";
 				}
