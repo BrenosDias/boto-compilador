@@ -261,7 +261,15 @@ COMANDO
 		        Symbol val;
 		        val.nome = $2.label;
 		        val.tipo = $4.type;
-		        val.temp = gentempcode($2.label);
+		        if($4.type == "boolean"){
+		        	val.tipo = "int";
+		        	val.temp = gentempcode("boolean");
+		        }
+		        else{
+		        	val.tipo = $4.type;
+		        	val.temp = gentempcode(val.tipo);
+		        }
+		        
 		        cout << "\nNome "+val.nome << endl;
 				cout << "\nTemp "+val.temp << endl;
 		        declaraVariavel(val);
@@ -271,8 +279,8 @@ COMANDO
 				if ($4.type == "String") {
 					// Atribuição de string com strcpy
 					$$.traducao = $4.traducao
-						+ "\tstrcpy(" + $2.label + ".str, " + $4.label + ".str);\n"
-						+ "\t" + $2.label + ".length = " + $4.label + ".length;\n";
+						+ "\tstrcpy(" + val.temp + ".str, " + $4.label + ".str);\n"
+						+ "\t" + val.temp + ".length = " + $4.label + ".length;\n";
 					$$.label = $2.label;
 					$$.type = "String";
 				} else {
