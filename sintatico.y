@@ -152,11 +152,17 @@ COMANDO
 		        $$.label = "";
 
 				if ($4.type == "String") {
-					// Gera a tradução com strCopy
-					$$.traducao = $4.traducao + "\t" + $2.label + " = strCopy(" + $4.label + ");\n";
+					// Atribuição de string com strcpy
+					$$.traducao = $4.traducao
+						+ "\tstrcpy(" + $2.label + ".str, " + $4.label + ".str);\n"
+						+ "\t" + $2.label + ".length = " + $4.label + ".length;\n";
+					$$.label = $2.label;
+					$$.type = "String";
 				} else {
-					// Para os outros tipos, atribuição direta
+					// Atribuição comum
 					$$.traducao = $4.traducao + "\t" + $2.label + " = " + $4.label + ";\n";
+					$$.label = $2.label;
+					$$.type = $4.type;
 				}
 		    }
 		    ;
@@ -181,14 +187,15 @@ EXPRESSAO
 					cout << "\nAtribuição de string com strCopy\n";
 					$$.type = "string";
 
-					if ($3.type != "string") {
+					if ($3.type != "String") {
 						yyerror("Atribuição inválida: string esperado");
 					}
 
 					$$.traducao = $3.traducao
-    					+ "\t" + $1.label + " = strCopy(" + $3.label + ");\n";
-						
+						+ "\tstrcpy(" + $1.label + ".str, " + $3.label + ".str);\n"
+						+ "\t" + $1.label + ".length = " + $3.label + ".length;\n";
 					$$.label = $1.label;
+					$$.type = "String";
 				}
 
 				else {
@@ -451,28 +458,43 @@ E
 		        $$ = $2;
 		    }
 		    | TK_ID
-		    {
-		        auto it = symbolTable.find($1.label);
-		        if (it != symbolTable.end()) {
-		        	string tipo;
-		            if(it->second.temp[0] == 'b'){
+			{
+				auto it = symbolTable.find($1.label);
+				if (it != symbolTable.end()) {
+					string origem = it->second.temp.empty() ? $1.label : it->second.temp;
 
-		            	$$.type = "int";
-		            }
-		            else{
-		            	$$.type = it->second.tipo;
-		            }
-		            
+					// Tratamento especial para string
+					if (it->second.tipo == "String") {
+						$$.type = "String";
+						$$.label = gentempcode("String");  // Usa temp tipo String
+						insertTempsST($$.label, "String");
 
-		            $$.label = gentempcode("boolean");
+						// Geração do código com strcpy
+						$$.traducao = "\tstrcpy(" + $$.label + ".str, " + origem + ".str);\n"
+									+ "\t" + $$.label + ".length = " + origem + ".length;\n";
+					}
 
-		            insertTempsST($$.label, $$.type);
-		            string origem = it->second.temp.empty() ? $1.label : it->second.temp;
-		            $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
-		        } else {
-		            yyerror("Variável não declarada.");
-		        }
-		    }
+					// Tratamento especial para boolean (reconvertido como int)
+					else if (it->second.temp[0] == 'b') {
+						$$.type = "int";
+						$$.label = gentempcode("boolean");
+						insertTempsST($$.label, "int");
+
+						$$.traducao = "\t" + $$.label + " = " + origem + ";\n";
+					}
+
+					// Caso geral
+					else {
+						$$.type = it->second.tipo;
+						$$.label = gentempcode($$.type);
+						insertTempsST($$.label, $$.type);
+
+						$$.traducao = "\t" + $$.label + " = " + origem + ";\n";
+					}
+				} else {
+					yyerror("Variável não declarada.");
+				}
+			}
 		    | TK_INT
 		    {
 		        $$.type = "int";
