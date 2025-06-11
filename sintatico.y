@@ -28,7 +28,7 @@ struct Symbol {
 typedef struct {
     char* str;
     int length;
-} StringValue;
+} String;
 
 int var_temp_qnt;
 unordered_map<string, Symbol> symbolTable;
@@ -42,7 +42,7 @@ void insertTempsST(const string& nome, const string& tipo);
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel);
 void implicitConversion(atributos& esquerda, atributos& direita, atributos& final , string operacao);
 void reportSemanticError(string type1, string type3, string text);
-StringValue strCopy(StringValue source);
+String strCopy(String source);
 string searchType(const string& label);
 %}
 
@@ -149,8 +149,15 @@ COMANDO
 		        val.tipo = $4.type;
 		        val.temp = $4.label;
 		        symbolTable.insert({val.nome, val});
-				$$.traducao = $4.traducao + "\t" + $2.label + " = " + $4.label + ";\n";
 		        $$.label = "";
+
+				if ($4.type == "String") {
+					// Gera a tradução com strCopy
+					$$.traducao = $4.traducao + "\t" + $2.label + " = strCopy(" + $4.label + ");\n";
+				} else {
+					// Para os outros tipos, atribuição direta
+					$$.traducao = $4.traducao + "\t" + $2.label + " = " + $4.label + ";\n";
+				}
 		    }
 		    ;
 
@@ -170,7 +177,7 @@ EXPRESSAO
 				}
 
 				// Agora: processa a atribuição se o tipo do LHS for string
-				if (it->second.tipo == "string") {
+				if (it->second.tipo == "String") {
 					cout << "\nAtribuição de string com strCopy\n";
 					$$.type = "string";
 
@@ -504,7 +511,7 @@ E
 		    }
 			| TK_STRING
 			{
-				$$.type = "string";
+				$$.type = "String";
 				$$.label = gentempcode($$.type);
 				insertTempsST($$.label, $$.type);
 
@@ -592,8 +599,8 @@ string gentempcode(string tipo) {
     return temp;
 }
 
-StringValue strCopy(StringValue source) {
-    StringValue dest;
+String strCopy(String source) {
+    String dest;
     dest.length = source.length;
 
     // Aloca memória para os caracteres + '\0'

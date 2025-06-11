@@ -36,7 +36,7 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 "main"		{return TK_MAIN;}
 
-"string"    {return TK_STRING; }
+"String"    {return TK_STRING; }
 
 "int"		{return TK_TIPO_INT;}
 
