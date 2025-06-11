@@ -238,18 +238,17 @@ COMANDO
 		            yyerror("Comando 'break' fora de um laço (while/for)");
 		            $$.traducao = "";
 		        } else {
-		            // Perfeito, continua funcionando!
 		            $$.traducao = "goto " + breakLabels.top() + ";\n";
 		        }
 		    }
 		    | TK_BREAKOUT ';'
 		    {
-		        // A verificação é na pilha de laços principal
+		        
 		        if (pilhaLacos.empty()) {
 		            yyerror("Comando 'breakout' fora de um laço");
 		            $$.traducao = "";
 		        } else {
-		            // Pega o primeiro elemento (o mais externo) com .front()
+		            
 		            $$.traducao = "goto " + pilhaLacos.front().fim + ";\n";
 		        }
 		    }		    
@@ -259,7 +258,6 @@ COMANDO
 		            yyerror("Comando 'continue' fora de um laço (while/for)");
 		            $$.traducao = "";
 		        } else {
-		            // Perfeito, continua funcionando!
 		            $$.traducao = "goto " + continueLabels.top() + ";\n";
 		        }
 		    }
@@ -281,16 +279,16 @@ POP_ESCOPO  : '}'
 FOR_DECL_OU_EXPR
 		    : TK_VAR TK_ID '=' E  // Ex: var a = 0
 		    {
-		        // Ação semântica para declarar a variável
+		        
 		        Symbol val;
 		        val.nome = $2.label;
 		        val.tipo = $4.type;
 		        val.temp = $4.label;
 		        declaraVariavel(val);
-		        $$.traducao = $4.traducao; // Passa a tradução da inicialização
+		        $$.traducao = $4.traducao; 
 		        $$.label = "";
 		    }
-		    | EXPRESSAO            // Ex: a = 0 (se 'a' já existe)
+		    | EXPRESSAO           
 		    {
 		        $$ = $1;
 		    }
@@ -315,11 +313,10 @@ FOR_COND
 			}
 		    | 
 		    {
-		        // Se a condição for vazia, o laço é infinito (condição sempre verdadeira).
-		        // Geramos um booleano temporário com valor 'true'.
-		        string temp_true = gentempcode("bool");
-		        insertTempsST(temp_true, "bool");
-		        $$.traducao = temp_true + " = 1;\n"; // 1 para 'true'
+		        
+		        string temp_true = gentempcode("boolean");
+		        insertTempsST(temp_true, "int");
+		        $$.traducao = temp_true + " = 1;\n"; 
 		        $$.label = temp_true;
 		    }
 		    ;
@@ -346,7 +343,7 @@ ESTRUTURA_DE_CONTROLE
 				string temp = gentempcode("int");
 				insertTempsST(temp, "int");
 				
-				// Extraindo os labels de início e fim
+				
 
 				string traducao;
 
@@ -373,33 +370,25 @@ ESTRUTURA_DE_CONTROLE
 			}
 			|TK_DO INICIO_LOOP COMANDO TK_WHILE '(' E ')' ';'
 			{
-		        // Pega os rótulos da pilha, preparados pelo PREPARA_LACO
+		    
 		        InfoLaco lacoAtual = pilhaLacos.back();
 
-		        if ($6.label[0] != 'b'){ // $6 é o não-terminal E
+		        if ($6.label[0] != 'b'){ 
 		            yyerror("Essa expressao nao e um boolean");
 		        }
 
 		        string traducao;
 
-		        // 1. Rótulo de início do laço
+		        
 		        traducao += lacoAtual.inicio + ":\n";
-
-		        // 2. Código do corpo (COMANDO), que é $3
 		        traducao += $3.traducao;
-
-		        // 3. Código da expressão condicional (E), que é $6
 		        traducao += $6.traducao;
-
-		        // 4. Salto condicional de volta para o início se a condição for VERDADEIRA
 		        traducao += "if (" + $6.label + ") goto " + lacoAtual.inicio + ";\n";
-
-		        // 5. Rótulo de fim, para onde o 'break' e 'breakout' pularão
 		        traducao += lacoAtual.fim + ":\n";
 
 		        $$.traducao = traducao;
 
-		        // 6. Limpeza das pilhas, exatamente como na regra do 'while'
+		        
 		        if (!pilhaLacos.empty()) {
 		            pilhaLacos.pop_back();
 		        }
@@ -409,10 +398,10 @@ ESTRUTURA_DE_CONTROLE
 			}
 			| TK_FOR '(' FOR_INIT ';' FOR_COND ';' FOR_INCR ')' INICIO_LOOP COMANDO
 		    {
-		        // Pega os rótulos preparados pelo PREPARA_LACO ($9)
+		        
 		        InfoLaco lacoAtual = pilhaLacos.back();
 
-		        // Pega o código de cada parte
+		        
 		        string init_code = $3.traducao;
 		        string cond_code = $5.traducao;
 		        string cond_label = $5.label;
@@ -421,36 +410,22 @@ ESTRUTURA_DE_CONTROLE
 
 		        string traducao;
 
-		        // 1. Código da inicialização (executado uma vez, fora do laço)
 		        traducao += init_code;
-
-		        // 2. Rótulo de início do laço
 		        traducao += lacoAtual.inicio + ":\n";
-
-		        // 3. Código da condição
 		        traducao += cond_code;
 
-		        // 4. Verificação da condição (salta para o fim se for falsa)
-		        string temp = gentempcode("bool");
-		        insertTempsST(temp, "bool");
+		       
+		        string temp = gentempcode("boolean");
+		        insertTempsST(temp, "int");
 		        traducao += temp + " = !(" + cond_label + ");\n";
 		        traducao += "if (" + temp + ") goto " + lacoAtual.fim + ";\n";
-
-		        // 5. Código do corpo
 		        traducao += body_code;
-
-		        // 6. Código do incremento
 		        traducao += incr_code;
-
-		        // 7. Salto incondicional de volta para o início
 		        traducao += "goto " + lacoAtual.inicio + ";\n";
-
-		        // 8. Rótulo de fim (para onde o break e o if_false pulam)
 		        traducao += lacoAtual.fim + ":\n";
-
 		        $$.traducao = traducao;
 
-		        // 9. Limpeza das pilhas
+		       
 		        if (!pilhaLacos.empty()) {
 		            pilhaLacos.pop_back();
 		        }
@@ -487,29 +462,19 @@ ESTRUTURA_DE_CONTROLE
 		        string elseLabel = genlabel();
 		        string fimIfLabel = genlabel();
 
-		        string temp = gentempcode("bool");
-		        insertTempsST(temp, "bool");
+		        string temp = gentempcode("boolean");
+		        insertTempsST(temp, "int");
 
 		        string traducao;
 
-		        // 2. Tradução da condição
+		        
 		        traducao += $3.traducao;
-
-		        // 3. Salto para o ELSE se a condição for FALSA
 		        traducao += temp + " = !(" + $3.label + ");\n";
 		        traducao += "if (" + temp + ") goto " + elseLabel + ";\n";
-
-		        // 4. Código do bloco THEN ($5)
 		        traducao += $5.traducao;
-
-		        // 5. Salto INCONDICIONAL para o fim para pular o ELSE
 		        traducao += "\tgoto " + fimIfLabel + ";\n";
-
-		        // 6. Rótulo e código do bloco ELSE ($7)
 		        traducao += elseLabel + ":\n";
 		        traducao += $7.traducao;
-
-		        // 7. Rótulo final
 		        traducao += fimIfLabel + ":\n";
 
 		        $$.traducao = traducao;
@@ -523,34 +488,29 @@ ESTRUTURA_DE_CONTROLE
 SWITCH
 		    : SWITCH_HEADER LISTA_CASES '}'
 		    {
-		        // AÇÃO DE MONTAGEM FINAL
-		        SwitchContext ctx = switchStack.top(); // Pega o contexto que foi criado em SWITCH_HEADER
+		        
+		        SwitchContext ctx = switchStack.top(); 
 		        string switch_code;
 
-		        // --- Monta a Tabela de Saltos ---
+		        
 		        for (const auto& case_info : ctx.cases) {
 		            switch_code += "if (" + ctx.temp_var + " == " + case_info.first + ") goto " + case_info.second + ";\n";
 		        }
 		        
-		        // --- Salto para default ou para o fim ---
+		        
 		        if (ctx.has_default) {
 		            switch_code += "goto " + ctx.default_label + ";\n\n";
 		        } else {
 		            switch_code += "goto " + ctx.end_label + ";\n\n";
 		        }
 
-		        // --- Anexa o código dos blocos de case (vindo de LISTA_CASES) ---
-		        switch_code += $2.traducao; // Agora é $2 porque LISTA_CASES é o segundo símbolo
+		        
+		        switch_code += $2.traducao; 
 
-		        // --- Rótulo final ---
 		        switch_code += ctx.end_label + ":\n";
-
-		        // $1 (SWITCH_HEADER) não tem tradução, mas precisamos da tradução da expressão E
-		        // Para isso, o SWITCH_HEADER precisa passar a tradução de E para cima.
-		        // Vamos ajustar SWITCH_HEADER para isso.
 		        $$.traducao = $1.traducao + switch_code;
 
-		        // --- Limpeza das pilhas ---
+		        
 		        switchStack.pop();
 		        breakLabels.pop();
 		    }
@@ -559,7 +519,7 @@ SWITCH
 SWITCH_HEADER
 		    : TK_SWITCH '(' E ')' '{'
 		    {
-		        // AÇÃO DE PREPARO
+		        
 		        SwitchContext ctx;
 		        ctx.temp_var = $3.label;
 		        ctx.end_label = genlabel();
@@ -616,17 +576,14 @@ LABEL_CASE
 INICIO_LOOP
 		    : 
 		    {
-		        // 1. Cria os rótulos
 		        InfoLaco novoLaco;
 		        novoLaco.inicio = genlabel();
 		        novoLaco.fim = genlabel();
-
-		        // 2. Empilha o rótulo de FIM na pilha de breaks
+		        
 		        breakLabels.push(novoLaco.fim);
 
 		        continueLabels.push(novoLaco.inicio);
 
-		        // 3. Empilha a estrutura completa na pilha de laços
 		        pilhaLacos.push_back(novoLaco);    	
 		       	cout << "entrou no while" << endl;
 		    }
@@ -660,12 +617,10 @@ EXPRESSAO
 
 		        }
 
-
 		        if(it->second.tipo == $3.type && it->second.temp[0] == $3.label[0]){
 					
 		        	cout << "\nMesmo tipo" << endl;
 
-		        	// it->second.temp = $3.label;
 			        $$.type = $3.type;
 			        $$.traducao = $3.traducao + "\t" + it->second.temp + " = " + $3.label + ";\n";
 			        $$.label = $1.label;	

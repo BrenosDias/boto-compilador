@@ -741,12 +741,12 @@ static const yytype_int8 yytranslate[] =
 static const yytype_int16 yyrline[] =
 {
        0,   105,   105,   160,   166,   171,   177,   205,   215,   227,
-     231,   235,   245,   256,   269,   275,   282,   293,   300,   305,
-     311,   317,   328,   333,   338,   374,   410,   462,   480,   517,
-     524,   560,   575,   580,   586,   593,   603,   618,   638,   713,
-     735,   742,   749,   756,   763,   770,   783,   800,   813,   827,
-     840,   854,   871,   888,   905,   915,   925,   929,   965,   973,
-     980,   994
+     231,   235,   244,   255,   267,   273,   280,   291,   298,   303,
+     309,   315,   325,   330,   335,   371,   399,   437,   455,   482,
+     489,   520,   535,   540,   546,   553,   563,   578,   595,   668,
+     690,   697,   704,   711,   718,   725,   738,   755,   768,   782,
+     795,   809,   826,   843,   860,   870,   880,   884,   920,   928,
+     935,   949
 };
 #endif
 
@@ -1585,137 +1585,134 @@ yyreduce:
 		            yyerror("Comando 'break' fora de um laço (while/for)");
 		            yyval.traducao = "";
 		        } else {
-		            // Perfeito, continua funcionando!
 		            yyval.traducao = "goto " + breakLabels.top() + ";\n";
 		        }
 		    }
-#line 1593 "y.tab.c"
+#line 1592 "y.tab.c"
     break;
 
   case 12: /* COMANDO: TK_BREAKOUT ';'  */
-#line 246 "sintatico.y"
+#line 245 "sintatico.y"
                     {
-		        // A verificação é na pilha de laços principal
+		        
 		        if (pilhaLacos.empty()) {
 		            yyerror("Comando 'breakout' fora de um laço");
 		            yyval.traducao = "";
 		        } else {
-		            // Pega o primeiro elemento (o mais externo) com .front()
+		            
 		            yyval.traducao = "goto " + pilhaLacos.front().fim + ";\n";
 		        }
 		    }
-#line 1608 "y.tab.c"
+#line 1607 "y.tab.c"
     break;
 
   case 13: /* COMANDO: TK_CONTINUE ';'  */
-#line 257 "sintatico.y"
+#line 256 "sintatico.y"
                     {
 		        if (continueLabels.empty()) {
 		            yyerror("Comando 'continue' fora de um laço (while/for)");
 		            yyval.traducao = "";
 		        } else {
-		            // Perfeito, continua funcionando!
 		            yyval.traducao = "goto " + continueLabels.top() + ";\n";
 		        }
 		    }
-#line 1622 "y.tab.c"
+#line 1620 "y.tab.c"
     break;
 
   case 14: /* PUSH_ESCOPO: '{'  */
-#line 270 "sintatico.y"
+#line 268 "sintatico.y"
                         {
 				entraEscopo();
 			}
-#line 1630 "y.tab.c"
+#line 1628 "y.tab.c"
     break;
 
   case 15: /* POP_ESCOPO: '}'  */
-#line 276 "sintatico.y"
+#line 274 "sintatico.y"
                         {
 				saiEscopo();
 			}
-#line 1638 "y.tab.c"
+#line 1636 "y.tab.c"
     break;
 
   case 16: /* FOR_DECL_OU_EXPR: TK_VAR TK_ID '=' E  */
-#line 283 "sintatico.y"
+#line 281 "sintatico.y"
                     {
-		        // Ação semântica para declarar a variável
+		        
 		        Symbol val;
 		        val.nome = yyvsp[-2].label;
 		        val.tipo = yyvsp[0].type;
 		        val.temp = yyvsp[0].label;
 		        declaraVariavel(val);
-		        yyval.traducao = yyvsp[0].traducao; // Passa a tradução da inicialização
+		        yyval.traducao = yyvsp[0].traducao; 
 		        yyval.label = "";
 		    }
-#line 1653 "y.tab.c"
+#line 1651 "y.tab.c"
     break;
 
   case 17: /* FOR_DECL_OU_EXPR: EXPRESSAO  */
-#line 294 "sintatico.y"
+#line 292 "sintatico.y"
                     {
 		        yyval = yyvsp[0];
 		    }
-#line 1661 "y.tab.c"
+#line 1659 "y.tab.c"
     break;
 
   case 18: /* FOR_INIT: FOR_DECL_OU_EXPR  */
-#line 301 "sintatico.y"
+#line 299 "sintatico.y"
                     {
 		        yyval.traducao = yyvsp[0].traducao; 
 		    }
-#line 1669 "y.tab.c"
+#line 1667 "y.tab.c"
     break;
 
   case 19: /* FOR_INIT: %empty  */
-#line 305 "sintatico.y"
+#line 303 "sintatico.y"
                     {
 		        yyval.traducao = ""; 
 		    }
-#line 1677 "y.tab.c"
+#line 1675 "y.tab.c"
     break;
 
   case 20: /* FOR_COND: E  */
-#line 312 "sintatico.y"
+#line 310 "sintatico.y"
                     { 
 		    	yyval.traducao = yyvsp[0].traducao; 
 		    	yyval.label = yyvsp[0].label; 
 			}
-#line 1686 "y.tab.c"
+#line 1684 "y.tab.c"
     break;
 
   case 21: /* FOR_COND: %empty  */
-#line 317 "sintatico.y"
+#line 315 "sintatico.y"
                     {
-		        // Se a condição for vazia, o laço é infinito (condição sempre verdadeira).
-		        // Geramos um booleano temporário com valor 'true'.
-		        string temp_true = gentempcode("bool");
-		        insertTempsST(temp_true, "bool");
-		        yyval.traducao = temp_true + " = 1;\n"; // 1 para 'true'
+		        
+		        string temp_true = gentempcode("boolean");
+		        insertTempsST(temp_true, "int");
+		        yyval.traducao = temp_true + " = 1;\n"; 
 		        yyval.label = temp_true;
 		    }
-#line 1699 "y.tab.c"
+#line 1696 "y.tab.c"
     break;
 
   case 22: /* FOR_INCR: EXPRESSAO  */
-#line 329 "sintatico.y"
+#line 326 "sintatico.y"
                     {
 		     	yyval.traducao = yyvsp[0].traducao; 
 		 	}
-#line 1707 "y.tab.c"
+#line 1704 "y.tab.c"
     break;
 
   case 23: /* FOR_INCR: %empty  */
-#line 333 "sintatico.y"
+#line 330 "sintatico.y"
                     {
 		     	yyval.traducao = ""; 
 		    }
-#line 1715 "y.tab.c"
+#line 1712 "y.tab.c"
     break;
 
   case 24: /* ESTRUTURA_DE_CONTROLE: TK_WHILE INICIO_LOOP '(' E ')' COMANDO  */
-#line 339 "sintatico.y"
+#line 336 "sintatico.y"
                         {
 				InfoLaco lacoAtual = pilhaLacos.back();
 
@@ -1726,7 +1723,7 @@ yyreduce:
 				string temp = gentempcode("int");
 				insertTempsST(temp, "int");
 				
-				// Extraindo os labels de início e fim
+				
 
 				string traducao;
 
@@ -1751,39 +1748,31 @@ yyreduce:
 		       		cout << "pop pilha" << endl;	
 		       	}			
 			}
-#line 1755 "y.tab.c"
+#line 1752 "y.tab.c"
     break;
 
   case 25: /* ESTRUTURA_DE_CONTROLE: TK_DO INICIO_LOOP COMANDO TK_WHILE '(' E ')' ';'  */
-#line 375 "sintatico.y"
+#line 372 "sintatico.y"
                         {
-		        // Pega os rótulos da pilha, preparados pelo PREPARA_LACO
+		    
 		        InfoLaco lacoAtual = pilhaLacos.back();
 
-		        if (yyvsp[-2].label[0] != 'b'){ // $6 é o não-terminal E
+		        if (yyvsp[-2].label[0] != 'b'){ 
 		            yyerror("Essa expressao nao e um boolean");
 		        }
 
 		        string traducao;
 
-		        // 1. Rótulo de início do laço
+		        
 		        traducao += lacoAtual.inicio + ":\n";
-
-		        // 2. Código do corpo (COMANDO), que é $3
 		        traducao += yyvsp[-5].traducao;
-
-		        // 3. Código da expressão condicional (E), que é $6
 		        traducao += yyvsp[-2].traducao;
-
-		        // 4. Salto condicional de volta para o início se a condição for VERDADEIRA
 		        traducao += "if (" + yyvsp[-2].label + ") goto " + lacoAtual.inicio + ";\n";
-
-		        // 5. Rótulo de fim, para onde o 'break' e 'breakout' pularão
 		        traducao += lacoAtual.fim + ":\n";
 
 		        yyval.traducao = traducao;
 
-		        // 6. Limpeza das pilhas, exatamente como na regra do 'while'
+		        
 		        if (!pilhaLacos.empty()) {
 		            pilhaLacos.pop_back();
 		        }
@@ -1791,16 +1780,16 @@ yyreduce:
 		            breakLabels.pop();
 		        }
 			}
-#line 1795 "y.tab.c"
+#line 1784 "y.tab.c"
     break;
 
   case 26: /* ESTRUTURA_DE_CONTROLE: TK_FOR '(' FOR_INIT ';' FOR_COND ';' FOR_INCR ')' INICIO_LOOP COMANDO  */
-#line 411 "sintatico.y"
+#line 400 "sintatico.y"
                     {
-		        // Pega os rótulos preparados pelo PREPARA_LACO ($9)
+		        
 		        InfoLaco lacoAtual = pilhaLacos.back();
 
-		        // Pega o código de cada parte
+		        
 		        string init_code = yyvsp[-7].traducao;
 		        string cond_code = yyvsp[-5].traducao;
 		        string cond_label = yyvsp[-5].label;
@@ -1809,36 +1798,22 @@ yyreduce:
 
 		        string traducao;
 
-		        // 1. Código da inicialização (executado uma vez, fora do laço)
 		        traducao += init_code;
-
-		        // 2. Rótulo de início do laço
 		        traducao += lacoAtual.inicio + ":\n";
-
-		        // 3. Código da condição
 		        traducao += cond_code;
 
-		        // 4. Verificação da condição (salta para o fim se for falsa)
-		        string temp = gentempcode("bool");
-		        insertTempsST(temp, "bool");
+		       
+		        string temp = gentempcode("boolean");
+		        insertTempsST(temp, "int");
 		        traducao += temp + " = !(" + cond_label + ");\n";
 		        traducao += "if (" + temp + ") goto " + lacoAtual.fim + ";\n";
-
-		        // 5. Código do corpo
 		        traducao += body_code;
-
-		        // 6. Código do incremento
 		        traducao += incr_code;
-
-		        // 7. Salto incondicional de volta para o início
 		        traducao += "goto " + lacoAtual.inicio + ";\n";
-
-		        // 8. Rótulo de fim (para onde o break e o if_false pulam)
 		        traducao += lacoAtual.fim + ":\n";
-
 		        yyval.traducao = traducao;
 
-		        // 9. Limpeza das pilhas
+		       
 		        if (!pilhaLacos.empty()) {
 		            pilhaLacos.pop_back();
 		        }
@@ -1846,11 +1821,11 @@ yyreduce:
 		            breakLabels.pop();
 		        }
 		    }
-#line 1850 "y.tab.c"
+#line 1825 "y.tab.c"
     break;
 
   case 27: /* ESTRUTURA_DE_CONTROLE: TK_IF '(' E ')' COMANDO  */
-#line 463 "sintatico.y"
+#line 438 "sintatico.y"
                         {
 				if (yyvsp[-2].label[0] != 'b'){
 					yyerror("Essa expressao nao e um boolean");
@@ -1868,11 +1843,11 @@ yyreduce:
 
 					yyval.traducao = traducao;
 			}
-#line 1872 "y.tab.c"
+#line 1847 "y.tab.c"
     break;
 
   case 28: /* ESTRUTURA_DE_CONTROLE: TK_IF '(' E ')' COMANDO TK_ELSE COMANDO  */
-#line 481 "sintatico.y"
+#line 456 "sintatico.y"
                     {
 		        if (yyvsp[-4].label[0] != 'b'){
 		            yyerror("Essa expressao nao e um boolean");
@@ -1882,85 +1857,70 @@ yyreduce:
 		        string elseLabel = genlabel();
 		        string fimIfLabel = genlabel();
 
-		        string temp = gentempcode("bool");
-		        insertTempsST(temp, "bool");
+		        string temp = gentempcode("boolean");
+		        insertTempsST(temp, "int");
 
 		        string traducao;
 
-		        // 2. Tradução da condição
+		        
 		        traducao += yyvsp[-4].traducao;
-
-		        // 3. Salto para o ELSE se a condição for FALSA
 		        traducao += temp + " = !(" + yyvsp[-4].label + ");\n";
 		        traducao += "if (" + temp + ") goto " + elseLabel + ";\n";
-
-		        // 4. Código do bloco THEN ($5)
 		        traducao += yyvsp[-2].traducao;
-
-		        // 5. Salto INCONDICIONAL para o fim para pular o ELSE
 		        traducao += "\tgoto " + fimIfLabel + ";\n";
-
-		        // 6. Rótulo e código do bloco ELSE ($7)
 		        traducao += elseLabel + ":\n";
 		        traducao += yyvsp[0].traducao;
-
-		        // 7. Rótulo final
 		        traducao += fimIfLabel + ":\n";
 
 		        yyval.traducao = traducao;
 		    }
-#line 1913 "y.tab.c"
+#line 1878 "y.tab.c"
     break;
 
   case 29: /* ESTRUTURA_DE_CONTROLE: SWITCH  */
-#line 518 "sintatico.y"
+#line 483 "sintatico.y"
                     {
 		    	yyval = yyvsp[0];	
 		    }
-#line 1921 "y.tab.c"
+#line 1886 "y.tab.c"
     break;
 
   case 30: /* SWITCH: SWITCH_HEADER LISTA_CASES '}'  */
-#line 525 "sintatico.y"
+#line 490 "sintatico.y"
                     {
-		        // AÇÃO DE MONTAGEM FINAL
-		        SwitchContext ctx = switchStack.top(); // Pega o contexto que foi criado em SWITCH_HEADER
+		        
+		        SwitchContext ctx = switchStack.top(); 
 		        string switch_code;
 
-		        // --- Monta a Tabela de Saltos ---
+		        
 		        for (const auto& case_info : ctx.cases) {
 		            switch_code += "if (" + ctx.temp_var + " == " + case_info.first + ") goto " + case_info.second + ";\n";
 		        }
 		        
-		        // --- Salto para default ou para o fim ---
+		        
 		        if (ctx.has_default) {
 		            switch_code += "goto " + ctx.default_label + ";\n\n";
 		        } else {
 		            switch_code += "goto " + ctx.end_label + ";\n\n";
 		        }
 
-		        // --- Anexa o código dos blocos de case (vindo de LISTA_CASES) ---
-		        switch_code += yyvsp[-1].traducao; // Agora é $2 porque LISTA_CASES é o segundo símbolo
+		        
+		        switch_code += yyvsp[-1].traducao; 
 
-		        // --- Rótulo final ---
 		        switch_code += ctx.end_label + ":\n";
-
-		        // $1 (SWITCH_HEADER) não tem tradução, mas precisamos da tradução da expressão E
-		        // Para isso, o SWITCH_HEADER precisa passar a tradução de E para cima.
-		        // Vamos ajustar SWITCH_HEADER para isso.
 		        yyval.traducao = yyvsp[-2].traducao + switch_code;
 
-		        // --- Limpeza das pilhas ---
+		        
 		        switchStack.pop();
 		        breakLabels.pop();
 		    }
-#line 1958 "y.tab.c"
+#line 1918 "y.tab.c"
     break;
 
   case 31: /* SWITCH_HEADER: TK_SWITCH '(' E ')' '{'  */
-#line 561 "sintatico.y"
+#line 521 "sintatico.y"
                     {
-		        // AÇÃO DE PREPARO
+		        
 		        SwitchContext ctx;
 		        ctx.temp_var = yyvsp[-2].label;
 		        ctx.end_label = genlabel();
@@ -1970,35 +1930,35 @@ yyreduce:
 
 		        yyval.traducao = yyvsp[-2].traducao;
 		    }
-#line 1974 "y.tab.c"
+#line 1934 "y.tab.c"
     break;
 
   case 32: /* LISTA_CASES: CASE_BLOCO LISTA_CASES  */
-#line 576 "sintatico.y"
+#line 536 "sintatico.y"
                     {
 		    	yyval.traducao = yyvsp[-1].traducao + yyvsp[0].traducao;
 		    }
-#line 1982 "y.tab.c"
+#line 1942 "y.tab.c"
     break;
 
   case 33: /* LISTA_CASES: %empty  */
-#line 580 "sintatico.y"
+#line 540 "sintatico.y"
                     {
 		         yyval.traducao = ""; 
 		    }
-#line 1990 "y.tab.c"
+#line 1950 "y.tab.c"
     break;
 
   case 34: /* CASE_BLOCO: LABEL_CASE ':' COMANDOS  */
-#line 587 "sintatico.y"
+#line 547 "sintatico.y"
                     {
 		         yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao; 
 		    }
-#line 1998 "y.tab.c"
+#line 1958 "y.tab.c"
     break;
 
   case 35: /* LABEL_CASE: TK_CASE TK_INT  */
-#line 594 "sintatico.y"
+#line 554 "sintatico.y"
                     {
 	            if (switchStack.empty()) { yyerror("case fora de um switch."); } 
 	            else {
@@ -2008,11 +1968,11 @@ yyreduce:
 	                yyval.traducao = case_label + ":\n";
 	            }
 		    }
-#line 2012 "y.tab.c"
+#line 1972 "y.tab.c"
     break;
 
   case 36: /* LABEL_CASE: TK_DEFAULT  */
-#line 604 "sintatico.y"
+#line 564 "sintatico.y"
                 {
 	            if (switchStack.empty()) { yyerror("default fora de um switch."); }
 	            else if (switchStack.top().has_default) { yyerror("múltiplos defaults em um switch."); }
@@ -2023,31 +1983,28 @@ yyreduce:
 	                yyval.traducao = default_label + ":\n";
 	            }
 	        }
-#line 2027 "y.tab.c"
+#line 1987 "y.tab.c"
     break;
 
   case 37: /* INICIO_LOOP: %empty  */
-#line 618 "sintatico.y"
+#line 578 "sintatico.y"
                     {
-		        // 1. Cria os rótulos
 		        InfoLaco novoLaco;
 		        novoLaco.inicio = genlabel();
 		        novoLaco.fim = genlabel();
-
-		        // 2. Empilha o rótulo de FIM na pilha de breaks
+		        
 		        breakLabels.push(novoLaco.fim);
 
 		        continueLabels.push(novoLaco.inicio);
 
-		        // 3. Empilha a estrutura completa na pilha de laços
 		        pilhaLacos.push_back(novoLaco);    	
 		       	cout << "entrou no while" << endl;
 		    }
-#line 2047 "y.tab.c"
+#line 2004 "y.tab.c"
     break;
 
   case 38: /* EXPRESSAO: TK_ID '=' E  */
-#line 639 "sintatico.y"
+#line 596 "sintatico.y"
                     {	
         		auto it = symbolTable.escopos.begin()->end(); 
 		    	bool achou = false;
@@ -2072,12 +2029,10 @@ yyreduce:
 
 		        }
 
-
 		        if(it->second.tipo == yyvsp[0].type && it->second.temp[0] == yyvsp[0].label[0]){
 					
 		        	cout << "\nMesmo tipo" << endl;
 
-		        	// it->second.temp = $3.label;
 			        yyval.type = yyvsp[0].type;
 			        yyval.traducao = yyvsp[0].traducao + "\t" + it->second.temp + " = " + yyvsp[0].label + ";\n";
 			        yyval.label = yyvsp[-2].label;	
@@ -2122,11 +2077,11 @@ yyreduce:
 
 
 		    }
-#line 2126 "y.tab.c"
+#line 2081 "y.tab.c"
     break;
 
   case 39: /* EXPRESSAO: TK_PRINT '(' E ')'  */
-#line 713 "sintatico.y"
+#line 668 "sintatico.y"
                                          {
 
                 string formato = "";
@@ -2149,63 +2104,63 @@ yyreduce:
 
                 yyval.traducao = yyvsp[-1].traducao + "\tprintf(\"" + formato + "\", " + yyvsp[-1].label + ");\n";
             }
-#line 2153 "y.tab.c"
+#line 2108 "y.tab.c"
     break;
 
   case 40: /* EXPRESSAO: E  */
-#line 736 "sintatico.y"
+#line 691 "sintatico.y"
                     {
 		        yyval = yyvsp[0];
 		    }
-#line 2161 "y.tab.c"
+#line 2116 "y.tab.c"
     break;
 
   case 41: /* E: E '+' E  */
-#line 743 "sintatico.y"
+#line 698 "sintatico.y"
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " + ");
 		    }
-#line 2172 "y.tab.c"
+#line 2127 "y.tab.c"
     break;
 
   case 42: /* E: E '-' E  */
-#line 750 "sintatico.y"
+#line 705 "sintatico.y"
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " - ");
 		    }
-#line 2183 "y.tab.c"
+#line 2138 "y.tab.c"
     break;
 
   case 43: /* E: E '*' E  */
-#line 757 "sintatico.y"
+#line 712 "sintatico.y"
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " * ");
 		    }
-#line 2194 "y.tab.c"
+#line 2149 "y.tab.c"
     break;
 
   case 44: /* E: E '/' E  */
-#line 764 "sintatico.y"
+#line 719 "sintatico.y"
                     {
 		        typeValue(yyval.type, yyvsp[-2].type, yyvsp[0].type, yyvsp[-2].label, yyvsp[0].label);
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        implicitConversion(yyvsp[-2], yyvsp[0], yyval, " / ");
 		    }
-#line 2205 "y.tab.c"
+#line 2160 "y.tab.c"
     break;
 
   case 45: /* E: E TK_MAIOR E  */
-#line 771 "sintatico.y"
+#line 726 "sintatico.y"
                     {
 				implicitConversion(yyvsp[-2], yyvsp[0], yyval, " > ");
 				insertTempsST(yyval.label, yyval.type);
@@ -2218,11 +2173,11 @@ yyreduce:
 				insertTempsST(yyval.label, yyval.type);
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " > " + yyvsp[0].label + ";\n";
 		    }
-#line 2222 "y.tab.c"
+#line 2177 "y.tab.c"
     break;
 
   case 46: /* E: E TK_MENOR E  */
-#line 785 "sintatico.y"
+#line 740 "sintatico.y"
                     {	
 		    	cout << "\n Esq = "+ yyvsp[-2].label + "Dir = " + yyvsp[0].label << endl;
 
@@ -2238,11 +2193,11 @@ yyreduce:
 		        insertTempsST(yyval.label, yyval.type);
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " < " + yyvsp[0].label + ";\n";
 		    }
-#line 2242 "y.tab.c"
+#line 2197 "y.tab.c"
     break;
 
   case 47: /* E: E TK_DIFERENTE E  */
-#line 801 "sintatico.y"
+#line 756 "sintatico.y"
                     {
 				implicitConversion(yyvsp[-2], yyvsp[0], yyval, " != ");
 				insertTempsST(yyval.label, yyval.type);
@@ -2255,11 +2210,11 @@ yyreduce:
 		        insertTempsST(yyval.label, yyval.type);
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " != " + yyvsp[0].label + ";\n";
 		    }
-#line 2259 "y.tab.c"
+#line 2214 "y.tab.c"
     break;
 
   case 48: /* E: E TK_IGUAL_IGUAL E  */
-#line 814 "sintatico.y"
+#line 769 "sintatico.y"
                     {
 				implicitConversion(yyvsp[-2], yyvsp[0], yyval, " == ");
 				insertTempsST(yyval.label, yyval.type);
@@ -2273,11 +2228,11 @@ yyreduce:
 		        insertTempsST(yyval.label, yyval.type);
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " == " + yyvsp[0].label + ";\n";
 		    }
-#line 2277 "y.tab.c"
+#line 2232 "y.tab.c"
     break;
 
   case 49: /* E: E TK_MENOR_IGUAL E  */
-#line 828 "sintatico.y"
+#line 783 "sintatico.y"
                     {
 				implicitConversion(yyvsp[-2], yyvsp[0], yyval, " <= ");
 		        insertTempsST(yyval.label, yyval.type);
@@ -2290,11 +2245,11 @@ yyreduce:
 		        insertTempsST(yyval.label, yyval.type);
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " <= " + yyvsp[0].label + ";\n";
 		    }
-#line 2294 "y.tab.c"
+#line 2249 "y.tab.c"
     break;
 
   case 50: /* E: E TK_MAIOR_IGUAL E  */
-#line 841 "sintatico.y"
+#line 796 "sintatico.y"
                     {
 				implicitConversion(yyvsp[-2], yyvsp[0], yyval, " >= ");
 				
@@ -2308,11 +2263,11 @@ yyreduce:
 		        insertTempsST(yyval.label, yyval.type);
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " >= " + yyvsp[0].label + ";\n";
 		    }
-#line 2312 "y.tab.c"
+#line 2267 "y.tab.c"
     break;
 
   case 51: /* E: TK_NOT E  */
-#line 855 "sintatico.y"
+#line 810 "sintatico.y"
                     {
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -2329,11 +2284,11 @@ yyreduce:
 		        }
 				yyval.traducao = yyvsp[0].traducao  + "\t" + yyval.label + " = " + "!" + yyvsp[0].label + ";\n";
 		    }
-#line 2333 "y.tab.c"
+#line 2288 "y.tab.c"
     break;
 
   case 52: /* E: E TK_AND E  */
-#line 872 "sintatico.y"
+#line 827 "sintatico.y"
                     {
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -2350,11 +2305,11 @@ yyreduce:
 		        }
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " && " + yyvsp[0].label + ";\n";
 		    }
-#line 2354 "y.tab.c"
+#line 2309 "y.tab.c"
     break;
 
   case 53: /* E: E TK_OR E  */
-#line 889 "sintatico.y"
+#line 844 "sintatico.y"
                     {
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -2371,11 +2326,11 @@ yyreduce:
 		        }
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " || " + yyvsp[0].label + ";\n";
 		    }
-#line 2375 "y.tab.c"
+#line 2330 "y.tab.c"
     break;
 
   case 54: /* E: TK_TIPO_INT '(' E ')'  */
-#line 906 "sintatico.y"
+#line 861 "sintatico.y"
                     {
 				if(yyvsp[-1].type == "char"){
 					yyerror("Não é possível essa conversão.");
@@ -2385,11 +2340,11 @@ yyreduce:
 
 				yyval.traducao = yyvsp[-1].traducao  + "\t" + yyval.label + " = " + "(int)" + yyvsp[-1].label + ";\n";
 		    }
-#line 2389 "y.tab.c"
+#line 2344 "y.tab.c"
     break;
 
   case 55: /* E: TK_TIPO_FLOAT '(' E ')'  */
-#line 916 "sintatico.y"
+#line 871 "sintatico.y"
                     {
 				if(yyvsp[-1].type == "char"){
 					yyerror("Não é possível essa conversão.");
@@ -2399,19 +2354,19 @@ yyreduce:
 
 				yyval.traducao = yyvsp[-1].traducao  + "\t" + yyval.label + " = " + "(float)" + yyvsp[-1].label + ";\n";
 		    }
-#line 2403 "y.tab.c"
+#line 2358 "y.tab.c"
     break;
 
   case 56: /* E: '(' E ')'  */
-#line 926 "sintatico.y"
+#line 881 "sintatico.y"
                     {
 		        yyval = yyvsp[-1];
 		    }
-#line 2411 "y.tab.c"
+#line 2366 "y.tab.c"
     break;
 
   case 57: /* E: TK_ID  */
-#line 930 "sintatico.y"
+#line 885 "sintatico.y"
                     {
 
 		        bool achou = false; 
@@ -2447,33 +2402,33 @@ yyreduce:
 
 
 		    }
-#line 2451 "y.tab.c"
+#line 2406 "y.tab.c"
     break;
 
   case 58: /* E: TK_INT  */
-#line 966 "sintatico.y"
+#line 921 "sintatico.y"
                     {
 		        yyval.type = "int";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
-#line 2462 "y.tab.c"
+#line 2417 "y.tab.c"
     break;
 
   case 59: /* E: TK_FLOAT  */
-#line 974 "sintatico.y"
+#line 929 "sintatico.y"
                     {
 		        yyval.type = "float";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
-#line 2473 "y.tab.c"
+#line 2428 "y.tab.c"
     break;
 
   case 60: /* E: TK_BOOLEAN  */
-#line 981 "sintatico.y"
+#line 936 "sintatico.y"
                     {	
 		        yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -2487,22 +2442,22 @@ yyreduce:
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + label + ";\n";
 		    }
-#line 2491 "y.tab.c"
+#line 2446 "y.tab.c"
     break;
 
   case 61: /* E: TK_CHAR  */
-#line 995 "sintatico.y"
+#line 950 "sintatico.y"
                     {
 		        yyval.type = "char";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
-#line 2502 "y.tab.c"
+#line 2457 "y.tab.c"
     break;
 
 
-#line 2506 "y.tab.c"
+#line 2461 "y.tab.c"
 
       default: break;
     }
@@ -2695,7 +2650,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 1004 "sintatico.y"
+#line 959 "sintatico.y"
 
 
 #include "lex.yy.c"
