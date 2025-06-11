@@ -1,0 +1,62 @@
+
+int main() {
+
+    var a = "hello";
+    var b;
+    b = a;
+    var d="";
+
+}
+
+================================DO While input
+
+int main() {
+
+    var a = 20;
+    do{
+
+        a = input();
+    }while(a > 3);
+
+}
+
+================================For + print
+
+int main() {
+
+
+    for(var i = 0; i <20 ; i = i + 1){
+
+        print(i);
+    }
+}
+
+=================================While + break + if
+
+int main() {
+
+    var i = 0;
+
+    while(i < 10){
+
+        i = i+1;
+        if(i == 5){
+            break;
+        }
+    }
+}
+================================= Switch Case
+int main() {
+    var opcao;
+    opcao = 2;  
+    
+    switch (opcao) {
+    case 1:
+        var i = 3; 
+    case 2:
+        var mari = 5;
+    }
+}
+
+
+===========================

@@ -52,6 +52,8 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 "print"     {return TK_PRINT;}
 
+"input"     {return TK_INPUT;}
+
 "while"     {return TK_WHILE;}
 
 "for"     {return TK_FOR;}
