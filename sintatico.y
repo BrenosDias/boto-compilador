@@ -50,6 +50,12 @@ struct SwitchContext {
     bool has_default = false;  // Flag para saber se um default foi definido
     vector<CaseInfo> cases; // Vetor com todos os cases (valor, rótulo)
 };
+}; 
+
+typedef struct {
+    char* str;
+    int length;
+} String;
 
 int var_temp_qnt;
 // Pilha para os rótulos de saída (para o 'break') - continua igual
@@ -61,6 +67,7 @@ stack<SwitchContext> switchStack;
 vector<Symbol> tempsVector;
 set<string> tempsAdicionados;
 TabelaSimbolos symbolTable;
+unordered_map<string, Symbol> symbolTable;
 
 int yylex(void);
 void yyerror(string);
@@ -75,6 +82,8 @@ void entraEscopo();
 void saiEscopo();
 void declaraVariavel(Symbol& simbolo);
 string genlabel();
+String strCopy(String source);
+string searchType(const string& label);
 %}
 
 %token TK_TIPO_FLOAT
@@ -83,7 +92,7 @@ string genlabel();
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOLEAN
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
-%token TK_PRINT
+%token TK_PRINT TK_INPUT TK_STRING
 %token TK_WHILE TK_FOR TK_DO TK_IF TK_BREAK TK_CONTINUE TK_BREAKOUT TK_SWITCH TK_CASE TK_DEFAULT
 
 
@@ -114,36 +123,26 @@ S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 
 				
 
+				// Declara apenas variáveis temporárias
+				for (auto &t : tempsVector) {
+					codigo += "\t" + t.tipo + " " + t.nome + ";\n";
+				}
 
+				for (auto &par : symbolTable) {
+					const Symbol &simbolo = par.second;
 
-				// // Iterate through each scope in the symbolTable
-				// for (const auto& escopoAtual : symbolTable.escopos) {
-				// 	// Iterate through each symbol (key-value pair) within the current scope map
-				// 	for (const auto& par : escopoAtual) {
-				// 		const Symbol& simbolo = par.second;
+					bool encontrado = false;
+					for (const Symbol &temp : tempsVector) {
+						if (temp.nome == simbolo.nome && temp.tipo != "undefined") {
+							encontrado = true;
+							break;
+						}
+					}
 
-				// 		bool encontrado = false;
-				// 		for (const Symbol& temp : tempsVector) {
-				// 			// Assuming 'temp.nome' is the unique identifier for comparison
-				// 			// and 'temp.tipo' needs to be defined
-				// 			if (temp.nome == simbolo.nome && temp.tipo != "undefined") {
-				// 				encontrado = true;
-				// 				break;
-				// 			}
-				// 		}
-
-				// 		if (!encontrado) {
-				// 			codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
-				// 		}
-				// 	}
-				// }
-
-			for (const Symbol& simbolo : tempsVector) {
-			    // SÓ DECLARE a variável se o tipo for conhecido (diferente de "undefined")
-			    if (simbolo.tipo != "undefined" && tempsAdicionados.insert(simbolo.temp).second) {
-			        codigo += "\t" + simbolo.tipo + " " + simbolo.temp + ";\n";
-			    }
-			}
+					if (!encontrado) {
+						codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
+					}
+				}
 
 				codigo += "\n";
 
@@ -223,6 +222,15 @@ COMANDO
 		        declaraVariavel(val);
 				$$.traducao = $4.traducao;
 		        $$.label = "";
+
+				if ($4.type == "String") {
+					// Gera a tradução com strCopy
+					$$.traducao = $4.traducao + "\t" + $2.label + " = strCopy(" + $4.label + ");\n";
+				} else {
+					// Para os outros tipos, atribuição direta
+					$$.traducao = $4.traducao;
+				}
+
 		    }
 		    | PUSH_ESCOPO COMANDOS POP_ESCOPO
 		    {
@@ -655,11 +663,27 @@ EXPRESSAO
 		        }
 
 		        if (it->second.tipo == "undefined") {
-		            it->second.tipo = $3.type;
-		            it->second.temp = $3.label;
+					it->second.tipo = $3.type;
+					it->second.temp = $3.label;
+					cout << "LHS: " << it->second.tipo << ", RHS: " << $3.type << endl;
+				}
 
-		        }
+				// Agora: processa a atribuição se o tipo do LHS for string
+				if (it->second.tipo == "String") {
+					cout << "\nAtribuição de string com strCopy\n";
+					$$.type = "string";
 
+					if ($3.type != "string") {
+						yyerror("Atribuição inválida: string esperado");
+					}
+
+					$$.traducao = $3.traducao
+    					+ "\t" + $1.label + " = strCopy(" + $3.label + ");\n";
+						
+					$$.label = $1.label;
+				}
+
+				else {
 
 		        if(it->second.tipo == $3.type && it->second.temp[0] == $3.label[0]){
 					
@@ -707,35 +731,53 @@ EXPRESSAO
 		        }else{
 		        	yyerror("Variável recebendo valores de tipos não conversiveis");
 		        }
+			}
 
 
 		    }
-		    | TK_PRINT '(' E ')' {
-
-                string formato = "";
-
-                cout << "\n" << $3.type << endl;
-
-                 if ($3.type == "int" ) {
-                    formato = "%d";
-                } else if ($3.label[0] == 'b') {
-                    formato = "%d";
-                } else if ($3.type == "float") {
-                    formato = "%f";
-                }else if ($3.type == "string") {
-                    formato = "%s";
-                } else if ($3.type == "char") {
-                    formato = "%c";
-                } else {
-                    yyerror("Tipo inválido no print.");
-                }
-
-                $$.traducao = $3.traducao + "\tprintf(\"" + formato + "\", " + $3.label + ");\n";
-            }         
 		    | E
 		    {
 		        $$ = $1;
 		    }
+			| TK_PRINT '(' E ')' {
+
+				string formato = "";
+
+				if ($3.type == "int" ) {
+					formato = "%d";
+				} else if ($3.type == "float") {
+					formato = "%f";
+				} else if ($3.type == "string") {
+					formato = "%s";
+				} else if ($3.type == "char") {
+					formato = "%c";
+				} else {
+					yyerror("Tipo inválido no print.");
+				}
+
+				$$.traducao = $3.traducao + "\tprintf(\"" + formato + "\", " + $3.label + ");\n";
+			}
+			| TK_ID '=' TK_INPUT '(' ')' 
+			{
+				string tipo = searchType($1.label); // Busca o tipo da variável
+
+				 if (tipo == "undefined") {
+					tipo = "int";
+					symbolTable[$1.label].tipo = tipo;
+				}
+
+				if (tipo == "int") {
+					$$.traducao = "\tscanf(\"%d\", &" + $1.label + ");\n";
+				} else if (tipo == "float") {
+					$$.traducao = "\tscanf(\"%f\", &" + $1.label + ");\n";
+				} else if (tipo == "char") {
+					$$.traducao = "\tscanf(\" %c\", &" + $1.label + ");\n";
+				} else {
+					yyerror("Tipo inválido para input.");
+				}
+
+				$$.label = $1.label;
+			}
 		    ;
 // Expressões matemáticas e terminais
 E 
@@ -998,6 +1040,72 @@ E
 		        insertTempsST($$.label, $$.type);
 		        $$.traducao = "\t" + $$.label + " = " + $1.label + ";\n";
 		    }
+			| TK_STRING
+			{
+				$$.type = "String";
+				$$.label = gentempcode($$.type);
+				insertTempsST($$.label, $$.type);
+
+				std::string originalString = $1.label; // Ex: "\"hello\""
+				std::string traducao = "";
+
+				std::string valorSemAspas;
+				int size = 0;
+
+				// Lê caractere por caractere, desconsiderando as aspas e lidando com escapes
+				for (int i = 1; i < originalString.length() - 1; i++) {
+					char c = originalString[i];
+
+					if (c == '\\' && i + 1 < originalString.length() - 1) {
+						char next = originalString[i + 1];
+						if (next == 'n') {
+							valorSemAspas += '\n';
+						} else if (next == 't') {
+							valorSemAspas += '\t';
+						} else if (next == '\\') {
+							valorSemAspas += '\\';
+						} else if (next == '"') {
+							valorSemAspas += '"';
+						} else {
+							valorSemAspas += next;
+						}
+						i++; // pula o caractere escapado
+					} else {
+						valorSemAspas += c;
+					}
+
+					size++;
+				}
+
+				// Alocação da string (com +1 pro \0)
+				traducao += "\t" + $$.label + ".str = (char*) malloc(" + std::to_string(size + 1) + ");\n";
+
+				// Cópia dos caracteres
+				for (int i = 0; i < valorSemAspas.length(); i++) {
+					char c = valorSemAspas[i];
+
+					// Escapa corretamente caracteres especiais no código C
+					if (c == '\n') {
+						traducao += "\t" + $$.label + ".str[" + std::to_string(i) + "] = '\\n';\n";
+					} else if (c == '\t') {
+						traducao += "\t" + $$.label + ".str[" + std::to_string(i) + "] = '\\t';\n";
+					} else if (c == '\\') {
+						traducao += "\t" + $$.label + ".str[" + std::to_string(i) + "] = '\\\\';\n";
+					} else if (c == '\'') {
+						traducao += "\t" + $$.label + ".str[" + std::to_string(i) + "] = '\\'';\n";
+					} else {
+						traducao += "\t" + $$.label + ".str[" + std::to_string(i) + "] = '" + c + "';\n";
+					}
+				}
+
+				// Finaliza com \0
+				traducao += "\t" + $$.label + ".str[" + std::to_string(size) + "] = '\\0';\n";
+
+				// Define o tamanho
+				traducao += "\t" + $$.label + ".length = " + std::to_string(size) + ";\n";
+
+				$$.traducao = traducao;
+			}
 		    ;
 
 
@@ -1023,6 +1131,24 @@ string gentempcode(string tipo) {
 	 cout << "\n" + temp << endl;
 
     return temp;
+}
+
+String strCopy(String source) {
+    String dest;
+    dest.length = source.length;
+
+    // Aloca memória para os caracteres + '\0'
+    dest.str = (char*) malloc((dest.length + 1) * sizeof(char));
+
+    // Copia os caracteres
+    for (int i = 0; i < dest.length; i++) {
+        dest.str[i] = source.str[i];
+    }
+
+    // Finaliza com '\0'
+    dest.str[dest.length] = '\0';
+
+    return dest;
 }
 
 void typeValue(string& resultType,  string& leftType,  string& rightType,  string& leftLabel,  string& rightLabel){
@@ -1136,6 +1262,17 @@ int labelCount = 0;
 string genlabel() {
     return "L" + to_string(labelCount++);
 }
+
+string searchType(const string& label) {
+    auto it = symbolTable.find(label);
+    if (it != symbolTable.end()) {
+        return it->second.tipo;
+    } else {
+        yyerror("Variável '" + label + "' não declarada.");
+        return "undefined"; 
+    }
+}
+
 
 void printSymbolTable() {
     cout << "\n========= SYMBOL TABLE =========" << endl;

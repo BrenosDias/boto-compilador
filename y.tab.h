@@ -75,6 +75,7 @@ extern int yydebug;
     TK_FIM = 276,                  /* TK_FIM  */
     TK_ERROR = 277,                /* TK_ERROR  */
     TK_PRINT = 278,                /* TK_PRINT  */
+<<<<<<< HEAD
     TK_WHILE = 279,                /* TK_WHILE  */
     TK_FOR = 280,                  /* TK_FOR  */
     TK_DO = 281,                   /* TK_DO  */
@@ -87,6 +88,10 @@ extern int yydebug;
     TK_DEFAULT = 288,              /* TK_DEFAULT  */
     LOWER_THAN_ELSE = 289,         /* LOWER_THAN_ELSE  */
     TK_ELSE = 290                  /* TK_ELSE  */
+=======
+    TK_INPUT = 279,                /* TK_INPUT  */
+    TK_STRING = 280                /* TK_STRING  */
+>>>>>>> feature/string
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -116,6 +121,7 @@ extern int yydebug;
 #define TK_FIM 276
 #define TK_ERROR 277
 #define TK_PRINT 278
+<<<<<<< HEAD
 #define TK_WHILE 279
 #define TK_FOR 280
 #define TK_DO 281
@@ -128,6 +134,10 @@ extern int yydebug;
 #define TK_DEFAULT 288
 #define LOWER_THAN_ELSE 289
 #define TK_ELSE 290
+=======
+#define TK_INPUT 279
+#define TK_STRING 280
+>>>>>>> feature/string
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

@@ -17,6 +17,7 @@ DELIM {ESPACO}+
 INT {DIGITO}+
 REAL {INT}+("."{INT}+)?
 CHAR \'[ -~]\'
+STRING    \"([^\\\n\"]|\\.)*\"
 BOOLEAN true|false
 ID {LETRA}({LETRA}|{INT})*
 MAIOR_IGUAL     {MAIOR_QUE}{IGUAL}
@@ -32,7 +33,10 @@ DIFERENTE       {NEGACAO}{IGUAL}
 {DELIM} 	{}
 
 
+
 "main"		{return TK_MAIN;}
+
+"String"    {return TK_STRING; }
 
 "int"		{return TK_TIPO_INT;}
 
@@ -90,6 +94,10 @@ DIFERENTE       {NEGACAO}{IGUAL}
 {REAL}		{ yylval.label = yytext; return TK_FLOAT; }
 {BOOLEAN}   { yylval.label = yytext; return TK_BOOLEAN; }
 {ID}		{ yylval.label = yytext; return TK_ID; }
+{STRING} {
+    yylval.label = strdup(yytext);  // Faz uma cópia da string reconhecida
+    return TK_STRING;
+}
 
 
 .			{ *yytext; }
