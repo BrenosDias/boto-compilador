@@ -50,7 +50,7 @@ struct SwitchContext {
     bool has_default = false;  // Flag para saber se um default foi definido
     vector<CaseInfo> cases; // Vetor com todos os cases (valor, rótulo)
 };
-}; 
+ 
 
 typedef struct {
     char* str;
@@ -67,7 +67,6 @@ stack<SwitchContext> switchStack;
 vector<Symbol> tempsVector;
 set<string> tempsAdicionados;
 TabelaSimbolos symbolTable;
-unordered_map<string, Symbol> symbolTable;
 
 int yylex(void);
 void yyerror(string);
@@ -83,7 +82,7 @@ void saiEscopo();
 void declaraVariavel(Symbol& simbolo);
 string genlabel();
 String strCopy(String source);
-string searchType(const string& label);
+// string searchType(const string& label);
 %}
 
 %token TK_TIPO_FLOAT
@@ -111,52 +110,93 @@ string searchType(const string& label);
 %nonassoc TK_ELSE
 %%
 
-S 			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
+S 			:LISTA_DECLARACOES_GLOBAIS FUNCAO_MAIN
+		    {
+
+			    string codigo = "/*Compilador boto*/\n"
+			                    "#include <iostream>\n"
+			                    "#include<string.h>\n"
+			                    "#include<stdio.h>\n\n";
+
+			    set<string> tempsGlobaisDeclarados;
+
+			    if (!symbolTable.escopos.empty()) {
+			        const auto& escopoGlobal = symbolTable.escopos[0];
+			        for (const auto& par : escopoGlobal) {
+			            const Symbol& simbolo = par.second;
+			            // Só declara variáveis com nome (não temporários) e com tipo definido
+			            if (simbolo.tipo != "undefined" && !simbolo.nome.empty() && simbolo.nome[0] != 't' && simbolo.nome[0] != 'b') {
+			                codigo += simbolo.tipo + " " + simbolo.temp + ";\n";
+			                tempsGlobaisDeclarados.insert(simbolo.temp);
+			            }
+			        }
+			    }
+			    codigo += "\n";
+
+
+			    codigo += "int main(void) {\n";
+
+			    for (const Symbol& simbolo : tempsVector) {
+			        if (!simbolo.temp.empty() && tempsGlobaisDeclarados.find(simbolo.temp) == tempsGlobaisDeclarados.end() && tempsAdicionados.insert(simbolo.temp).second) {
+			            // Se o tipo for undefined, talvez queira usar um tipo padrão como int
+			            string tipo_a_declarar = (simbolo.tipo == "undefined") ? "int" : simbolo.tipo;
+			            codigo += "\t" + tipo_a_declarar + " " + simbolo.temp + ";\n";
+			        }
+			    }
+			    codigo += "\n";
+
+			    codigo += $1.traducao;
+
+			    codigo += $2.traducao;
+			                    
+
+			    codigo += "\treturn 0;\n"
+			              "}\n";
+
+			    cout << codigo << endl;
+		    }
+		    ;
+
+		// Este não-terminal reconhece uma lista de 0 ou mais declarações globais
+LISTA_DECLARACOES_GLOBAIS
+		    : DECLARACAO_GLOBAL LISTA_DECLARACOES_GLOBAIS
+		    | 
+		    ;
+
+		// Uma declaração global individual
+DECLARACAO_GLOBAL
+		    : TK_VAR TK_ID ';'
+		    {
+		        
+		        Symbol val;
+		        val.nome = $2.label;
+		        val.tipo = "undefined";
+		        val.temp = ""; 
+		        declaraVariavel(val);
+		    }
+		    | TK_VAR TK_ID '=' E ';'
+		    {
+
+		        Symbol val;
+		        val.nome = $2.label;
+		        val.tipo = $4.type;
+
+		        val.temp = gentempcode(val.tipo);
+		        declaraVariavel(val);
+		        // insertTempsST(val.temp, val.tipo);
+
+		    }
+		    ;
+FUNCAO_MAIN
+			: TK_TIPO_INT TK_MAIN '(' ')' BLOCO
 			{
-				// entraEscopo();
-
-				string codigo = "/*Compilador boto*/\n"
-								"#include <iostream>\n"
-								"#include<string.h>\n"
-								"#include<stdio.h>\n"
-								"int main(void) {\n";
-
 				
-
-				// Declara apenas variáveis temporárias
-				for (auto &t : tempsVector) {
-					codigo += "\t" + t.tipo + " " + t.nome + ";\n";
-				}
-
-				for (auto &par : symbolTable) {
-					const Symbol &simbolo = par.second;
-
-					bool encontrado = false;
-					for (const Symbol &temp : tempsVector) {
-						if (temp.nome == simbolo.nome && temp.tipo != "undefined") {
-							encontrado = true;
-							break;
-						}
-					}
-
-					if (!encontrado) {
-						codigo += "\t" + simbolo.tipo + " " + simbolo.nome + ";\n";
-					}
-				}
-
-				codigo += "\n";
-
-				codigo += $5.traducao;
-								
-				codigo += 	"\treturn 0;"
-							"\n}";
-
-				cout << codigo << endl;
+				$$.traducao = $5.traducao;
 
 			}
 			;
 
-BLOCO		: '{' COMANDOS '}'
+BLOCO		: PUSH_ESCOPO COMANDOS POP_ESCOPO
 			{
 				$$.traducao = $2.traducao;
 			}
@@ -216,7 +256,7 @@ COMANDO
 		        Symbol val;
 		        val.nome = $2.label;
 		        val.tipo = $4.type;
-		        val.temp = $4.label;
+		        val.temp = gentempcode($2.label);
 		        cout << "\nNome "+val.nome << endl;
 				cout << "\nTemp "+val.temp << endl;
 		        declaraVariavel(val);
@@ -225,7 +265,7 @@ COMANDO
 
 				if ($4.type == "String") {
 					// Gera a tradução com strCopy
-					$$.traducao = $4.traducao + "\t" + $2.label + " = strCopy(" + $4.label + ");\n";
+					$$.traducao = $4.traducao + "\t" + $4.label + " = strCopy(" + $4.label + ");\n";
 				} else {
 					// Para os outros tipos, atribuição direta
 					$$.traducao = $4.traducao;
@@ -325,8 +365,8 @@ FOR_COND
 		    {
 		        // Se a condição for vazia, o laço é infinito (condição sempre verdadeira).
 		        // Geramos um booleano temporário com valor 'true'.
-		        string temp_true = gentempcode("bool");
-		        insertTempsST(temp_true, "bool");
+		        string temp_true = gentempcode("boolean");
+		        insertTempsST(temp_true, "int");
 		        $$.traducao = temp_true + " = 1;\n"; // 1 para 'true'
 		        $$.label = temp_true;
 		    }
@@ -439,8 +479,8 @@ ESTRUTURA_DE_CONTROLE
 		        traducao += cond_code;
 
 		        // 4. Verificação da condição (salta para o fim se for falsa)
-		        string temp = gentempcode("bool");
-		        insertTempsST(temp, "bool");
+		        string temp = gentempcode("boolean");
+		        insertTempsST(temp, "int");
 		        traducao += temp + " = !(" + cond_label + ");\n";
 		        traducao += "if (" + temp + ") goto " + lacoAtual.fim + ";\n";
 
@@ -495,8 +535,8 @@ ESTRUTURA_DE_CONTROLE
 		        string elseLabel = genlabel();
 		        string fimIfLabel = genlabel();
 
-		        string temp = gentempcode("bool");
-		        insertTempsST(temp, "bool");
+		        string temp = gentempcode("boolean");
+		        insertTempsST(temp, "int");
 
 		        string traducao;
 
@@ -759,12 +799,30 @@ EXPRESSAO
 			}
 			| TK_ID '=' TK_INPUT '(' ')' 
 			{
-				string tipo = searchType($1.label); // Busca o tipo da variável
 
-				 if (tipo == "undefined") {
-					tipo = "int";
-					symbolTable[$1.label].tipo = tipo;
-				}
+			    bool achou = false;
+			    auto it = symbolTable.escopos.begin()->end(); 
+			    
+			    for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+			        auto& escopoAtual = symbolTable.escopos[i];
+			        it = escopoAtual.find($1.label); // Procura pelo nome da variável
+			        
+			        if (it != escopoAtual.end()) {
+			            achou = true;
+			            break; 
+			        }
+			    }
+
+			    if (!achou) {
+			        yyerror("Variavel '" + $3.label + "' nao declarada para input.");
+			    }
+			    
+
+			    if (it->second.tipo == "undefined") {
+			        it->second.tipo = "int"; 
+			    }
+
+			    string tipo = it->second.tipo;
 
 				if (tipo == "int") {
 					$$.traducao = "\tscanf(\"%d\", &" + $1.label + ");\n";
@@ -969,41 +1027,38 @@ E
 		        $$ = $2;
 		    }
 		    | TK_ID
-		    {
+			{
+			        // --- PASSO 1: Busca pela variável ---
+			        bool achou = false; 
+			        auto it = symbolTable.escopos.begin()->end(); // Inicializador seguro
 
-		        bool achou = false; 
+			        for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+			            auto& escopoAtual = symbolTable.escopos[i];
+			            it = escopoAtual.find($1.label);
+			            if (it != escopoAtual.end()) {
+			                achou = true;
+			                break; 
+			            }
+			        }
 
-		        for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
-		            auto& escopoAtual = symbolTable.escopos[i];
+			        if (!achou) {
+			            yyerror("Variavel '" + $1.label + "' nao declarada.");
+			            YYABORT; 
+			        }
 
-		            auto it = escopoAtual.find($1.label);
-		            if (it != escopoAtual.end()) {
-		                string tipo;
-
-		                if (it->second.temp[0] == 'b') {
-		                    $$.type = "int";
-							$$.label = gentempcode("boolean");
-
-		                } else {
-		                    $$.type = it->second.tipo;
-							$$.label = gentempcode($$.type);
-		                }
-
-		                insertTempsST($$.label, $$.type);
-		                string origem = it->second.temp.empty() ? $1.label : it->second.temp;
-		                $$.traducao = "\t" + $$.label + " = " + origem + ";\n";
-
-		                achou = true; 
-		                break;       
-		            }
-		        }
-
-		        if (!achou) {
-		            yyerror("Variável não declarada.");
-		        }
-
-
-		    }
+			        // --- PASSO 2: Verificação de segurança ---
+			        if (it->second.temp.empty()) {
+			            yyerror("Variavel '" + $1.label + "' usada sem ter um valor inicial.");
+			            YYABORT;
+			        }
+			        
+			        // --- PASSO 3: Lógica Otimizada ---
+			        // O resultado desta expressão É o próprio temporário existente.
+			        // Não criamos um novo nem geramos código de cópia.
+			        $$.label = it->second.temp; 
+			        $$.type = it->second.tipo;
+			        $$.traducao = ""; // NENHUM CÓDIGO NOVO É GERADO!
+			    }
 		    | TK_INT
 		    {
 		        $$.type = "int";
@@ -1263,15 +1318,15 @@ string genlabel() {
     return "L" + to_string(labelCount++);
 }
 
-string searchType(const string& label) {
-    auto it = symbolTable.find(label);
-    if (it != symbolTable.end()) {
-        return it->second.tipo;
-    } else {
-        yyerror("Variável '" + label + "' não declarada.");
-        return "undefined"; 
-    }
-}
+// string searchType(const string& label) {
+//     auto it = symbolTable.find(label);
+//     if (it != symbolTable.end()) {
+//         return it->second.tipo;
+//     } else {
+//         yyerror("Variável '" + label + "' não declarada.");
+//         return "undefined"; 
+//     }
+// }
 
 
 void printSymbolTable() {
@@ -1315,6 +1370,7 @@ int main(int argc, char* argv[])
     // declaraVariavel(val);
 	// cout << symbolTable.escopos[0][val.nome].temp << endl;
 	yyparse();
+
 	saiEscopo();
 	printSymbolTable();
 

@@ -75,23 +75,20 @@ extern int yydebug;
     TK_FIM = 276,                  /* TK_FIM  */
     TK_ERROR = 277,                /* TK_ERROR  */
     TK_PRINT = 278,                /* TK_PRINT  */
-<<<<<<< HEAD
-    TK_WHILE = 279,                /* TK_WHILE  */
-    TK_FOR = 280,                  /* TK_FOR  */
-    TK_DO = 281,                   /* TK_DO  */
-    TK_IF = 282,                   /* TK_IF  */
-    TK_BREAK = 283,                /* TK_BREAK  */
-    TK_CONTINUE = 284,             /* TK_CONTINUE  */
-    TK_BREAKOUT = 285,             /* TK_BREAKOUT  */
-    TK_SWITCH = 286,               /* TK_SWITCH  */
-    TK_CASE = 287,                 /* TK_CASE  */
-    TK_DEFAULT = 288,              /* TK_DEFAULT  */
-    LOWER_THAN_ELSE = 289,         /* LOWER_THAN_ELSE  */
-    TK_ELSE = 290                  /* TK_ELSE  */
-=======
     TK_INPUT = 279,                /* TK_INPUT  */
-    TK_STRING = 280                /* TK_STRING  */
->>>>>>> feature/string
+    TK_STRING = 280,               /* TK_STRING  */
+    TK_WHILE = 281,                /* TK_WHILE  */
+    TK_FOR = 282,                  /* TK_FOR  */
+    TK_DO = 283,                   /* TK_DO  */
+    TK_IF = 284,                   /* TK_IF  */
+    TK_BREAK = 285,                /* TK_BREAK  */
+    TK_CONTINUE = 286,             /* TK_CONTINUE  */
+    TK_BREAKOUT = 287,             /* TK_BREAKOUT  */
+    TK_SWITCH = 288,               /* TK_SWITCH  */
+    TK_CASE = 289,                 /* TK_CASE  */
+    TK_DEFAULT = 290,              /* TK_DEFAULT  */
+    LOWER_THAN_ELSE = 291,         /* LOWER_THAN_ELSE  */
+    TK_ELSE = 292                  /* TK_ELSE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -121,23 +118,20 @@ extern int yydebug;
 #define TK_FIM 276
 #define TK_ERROR 277
 #define TK_PRINT 278
-<<<<<<< HEAD
-#define TK_WHILE 279
-#define TK_FOR 280
-#define TK_DO 281
-#define TK_IF 282
-#define TK_BREAK 283
-#define TK_CONTINUE 284
-#define TK_BREAKOUT 285
-#define TK_SWITCH 286
-#define TK_CASE 287
-#define TK_DEFAULT 288
-#define LOWER_THAN_ELSE 289
-#define TK_ELSE 290
-=======
 #define TK_INPUT 279
 #define TK_STRING 280
->>>>>>> feature/string
+#define TK_WHILE 281
+#define TK_FOR 282
+#define TK_DO 283
+#define TK_IF 284
+#define TK_BREAK 285
+#define TK_CONTINUE 286
+#define TK_BREAKOUT 287
+#define TK_SWITCH 288
+#define TK_CASE 289
+#define TK_DEFAULT 290
+#define LOWER_THAN_ELSE 291
+#define TK_ELSE 292
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

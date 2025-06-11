@@ -1,11 +1,8 @@
 int main() {
-    var opcao;
-    opcao = 2;  
-    
-    switch (opcao) {
-    case 1:
-        var i = 3; 
-    case 2:
-        var mari = 5;
-    }
+
+var a = "hello";
+var b = a;
+var c = "";
+
+
 }
