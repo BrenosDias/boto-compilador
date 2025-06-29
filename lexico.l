@@ -12,6 +12,7 @@ MENOR_QUE    "<"
 IGUAL        "="
 NEGACAO      "!"
 MAIS_MAIS    "++"
+MENOS_MENOS  "--"
 
 
 DELIM {ESPACO}+
@@ -89,6 +90,8 @@ DIFERENTE       {NEGACAO}{IGUAL}
 {MENOR_QUE}     { return TK_MENOR;}
 
 {MAIS_MAIS}     { return TK_MAIS_MAIS;}
+
+{MENOS_MENOS}   { return TK_MENOS_MENOS;}
 
 
 

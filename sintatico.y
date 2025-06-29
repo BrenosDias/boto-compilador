@@ -88,7 +88,7 @@ String strCopy(String source);
 %token TK_TIPO_FLOAT
 %token TK_NOT TK_OR TK_AND
 %token TK_MAIOR TK_MAIOR_IGUAL TK_MENOR TK_MENOR_IGUAL TK_IGUAL_IGUAL TK_DIFERENTE
-%token TK_MAIS_MAIS
+%token TK_MAIS_MAIS TK_MENOS_MENOS
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOLEAN
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
@@ -1075,6 +1075,43 @@ E
 				$$.type = "int";
 				// O resultado da expressão '++i' é o valor NOVO.
 				$$.label = temp_nova;
+			}
+			| TK_ID TK_MENOS_MENOS 
+			{
+				// 1. Acha o símbolo da variável (ex: 'i') na Tabela de Símbolos
+				Symbol* var_simbolo = nullptr;
+				for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+					auto it = symbolTable.escopos[i].find($1.label);
+					if (it != symbolTable.escopos[i].end()) {
+						var_simbolo = &it->second;
+						break;
+					}
+				}
+				// ... (checagens de erro para garantir que a variável existe e é numérica) ...
+
+				// 2. Pega o nome da temporária ATUAL que guarda o valor de 'i'
+				string temp_atual = var_simbolo->temp; // Ex: "t1"
+
+				// 3. Gera temporárias para a operação
+				string temp_one = gentempcode("int");
+				insertTempsST(temp_one, "int");
+				string temp_nova = gentempcode("int");
+				insertTempsST(temp_nova, "int");
+
+				// 4. Gera a tradução do decremento
+				string traducao = "";
+				traducao += "\t" + temp_one + " = 1;\n";
+				// A ÚNICA MUDANÇA É AQUI vvv
+				traducao += "\t" + temp_nova + " = " + temp_atual + " - " + temp_one + ";\n";
+				
+				// 5. ATUALIZA A TABELA! 'i' agora aponta para a nova temporária.
+				var_simbolo->temp = temp_nova;
+
+				// 6. Prepara o resultado da regra
+				$$.traducao = traducao;
+				$$.type = "int";
+				// O resultado da expressão 'i--' é o valor ANTIGO.
+				$$.label = temp_atual; 
 			}
 			| E TK_AND E 
 		    {
