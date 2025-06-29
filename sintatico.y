@@ -88,6 +88,7 @@ String strCopy(String source);
 %token TK_TIPO_FLOAT
 %token TK_NOT TK_OR TK_AND
 %token TK_MAIOR TK_MAIOR_IGUAL TK_MENOR TK_MENOR_IGUAL TK_IGUAL_IGUAL TK_DIFERENTE
+%token TK_MAIS_MAIS
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOLEAN
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
@@ -821,7 +822,7 @@ EXPRESSAO
 					formato = "%d";
 				} else if ($3.type == "float") {
 					formato = "%f";
-				} else if ($3.type == "string") {
+				} else if ($3.type == "String") {
 					formato = "%s";
 				} else if ($3.type == "char") {
 					formato = "%c";
@@ -859,12 +860,14 @@ EXPRESSAO
 			    string tipo = it->second.tipo;
 
 				if (tipo == "int") {
-					$$.traducao = "\tscanf(\"%d\", &" + $1.label + ");\n";
+					$$.traducao = "\tscanf(\"%d\", &" + it->second.temp + ");\n";
 				} else if (tipo == "float") {
-					$$.traducao = "\tscanf(\"%f\", &" + $1.label + ");\n";
+					$$.traducao = "\tscanf(\"%f\", &" + it->second.temp + ");\n";
 				} else if (tipo == "char") {
-					$$.traducao = "\tscanf(\" %c\", &" + $1.label + ");\n";
-				} else {
+					$$.traducao = "\tscanf(\" %c\", &" + it->second.temp + ");\n";
+				} else if (tipo == "String") {
+					$$.traducao = "\tscanf(\" %c\", " + it->second.temp + ");\n";
+				}else {
 					yyerror("Tipo inválido para input.");
 				}
 
@@ -1002,6 +1005,77 @@ E
 		        }
 				$$.traducao = $2.traducao  + "\t" + $$.label + " = " + "!" + $2.label + ";\n";
 		    }
+			| TK_ID TK_MAIS_MAIS // Usando a precedência que definimos
+			{
+				Symbol* var_simbolo = nullptr;
+				cout << "Resultado de $1.label: " << $1.label << endl;
+				for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+					auto it = symbolTable.escopos[i].find($1.label);
+
+					if (it != symbolTable.escopos[i].end()) {
+						var_simbolo = &it->second;
+
+						break;
+					}
+				}
+				
+				string temp_atual = var_simbolo->temp; // var_simbolo->temp contém "t1"
+
+				cout << "Resultado de temp atual: " << temp_atual << endl;
+
+				// 3. Gera temporárias para a operação
+				string temp_one = gentempcode("int");
+				insertTempsST(temp_one, "int");
+
+				// 4. Gera a tradução do incremento
+				string traducao = "";
+				traducao += "\t" + temp_one + " = 1;\n";
+				// <<< E AQUI USAMOS O 'temp_atual' ('t1') QUE BUSCAMOS
+				traducao += "\t" + temp_atual + " = " + temp_atual + " + " + temp_one + ";\n";
+				
+				// 5. ATUALIZA A TABELA! 'i' agora aponta para a nova temporária.
+
+				// 6. Define o resultado da expressão (o valor antigo)
+				$$.traducao = traducao;
+				$$.type = "int";
+				$$.label = temp_atual;
+			}
+			| TK_MAIS_MAIS TK_ID  // Define a precedência
+			{
+				// 1. Acha o símbolo da variável (ex: 'i'), igual ao anterior
+				Symbol* var_simbolo = nullptr;
+				for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+					auto it = symbolTable.escopos[i].find($2.label); // Agora é $2
+					if (it != symbolTable.escopos[i].end()) {
+						var_simbolo = &it->second;
+						break;
+					}
+				}
+				// ... checagens de erro ...
+
+				// 2. Pega o nome da temporária ATUAL que guarda o valor de 'i'
+				string temp_atual = var_simbolo->temp; // Ex: "t1"
+
+				// 3. Gera temporárias para o valor '1' e para o novo valor
+				string temp_one = gentempcode("int");
+				insertTempsST(temp_one, "int");
+				string temp_nova = gentempcode("int");
+				insertTempsST(temp_nova, "int");
+
+				// 4. Gera a tradução do incremento
+				string traducao = "";
+				traducao += "\t" + temp_one + " = 1;\n";
+				traducao += "\t" + temp_nova + " = " + temp_atual + " + " + temp_one + ";\n";
+				
+				// 5. ATUALIZA A TABELA! 'i' agora aponta para a nova temporária.
+				var_simbolo->temp = temp_nova;
+
+				// 6. Prepara o resultado da regra do YACC
+				$$.traducao = traducao;
+				$$.type = "int";
+				// O resultado da expressão '++i' é o valor NOVO.
+				$$.label = temp_nova;
+			}
 			| E TK_AND E 
 		    {
 				$$.type = "int";
@@ -1293,6 +1367,9 @@ void implicitConversion(atributos& esquerda, atributos& direita, atributos& fina
         resultado = final.label + " = " + temp + operacao + esquerda.label;
         final.traducao =  esquerda.traducao + direita.traducao + traducaoAux + "\t" + resultado + ";\n";
     }
+	    else if (esquerda.type == "String" || direita.type == "String") {
+			yyerror("Não é permitido operações com String");
+    }
     else {
         resultado = final.label + " = " + esquerda.label + operacao + direita.label;
         final.traducao = esquerda.traducao + direita.traducao + "\t" + resultado + ";\n";
@@ -1364,13 +1441,13 @@ string genlabel() {
 
 
 void printSymbolTable() {
-    cout << "\n========= SYMBOL TABLE =========" << endl;
+    // cout << "\n========= SYMBOL TABLE =========" << endl;
 
-    if (symbolTable.escopos.empty()) {
-        cout << "A tabela de símbolos está vazia." << endl;
-        cout << "================================\n" << endl;
-        return;
-    }
+    // if (symbolTable.escopos.empty()) {
+    //     cout << "A tabela de símbolos está vazia." << endl;
+    //     cout << "================================\n" << endl;
+    //     return;
+    // }
 
     for (size_t i = 0; i < symbolTable.escopos.size(); ++i) {
         cout << "--- ESCOPO " << i << " ---" << endl;
@@ -1387,7 +1464,7 @@ void printSymbolTable() {
             }
         }
     }
-    cout << "================================\n" << endl;
+    // cout << "================================\n" << endl;
 }
 
 int main(int argc, char* argv[])

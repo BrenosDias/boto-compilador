@@ -1,11 +1,4 @@
-
-var breno;
-
 int main() {
-
-    var a = "hello";
-    var b;
-    b = a;
-    var d="";
-
+    var i = 0;
+    ++i;
 }

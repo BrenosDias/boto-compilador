@@ -64,31 +64,32 @@ extern int yydebug;
     TK_MENOR_IGUAL = 265,          /* TK_MENOR_IGUAL  */
     TK_IGUAL_IGUAL = 266,          /* TK_IGUAL_IGUAL  */
     TK_DIFERENTE = 267,            /* TK_DIFERENTE  */
-    TK_INT = 268,                  /* TK_INT  */
-    TK_FLOAT = 269,                /* TK_FLOAT  */
-    TK_CHAR = 270,                 /* TK_CHAR  */
-    TK_BOOLEAN = 271,              /* TK_BOOLEAN  */
-    TK_MAIN = 272,                 /* TK_MAIN  */
-    TK_ID = 273,                   /* TK_ID  */
-    TK_TIPO_INT = 274,             /* TK_TIPO_INT  */
-    TK_VAR = 275,                  /* TK_VAR  */
-    TK_FIM = 276,                  /* TK_FIM  */
-    TK_ERROR = 277,                /* TK_ERROR  */
-    TK_PRINT = 278,                /* TK_PRINT  */
-    TK_INPUT = 279,                /* TK_INPUT  */
-    TK_STRING = 280,               /* TK_STRING  */
-    TK_WHILE = 281,                /* TK_WHILE  */
-    TK_FOR = 282,                  /* TK_FOR  */
-    TK_DO = 283,                   /* TK_DO  */
-    TK_IF = 284,                   /* TK_IF  */
-    TK_BREAK = 285,                /* TK_BREAK  */
-    TK_CONTINUE = 286,             /* TK_CONTINUE  */
-    TK_BREAKOUT = 287,             /* TK_BREAKOUT  */
-    TK_SWITCH = 288,               /* TK_SWITCH  */
-    TK_CASE = 289,                 /* TK_CASE  */
-    TK_DEFAULT = 290,              /* TK_DEFAULT  */
-    LOWER_THAN_ELSE = 291,         /* LOWER_THAN_ELSE  */
-    TK_ELSE = 292                  /* TK_ELSE  */
+    TK_MAIS_MAIS = 268,            /* TK_MAIS_MAIS  */
+    TK_INT = 269,                  /* TK_INT  */
+    TK_FLOAT = 270,                /* TK_FLOAT  */
+    TK_CHAR = 271,                 /* TK_CHAR  */
+    TK_BOOLEAN = 272,              /* TK_BOOLEAN  */
+    TK_MAIN = 273,                 /* TK_MAIN  */
+    TK_ID = 274,                   /* TK_ID  */
+    TK_TIPO_INT = 275,             /* TK_TIPO_INT  */
+    TK_VAR = 276,                  /* TK_VAR  */
+    TK_FIM = 277,                  /* TK_FIM  */
+    TK_ERROR = 278,                /* TK_ERROR  */
+    TK_PRINT = 279,                /* TK_PRINT  */
+    TK_INPUT = 280,                /* TK_INPUT  */
+    TK_STRING = 281,               /* TK_STRING  */
+    TK_WHILE = 282,                /* TK_WHILE  */
+    TK_FOR = 283,                  /* TK_FOR  */
+    TK_DO = 284,                   /* TK_DO  */
+    TK_IF = 285,                   /* TK_IF  */
+    TK_BREAK = 286,                /* TK_BREAK  */
+    TK_CONTINUE = 287,             /* TK_CONTINUE  */
+    TK_BREAKOUT = 288,             /* TK_BREAKOUT  */
+    TK_SWITCH = 289,               /* TK_SWITCH  */
+    TK_CASE = 290,                 /* TK_CASE  */
+    TK_DEFAULT = 291,              /* TK_DEFAULT  */
+    LOWER_THAN_ELSE = 292,         /* LOWER_THAN_ELSE  */
+    TK_ELSE = 293                  /* TK_ELSE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -107,31 +108,32 @@ extern int yydebug;
 #define TK_MENOR_IGUAL 265
 #define TK_IGUAL_IGUAL 266
 #define TK_DIFERENTE 267
-#define TK_INT 268
-#define TK_FLOAT 269
-#define TK_CHAR 270
-#define TK_BOOLEAN 271
-#define TK_MAIN 272
-#define TK_ID 273
-#define TK_TIPO_INT 274
-#define TK_VAR 275
-#define TK_FIM 276
-#define TK_ERROR 277
-#define TK_PRINT 278
-#define TK_INPUT 279
-#define TK_STRING 280
-#define TK_WHILE 281
-#define TK_FOR 282
-#define TK_DO 283
-#define TK_IF 284
-#define TK_BREAK 285
-#define TK_CONTINUE 286
-#define TK_BREAKOUT 287
-#define TK_SWITCH 288
-#define TK_CASE 289
-#define TK_DEFAULT 290
-#define LOWER_THAN_ELSE 291
-#define TK_ELSE 292
+#define TK_MAIS_MAIS 268
+#define TK_INT 269
+#define TK_FLOAT 270
+#define TK_CHAR 271
+#define TK_BOOLEAN 272
+#define TK_MAIN 273
+#define TK_ID 274
+#define TK_TIPO_INT 275
+#define TK_VAR 276
+#define TK_FIM 277
+#define TK_ERROR 278
+#define TK_PRINT 279
+#define TK_INPUT 280
+#define TK_STRING 281
+#define TK_WHILE 282
+#define TK_FOR 283
+#define TK_DO 284
+#define TK_IF 285
+#define TK_BREAK 286
+#define TK_CONTINUE 287
+#define TK_BREAKOUT 288
+#define TK_SWITCH 289
+#define TK_CASE 290
+#define TK_DEFAULT 291
+#define LOWER_THAN_ELSE 292
+#define TK_ELSE 293
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
