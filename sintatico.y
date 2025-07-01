@@ -88,7 +88,7 @@ String strCopy(String source);
 %token TK_TIPO_FLOAT
 %token TK_NOT TK_OR TK_AND
 %token TK_MAIOR TK_MAIOR_IGUAL TK_MENOR TK_MENOR_IGUAL TK_IGUAL_IGUAL TK_DIFERENTE
-%token TK_MAIS_MAIS TK_MENOS_MENOS
+%token TK_MAIS_MAIS TK_MENOS_MENOS TK_MAIS_IGUAL
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOLEAN
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
@@ -918,7 +918,6 @@ E
 				$$.traducao = $1.traducao + $3.traducao + "\t" + $$.label + " = " + $1.label + " > " + $3.label + ";\n";
 		    }
 			| E TK_MENOR E
-
 		    {	
 		    	cout << "\n Esq = "+ $1.label + "Dir = " + $3.label << endl;
 
@@ -1008,7 +1007,6 @@ E
 			| TK_ID TK_MAIS_MAIS // Usando a precedência que definimos
 			{
 				Symbol* var_simbolo = nullptr;
-				cout << "Resultado de $1.label: " << $1.label << endl;
 				for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
 					auto it = symbolTable.escopos[i].find($1.label);
 
@@ -1018,10 +1016,15 @@ E
 						break;
 					}
 				}
+
+				if (!var_simbolo) {
+					yyerror("Variável '" + $1.label + "' não declarada.");
+				} else if (var_simbolo->tipo != "int" && var_simbolo->tipo != "float") {
+					yyerror("Operador '++' só pode ser usado com tipos numéricos.");
+				}
 				
 				string temp_atual = var_simbolo->temp; // var_simbolo->temp contém "t1"
 
-				cout << "Resultado de temp atual: " << temp_atual << endl;
 
 				// 3. Gera temporárias para a operação
 				string temp_one = gentempcode("int");
@@ -1033,9 +1036,7 @@ E
 				// <<< E AQUI USAMOS O 'temp_atual' ('t1') QUE BUSCAMOS
 				traducao += "\t" + temp_atual + " = " + temp_atual + " + " + temp_one + ";\n";
 				
-				// 5. ATUALIZA A TABELA! 'i' agora aponta para a nova temporária.
-
-				// 6. Define o resultado da expressão (o valor antigo)
+				
 				$$.traducao = traducao;
 				$$.type = "int";
 				$$.label = temp_atual;
@@ -1052,6 +1053,12 @@ E
 					}
 				}
 				// ... checagens de erro ...
+
+				if (!var_simbolo) {
+					yyerror("Variável '" + $1.label + "' não declarada.");
+				} else if (var_simbolo->tipo != "int" && var_simbolo->tipo != "float") {
+					yyerror("Operador '++' só pode ser usado com tipos numéricos.");
+				}
 
 				// 2. Pega o nome da temporária ATUAL que guarda o valor de 'i'
 				string temp_atual = var_simbolo->temp; // Ex: "t1"
@@ -1087,7 +1094,12 @@ E
 						break;
 					}
 				}
-				// ... (checagens de erro para garantir que a variável existe e é numérica) ...
+				
+				 if (!var_simbolo) {
+					yyerror("Variável '" + $1.label + "' não declarada.");
+				} else if (var_simbolo->tipo != "int" && var_simbolo->tipo != "float") {
+					yyerror("Operador '--' só pode ser usado com tipos numéricos.");
+				}
 
 				// 2. Pega o nome da temporária ATUAL que guarda o valor de 'i'
 				string temp_atual = var_simbolo->temp; // Ex: "t1"
@@ -1098,20 +1110,61 @@ E
 				string temp_nova = gentempcode("int");
 				insertTempsST(temp_nova, "int");
 
-				// 4. Gera a tradução do decremento
 				string traducao = "";
 				traducao += "\t" + temp_one + " = 1;\n";
-				// A ÚNICA MUDANÇA É AQUI vvv
 				traducao += "\t" + temp_nova + " = " + temp_atual + " - " + temp_one + ";\n";
 				
-				// 5. ATUALIZA A TABELA! 'i' agora aponta para a nova temporária.
+				
 				var_simbolo->temp = temp_nova;
 
 				// 6. Prepara o resultado da regra
 				$$.traducao = traducao;
 				$$.type = "int";
-				// O resultado da expressão 'i--' é o valor ANTIGO.
 				$$.label = temp_atual; 
+			}
+			| TK_ID TK_MAIS_IGUAL E{
+				    
+				Symbol* var_simbolo = nullptr;
+				for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+					auto it = symbolTable.escopos[i].find($1.label);
+					if (it != symbolTable.escopos[i].end()) {
+						var_simbolo = &it->second;
+						break;
+					}
+				}
+				if (!var_simbolo) {
+					yyerror("Variável '" + $1.label + "' não declarada.");
+				}
+
+				// <<< INÍCIO DA NOVA VERIFICAÇÃO DE TIPO >>>
+				
+				// Pega o tipo da variável da esquerda (ex: "int")
+				string tipo_lhs = var_simbolo->tipo; 
+				// Pega o tipo da expressão da direita (ex: "boolean" ou "int")
+				string tipo_rhs = $3.type;          
+
+				// 2. VERIFICA SE AMBOS SÃO NUMÉRICOS
+				// Modifique esta lógica se quiser aceitar outros tipos no futuro
+				if ((tipo_lhs != "int" && tipo_lhs != "float") || (tipo_rhs != "int" && tipo_rhs != "float")) {
+					// Se algum dos tipos não for numérico, lança um erro claro e para.
+					yyerror("Erro de Tipo: O operador '+=' requer operandos numéricos, mas recebeu '" + tipo_lhs + "' e '" + tipo_rhs + "'.");
+				}
+				
+				// <<< FIM DA VERIFICAÇÃO >>>
+
+				// 3. Se passou pela verificação, a geração de código continua normalmente
+				string temp_atual = var_simbolo->temp;
+				string temp_nova = gentempcode("int");
+				insertTempsST(temp_nova, "int");
+
+				string traducao = $3.traducao; // Código da expressão da direita
+				traducao += "\t" + temp_nova + " = " + temp_atual + " + " + $3.label + ";\n";
+				
+				var_simbolo->temp = temp_nova; // Atualiza a tabela de símbolos
+
+				$$.traducao = traducao;
+				$$.type = "int";
+				$$.label = temp_nova;
 			}
 			| E TK_AND E 
 		    {

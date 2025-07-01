@@ -13,6 +13,7 @@ IGUAL        "="
 NEGACAO      "!"
 MAIS_MAIS    "++"
 MENOS_MENOS  "--"
+MAIS_IGUAL   "+="
 
 
 DELIM {ESPACO}+
@@ -92,6 +93,8 @@ DIFERENTE       {NEGACAO}{IGUAL}
 {MAIS_MAIS}     { return TK_MAIS_MAIS;}
 
 {MENOS_MENOS}   { return TK_MENOS_MENOS;}
+
+{MAIS_IGUAL}    { return TK_MAIS_IGUAL;}
 
 
 
