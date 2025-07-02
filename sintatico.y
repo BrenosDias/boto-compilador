@@ -88,7 +88,7 @@ String strCopy(String source);
 %token TK_TIPO_FLOAT
 %token TK_NOT TK_OR TK_AND
 %token TK_MAIOR TK_MAIOR_IGUAL TK_MENOR TK_MENOR_IGUAL TK_IGUAL_IGUAL TK_DIFERENTE
-%token TK_MAIS_MAIS TK_MENOS_MENOS TK_MAIS_IGUAL TK_MENOS_IGUAL
+%token TK_MAIS_MAIS TK_MENOS_MENOS TK_MAIS_IGUAL TK_MENOS_IGUAL TK_MULTI_IGUAL TK_DIVIDE_IGUAL
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOLEAN
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
@@ -271,8 +271,8 @@ COMANDO
 		        	val.temp = gentempcode(val.tipo);
 		        }
 		        
-		        cout << "\nNome "+val.nome << endl;
-				cout << "\nTemp "+val.temp << endl;
+		        //cout << "\nNome "+val.nome << endl;
+				//cout << "\nTemp "+val.temp << endl;
 		        declaraVariavel(val);
 				$$.traducao = $4.traducao;
 		        $$.label = "";
@@ -919,7 +919,7 @@ E
 		    }
 			| E TK_MENOR E
 		    {	
-		    	cout << "\n Esq = "+ $1.label + "Dir = " + $3.label << endl;
+		    	//cout << "\n Esq = "+ $1.label + "Dir = " + $3.label << endl;
 
 
 				implicitConversion($1, $3, $$, " < ");
@@ -1190,7 +1190,7 @@ E
 				// Modifique esta lógica se quiser aceitar outros tipos no futuro
 				if ((tipo_lhs != "int" && tipo_lhs != "float") || (tipo_rhs != "int" && tipo_rhs != "float")) {
 					// Se algum dos tipos não for numérico, lança um erro claro e para.
-					yyerror("Erro de Tipo: O operador '+=' requer operandos numéricos, mas recebeu '" + tipo_lhs + "' e '" + tipo_rhs + "'.");
+					yyerror("Erro de Tipo: O operador '-=' requer operandos numéricos, mas recebeu '" + tipo_lhs + "' e '" + tipo_rhs + "'.");
 				}
 				
 				// <<< FIM DA VERIFICAÇÃO >>>
@@ -1204,6 +1204,87 @@ E
 				traducao += "\t" + temp_nova + " = " + temp_atual + " - " + $3.label + ";\n";
 				
 				var_simbolo->temp = temp_nova; // Atualiza a tabela de símbolos
+
+				$$.traducao = traducao;
+				$$.type = "int";
+				$$.label = temp_nova;
+			}
+			| TK_ID TK_MULTI_IGUAL E{
+				Symbol* var_simbolo = nullptr;
+				for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+					auto it = symbolTable.escopos[i].find($1.label);
+					if (it != symbolTable.escopos[i].end()) {
+						var_simbolo = &it->second;
+						break;
+					}
+				}
+				if (!var_simbolo) {
+					yyerror("Variável '" + $1.label + "' não declarada.");
+				}
+
+				// <<< INÍCIO DA NOVA VERIFICAÇÃO DE TIPO >>>
+				
+				// Pega o tipo da variável da esquerda (ex: "int")
+				string tipo_lhs = var_simbolo->tipo; 
+				// Pega o tipo da expressão da direita (ex: "boolean" ou "int")
+				string tipo_rhs = $3.type;          
+
+				// 2. VERIFICA SE AMBOS SÃO NUMÉRICOS
+				// Modifique esta lógica se quiser aceitar outros tipos no futuro
+				if ((tipo_lhs != "int" && tipo_lhs != "float") || (tipo_rhs != "int" && tipo_rhs != "float")) {
+					// Se algum dos tipos não for numérico, lança um erro claro e para.
+					yyerror("Erro de Tipo: O operador '*=' requer operandos numéricos, mas recebeu '" + tipo_lhs + "' e '" + tipo_rhs + "'.");
+				}
+				
+				// <<< FIM DA VERIFICAÇÃO >>>
+
+				// 3. Se passou pela verificação, a geração de código continua normalmente
+				string temp_atual = var_simbolo->temp;
+				string temp_nova = gentempcode("int");
+				insertTempsST(temp_nova, "int");
+
+				string traducao = $3.traducao; // Código da expressão da direita
+				traducao += "\t" + temp_nova + " = " + temp_atual + " * " + $3.label + ";\n";
+				
+				var_simbolo->temp = temp_nova; // Atualiza a tabela de símbolos
+
+				$$.traducao = traducao;
+				$$.type = "int";
+				$$.label = temp_nova;
+			}
+			| TK_ID TK_DIVIDE_IGUAL E{
+				Symbol* var_simbolo = nullptr;
+				for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+					auto it = symbolTable.escopos[i].find($1.label);
+					if (it != symbolTable.escopos[i].end()) {
+						var_simbolo = &it->second;
+						break;
+					}
+				}
+				if (!var_simbolo) {
+					yyerror("Variável '" + $1.label + "' não declarada.");
+				}
+
+				string tipo_lhs = var_simbolo->tipo; 
+				
+				string tipo_rhs = $3.type;          
+
+				// 2. VERIFICA SE AMBOS SÃO NUMÉRICOS
+				// Modifique esta lógica se quiser aceitar outros tipos no futuro
+				if ((tipo_lhs != "int" && tipo_lhs != "float") || (tipo_rhs != "int" && tipo_rhs != "float")) {
+					// Se algum dos tipos não for numérico, lança um erro claro e para.
+					yyerror("Erro de Tipo: O operador '/=' requer operandos numéricos, mas recebeu '" + tipo_lhs + "' e '" + tipo_rhs + "'.");
+				}
+				
+		
+				string temp_atual = var_simbolo->temp;
+				string temp_nova = gentempcode("int");
+				insertTempsST(temp_nova, "int");
+
+				string traducao = $3.traducao; 
+				traducao += "\t" + temp_nova + " = " + temp_atual + " / " + $3.label + ";\n";
+				
+				var_simbolo->temp = temp_nova; 
 
 				$$.traducao = traducao;
 				$$.type = "int";
@@ -1423,7 +1504,7 @@ string gentempcode(string tipo) {
     	tipo = "int";
     }
 
-	 cout << "\n" + temp << endl;
+	 //cout << "\n" + temp << endl;
 
     return temp;
 }
