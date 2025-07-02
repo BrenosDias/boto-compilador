@@ -781,8 +781,8 @@ static const yytype_int16 yyrline[] =
      449,   485,   537,   555,   592,   599,   635,   650,   655,   661,
      668,   678,   693,   713,   814,   818,   836,   880,   887,   894,
      901,   908,   921,   937,   950,   964,   977,   991,  1008,  1045,
-    1087,  1126,  1170,  1213,  1256,  1294,  1311,  1328,  1338,  1348,
-    1352,  1385,  1393,  1400,  1414,  1421
+    1087,  1126,  1152,  1176,  1204,  1226,  1243,  1260,  1270,  1280,
+    1284,  1317,  1325,  1332,  1346,  1353
 };
 #endif
 
@@ -2679,39 +2679,21 @@ yyreduce:
 
 				// <<< INÍCIO DA NOVA VERIFICAÇÃO DE TIPO >>>
 				
-				// Pega o tipo da variável da esquerda (ex: "int")
-				string tipo_lhs = var_simbolo->tipo; 
-				// Pega o tipo da expressão da direita (ex: "boolean" ou "int")
-				string tipo_rhs = yyvsp[0].type;          
-
-				// 2. VERIFICA SE AMBOS SÃO NUMÉRICOS
-				// Modifique esta lógica se quiser aceitar outros tipos no futuro
-				if ((tipo_lhs != "int" && tipo_lhs != "float") || (tipo_rhs != "int" && tipo_rhs != "float")) {
-					// Se algum dos tipos não for numérico, lança um erro claro e para.
-					yyerror("Erro de Tipo: O operador '+=' requer operandos numéricos, mas recebeu '" + tipo_lhs + "' e '" + tipo_rhs + "'.");
-				}
+				  string temp_atual = var_simbolo->temp; 
 				
-				// <<< FIM DA VERIFICAÇÃO >>>
-
-				// 3. Se passou pela verificação, a geração de código continua normalmente
-				string temp_atual = var_simbolo->temp;
-				string temp_nova = gentempcode("int");
-				insertTempsST(temp_nova, "int");
-
-				string traducao = yyvsp[0].traducao; // Código da expressão da direita
-				traducao += "\t" + temp_nova + " = " + temp_atual + " + " + yyvsp[0].label + ";\n";
-				
-				var_simbolo->temp = temp_nova; // Atualiza a tabela de símbolos
+				string traducao = yyvsp[0].traducao; 
+				traducao += "\t" + temp_atual + " = " + temp_atual + " + " + yyvsp[0].label + ";\n";
 
 				yyval.traducao = traducao;
 				yyval.type = "int";
-				yyval.label = temp_nova;
+				
+				yyval.label = temp_atual;
 			}
-#line 2711 "y.tab.c"
+#line 2693 "y.tab.c"
     break;
 
   case 62: /* E: TK_ID TK_MENOS_IGUAL E  */
-#line 1170 "sintatico.y"
+#line 1152 "sintatico.y"
                                                 {
 				Symbol* var_simbolo = nullptr;
 				for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
@@ -2725,41 +2707,22 @@ yyreduce:
 					yyerror("Variável '" + yyvsp[-2].label + "' não declarada.");
 				}
 
-				// <<< INÍCIO DA NOVA VERIFICAÇÃO DE TIPO >>>
 				
-				// Pega o tipo da variável da esquerda (ex: "int")
-				string tipo_lhs = var_simbolo->tipo; 
-				// Pega o tipo da expressão da direita (ex: "boolean" ou "int")
-				string tipo_rhs = yyvsp[0].type;          
-
-				// 2. VERIFICA SE AMBOS SÃO NUMÉRICOS
-				// Modifique esta lógica se quiser aceitar outros tipos no futuro
-				if ((tipo_lhs != "int" && tipo_lhs != "float") || (tipo_rhs != "int" && tipo_rhs != "float")) {
-					// Se algum dos tipos não for numérico, lança um erro claro e para.
-					yyerror("Erro de Tipo: O operador '-=' requer operandos numéricos, mas recebeu '" + tipo_lhs + "' e '" + tipo_rhs + "'.");
-				}
-				
-				// <<< FIM DA VERIFICAÇÃO >>>
-
-				// 3. Se passou pela verificação, a geração de código continua normalmente
 				string temp_atual = var_simbolo->temp;
-				string temp_nova = gentempcode("int");
-				insertTempsST(temp_nova, "int");
 
-				string traducao = yyvsp[0].traducao; // Código da expressão da direita
-				traducao += "\t" + temp_nova + " = " + temp_atual + " - " + yyvsp[0].label + ";\n";
+				string traducao = yyvsp[0].traducao; 
+				traducao += "\t" + temp_atual + " = " + temp_atual + " - " + yyvsp[0].label + ";\n";
 				
-				var_simbolo->temp = temp_nova; // Atualiza a tabela de símbolos
 
 				yyval.traducao = traducao;
 				yyval.type = "int";
-				yyval.label = temp_nova;
+				yyval.label = temp_atual;
 			}
-#line 2759 "y.tab.c"
+#line 2722 "y.tab.c"
     break;
 
   case 63: /* E: TK_ID TK_MULTI_IGUAL E  */
-#line 1213 "sintatico.y"
+#line 1176 "sintatico.y"
                                                 {
 				Symbol* var_simbolo = nullptr;
 				for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
@@ -2773,41 +2736,26 @@ yyreduce:
 					yyerror("Variável '" + yyvsp[-2].label + "' não declarada.");
 				}
 
-				// <<< INÍCIO DA NOVA VERIFICAÇÃO DE TIPO >>>
 				
-				// Pega o tipo da variável da esquerda (ex: "int")
-				string tipo_lhs = var_simbolo->tipo; 
-				// Pega o tipo da expressão da direita (ex: "boolean" ou "int")
-				string tipo_rhs = yyvsp[0].type;          
 
-				// 2. VERIFICA SE AMBOS SÃO NUMÉRICOS
-				// Modifique esta lógica se quiser aceitar outros tipos no futuro
-				if ((tipo_lhs != "int" && tipo_lhs != "float") || (tipo_rhs != "int" && tipo_rhs != "float")) {
-					// Se algum dos tipos não for numérico, lança um erro claro e para.
-					yyerror("Erro de Tipo: O operador '*=' requer operandos numéricos, mas recebeu '" + tipo_lhs + "' e '" + tipo_rhs + "'.");
-				}
 				
-				// <<< FIM DA VERIFICAÇÃO >>>
-
-				// 3. Se passou pela verificação, a geração de código continua normalmente
 				string temp_atual = var_simbolo->temp;
-				string temp_nova = gentempcode("int");
-				insertTempsST(temp_nova, "int");
+				
 
 				string traducao = yyvsp[0].traducao; // Código da expressão da direita
-				traducao += "\t" + temp_nova + " = " + temp_atual + " * " + yyvsp[0].label + ";\n";
+				traducao += "\t" + temp_atual + " = " + temp_atual + " * " + yyvsp[0].label + ";\n";
 				
-				var_simbolo->temp = temp_nova; // Atualiza a tabela de símbolos
+				
 
 				yyval.traducao = traducao;
 				yyval.type = "int";
-				yyval.label = temp_nova;
+				yyval.label = temp_atual;
 			}
-#line 2807 "y.tab.c"
+#line 2755 "y.tab.c"
     break;
 
   case 64: /* E: TK_ID TK_DIVIDE_IGUAL E  */
-#line 1256 "sintatico.y"
+#line 1204 "sintatico.y"
                                                  {
 				Symbol* var_simbolo = nullptr;
 				for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
@@ -2820,37 +2768,21 @@ yyreduce:
 				if (!var_simbolo) {
 					yyerror("Variável '" + yyvsp[-2].label + "' não declarada.");
 				}
-
-				string tipo_lhs = var_simbolo->tipo; 
-				
-				string tipo_rhs = yyvsp[0].type;          
-
-				// 2. VERIFICA SE AMBOS SÃO NUMÉRICOS
-				// Modifique esta lógica se quiser aceitar outros tipos no futuro
-				if ((tipo_lhs != "int" && tipo_lhs != "float") || (tipo_rhs != "int" && tipo_rhs != "float")) {
-					// Se algum dos tipos não for numérico, lança um erro claro e para.
-					yyerror("Erro de Tipo: O operador '/=' requer operandos numéricos, mas recebeu '" + tipo_lhs + "' e '" + tipo_rhs + "'.");
-				}
-				
 		
 				string temp_atual = var_simbolo->temp;
-				string temp_nova = gentempcode("int");
-				insertTempsST(temp_nova, "int");
 
 				string traducao = yyvsp[0].traducao; 
-				traducao += "\t" + temp_nova + " = " + temp_atual + " / " + yyvsp[0].label + ";\n";
+				traducao += "\t" + temp_atual + " = " + temp_atual + " / " + yyvsp[0].label + ";\n";
 				
-				var_simbolo->temp = temp_nova; 
-
 				yyval.traducao = traducao;
 				yyval.type = "int";
-				yyval.label = temp_nova;
+				yyval.label = temp_atual;
 			}
-#line 2850 "y.tab.c"
+#line 2782 "y.tab.c"
     break;
 
   case 65: /* E: E TK_AND E  */
-#line 1295 "sintatico.y"
+#line 1227 "sintatico.y"
                     {
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -2867,11 +2799,11 @@ yyreduce:
 		        }
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " && " + yyvsp[0].label + ";\n";
 		    }
-#line 2871 "y.tab.c"
+#line 2803 "y.tab.c"
     break;
 
   case 66: /* E: E TK_OR E  */
-#line 1312 "sintatico.y"
+#line 1244 "sintatico.y"
                     {
 				yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -2888,11 +2820,11 @@ yyreduce:
 		        }
 				yyval.traducao = yyvsp[-2].traducao + yyvsp[0].traducao + "\t" + yyval.label + " = " + yyvsp[-2].label + " || " + yyvsp[0].label + ";\n";
 		    }
-#line 2892 "y.tab.c"
+#line 2824 "y.tab.c"
     break;
 
   case 67: /* E: TK_TIPO_INT '(' E ')'  */
-#line 1329 "sintatico.y"
+#line 1261 "sintatico.y"
                     {
 				if(yyvsp[-1].type == "char"){
 					yyerror("Não é possível essa conversão.");
@@ -2902,11 +2834,11 @@ yyreduce:
 
 				yyval.traducao = yyvsp[-1].traducao  + "\t" + yyval.label + " = " + "(int)" + yyvsp[-1].label + ";\n";
 		    }
-#line 2906 "y.tab.c"
+#line 2838 "y.tab.c"
     break;
 
   case 68: /* E: TK_TIPO_FLOAT '(' E ')'  */
-#line 1339 "sintatico.y"
+#line 1271 "sintatico.y"
                     {
 				if(yyvsp[-1].type == "char"){
 					yyerror("Não é possível essa conversão.");
@@ -2916,19 +2848,19 @@ yyreduce:
 
 				yyval.traducao = yyvsp[-1].traducao  + "\t" + yyval.label + " = " + "(float)" + yyvsp[-1].label + ";\n";
 		    }
-#line 2920 "y.tab.c"
+#line 2852 "y.tab.c"
     break;
 
   case 69: /* E: '(' E ')'  */
-#line 1349 "sintatico.y"
+#line 1281 "sintatico.y"
                     {
 		        yyval = yyvsp[-1];
 		    }
-#line 2928 "y.tab.c"
+#line 2860 "y.tab.c"
     break;
 
   case 70: /* E: TK_ID  */
-#line 1353 "sintatico.y"
+#line 1285 "sintatico.y"
                         {
 			        // --- PASSO 1: Busca pela variável ---
 			        bool achou = false; 
@@ -2961,33 +2893,33 @@ yyreduce:
 			        yyval.type = it->second.tipo;
 			        yyval.traducao = ""; // NENHUM CÓDIGO NOVO É GERADO!
 			    }
-#line 2965 "y.tab.c"
+#line 2897 "y.tab.c"
     break;
 
   case 71: /* E: TK_INT  */
-#line 1386 "sintatico.y"
+#line 1318 "sintatico.y"
                     {
 		        yyval.type = "int";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
-#line 2976 "y.tab.c"
+#line 2908 "y.tab.c"
     break;
 
   case 72: /* E: TK_FLOAT  */
-#line 1394 "sintatico.y"
+#line 1326 "sintatico.y"
                     {
 		        yyval.type = "float";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
-#line 2987 "y.tab.c"
+#line 2919 "y.tab.c"
     break;
 
   case 73: /* E: TK_BOOLEAN  */
-#line 1401 "sintatico.y"
+#line 1333 "sintatico.y"
                     {	
 		        yyval.type = "int";
 		        yyval.label = gentempcode("boolean");
@@ -3001,22 +2933,22 @@ yyreduce:
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + label + ";\n";
 		    }
-#line 3005 "y.tab.c"
+#line 2937 "y.tab.c"
     break;
 
   case 74: /* E: TK_CHAR  */
-#line 1415 "sintatico.y"
+#line 1347 "sintatico.y"
                     {
 		        yyval.type = "char";
 		        yyval.label = gentempcode(yyval.type);
 		        insertTempsST(yyval.label, yyval.type);
 		        yyval.traducao = "\t" + yyval.label + " = " + yyvsp[0].label + ";\n";
 		    }
-#line 3016 "y.tab.c"
+#line 2948 "y.tab.c"
     break;
 
   case 75: /* E: TK_STRING  */
-#line 1422 "sintatico.y"
+#line 1354 "sintatico.y"
                         {
 				yyval.type = "String";
 				yyval.label = gentempcode(yyval.type);
@@ -3081,11 +3013,11 @@ yyreduce:
 
 				yyval.traducao = traducao;
 			}
-#line 3085 "y.tab.c"
+#line 3017 "y.tab.c"
     break;
 
 
-#line 3089 "y.tab.c"
+#line 3021 "y.tab.c"
 
       default: break;
     }
@@ -3278,7 +3210,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 1489 "sintatico.y"
+#line 1421 "sintatico.y"
 
 
 #include "lex.yy.c"
