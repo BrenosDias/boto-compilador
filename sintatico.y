@@ -290,7 +290,8 @@ COMANDO
 						$$.traducao = "";
 					}
 					else{
-						$$.traducao = $4.traducao;
+						$$.traducao = $4.traducao + "\t" + val.temp + " = " + $4.label +";\n"  ;
+						cout << "\nAAAAAAAA "+ $4.traducao << endl;
 					}
 					
 					$$.label = $2.label;
