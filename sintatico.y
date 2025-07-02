@@ -88,7 +88,7 @@ String strCopy(String source);
 %token TK_TIPO_FLOAT
 %token TK_NOT TK_OR TK_AND
 %token TK_MAIOR TK_MAIOR_IGUAL TK_MENOR TK_MENOR_IGUAL TK_IGUAL_IGUAL TK_DIFERENTE
-%token TK_MAIS_MAIS TK_MENOS_MENOS TK_MAIS_IGUAL
+%token TK_MAIS_MAIS TK_MENOS_MENOS TK_MAIS_IGUAL TK_MENOS_IGUAL
 %token TK_INT TK_FLOAT TK_CHAR TK_BOOLEAN
 %token TK_MAIN TK_ID TK_TIPO_INT TK_VAR
 %token TK_FIM TK_ERROR
@@ -1166,6 +1166,49 @@ E
 				$$.type = "int";
 				$$.label = temp_nova;
 			}
+			| TK_ID TK_MENOS_IGUAL E{
+				Symbol* var_simbolo = nullptr;
+				for (int i = symbolTable.escopos.size() - 1; i >= 0; --i) {
+					auto it = symbolTable.escopos[i].find($1.label);
+					if (it != symbolTable.escopos[i].end()) {
+						var_simbolo = &it->second;
+						break;
+					}
+				}
+				if (!var_simbolo) {
+					yyerror("Variável '" + $1.label + "' não declarada.");
+				}
+
+				// <<< INÍCIO DA NOVA VERIFICAÇÃO DE TIPO >>>
+				
+				// Pega o tipo da variável da esquerda (ex: "int")
+				string tipo_lhs = var_simbolo->tipo; 
+				// Pega o tipo da expressão da direita (ex: "boolean" ou "int")
+				string tipo_rhs = $3.type;          
+
+				// 2. VERIFICA SE AMBOS SÃO NUMÉRICOS
+				// Modifique esta lógica se quiser aceitar outros tipos no futuro
+				if ((tipo_lhs != "int" && tipo_lhs != "float") || (tipo_rhs != "int" && tipo_rhs != "float")) {
+					// Se algum dos tipos não for numérico, lança um erro claro e para.
+					yyerror("Erro de Tipo: O operador '+=' requer operandos numéricos, mas recebeu '" + tipo_lhs + "' e '" + tipo_rhs + "'.");
+				}
+				
+				// <<< FIM DA VERIFICAÇÃO >>>
+
+				// 3. Se passou pela verificação, a geração de código continua normalmente
+				string temp_atual = var_simbolo->temp;
+				string temp_nova = gentempcode("int");
+				insertTempsST(temp_nova, "int");
+
+				string traducao = $3.traducao; // Código da expressão da direita
+				traducao += "\t" + temp_nova + " = " + temp_atual + " - " + $3.label + ";\n";
+				
+				var_simbolo->temp = temp_nova; // Atualiza a tabela de símbolos
+
+				$$.traducao = traducao;
+				$$.type = "int";
+				$$.label = temp_nova;
+			}
 			| E TK_AND E 
 		    {
 				$$.type = "int";
@@ -1299,13 +1342,12 @@ E
 				$$.label = gentempcode($$.type);
 				insertTempsST($$.label, $$.type);
 
-				std::string originalString = $1.label; // Ex: "\"hello\""
+				std::string originalString = $1.label; 
 				std::string traducao = "";
 
 				std::string valorSemAspas;
 				int size = 0;
 
-				// Lê caractere por caractere, desconsiderando as aspas e lidando com escapes
 				for (int i = 1; i < originalString.length() - 1; i++) {
 					char c = originalString[i];
 

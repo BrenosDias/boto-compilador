@@ -14,7 +14,7 @@ NEGACAO      "!"
 MAIS_MAIS    "++"
 MENOS_MENOS  "--"
 MAIS_IGUAL   "+="
-
+MENOS_IGUAL  "-="
 
 DELIM {ESPACO}+
 INT {DIGITO}+
@@ -96,6 +96,7 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 {MAIS_IGUAL}    { return TK_MAIS_IGUAL;}
 
+{MENOS_IGUAL}   { return TK_MENOS_IGUAL;}
 
 
 [(){};:,=+\-*/<>] { return yytext[0]; }
