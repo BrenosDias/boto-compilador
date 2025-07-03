@@ -963,7 +963,7 @@ YY_RULE_SETUP
 case 25:
 YY_RULE_SETUP
 #line 88 "lexico.l"
-{return TK_TYPE;}
+{return TK_TIPO;}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
