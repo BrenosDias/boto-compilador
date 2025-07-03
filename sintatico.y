@@ -68,7 +68,7 @@ typedef struct {
 
 int var_temp_qnt;
 int funCount = 0;
-Function funcaoAtiva;
+Function* funcaoAtiva;
 
 vector<Function> functionVector;
 stack<string> breakLabels;
@@ -359,8 +359,10 @@ COMANDO
                     yyerror("O comando RETURN não pode ser usado fora de uma função");
                 }
 
-                if (funcaoAtiva.tipoRetorno != "void" && funcaoAtiva.tipoRetorno != $2.tipo) {
-                    yyerror("O tipo de retorno da função (" + funcaoAtiva.tipoRetorno + ") não corresponde ao tipo da expressão (" + $2.tipo + ")");
+				
+
+                if (funcaoAtiva->tipoRetorno != "void" && funcaoAtiva->tipoRetorno != $2.type) {
+                    yyerror("O tipo de retorno da função (" + funcaoAtiva->tipoRetorno + ") não corresponde ao tipo da expressão (" + $2.type + ")");
                 }
 
                 $$.traducao = $2.traducao;
@@ -383,26 +385,25 @@ POP_ESCOPO  : '}'
 			;
 
 FUNCTION_INIT 
-			: TK_FUNCTION TK_TIPO TK_ID{
-
-				Function funcao;
-
-				if(funcaoAtiva == nullptr){
-					yyerror("Não é possível declarar uma função dentro de outra função")
+			: TK_FUNCTION TK_TIPO TK_ID
+			{
+				if (funcaoAtiva != nullptr) {
+					yyerror("Nao e possivel declarar uma funcao dentro de outra funcao");
+					YYABORT;
 				}
 
-				funcao.nome = $2.label;
-				funcao.temp = genTempFunction()
-				funcao.tipoRetorno = $2.label; 
+				funcaoAtiva = new Function();
 
-				funcaoAtiva = funcao;
-			} 
+				funcaoAtiva->nome = $3.label;        
+				funcaoAtiva->tipoRetorno = $2.label;  
+				funcaoAtiva->temp = genTempFunction(); 
+			}
 			;
 
 FUNCTION_PARAMETROS
 			: '(' PARAMETROS ')'{
 
-				funcaoAtiva.tipoRetorno = TIPO_VOID;
+				funcaoAtiva->tipoRetorno = TIPO_VOID;
 			}
 			;
 PARAMETROS
@@ -420,29 +421,34 @@ PARAMETROS
 			;
 
 PARAMETRO 
-			: TK_TIPO TK_ID {
-
-				Function funcao = funcaoAtiva;
-
+			: TK_TIPO TK_ID 
+			{
 				adicionarParametro($2.label, $1.label);
 			}
 			;
 
 FUNCTION_CORPO
-			: '{' COMANDOS '}' {
-            	compilador.debug("Corpo da função");
-            
-            	funcaoAtiva = $2.traducao;
-        	}
-        	;
+			: '{' COMANDOS '}' 
+			{
+				if (funcaoAtiva == nullptr) {
+					yyerror("Corpo de funcao encontrado fora de uma definicao de funcao.");
+					YYABORT;
+				}
+				funcaoAtiva->traducao = $2.traducao;
+			}
+			;
 DECLARAR_FUNCTION
-			: FUNCTION_INIT FUNCTION_PARAMETROS FUNCTION_CORPO {
+			: FUNCTION_INIT FUNCTION_PARAMETROS FUNCTION_CORPO 
+			{
+				if (funcaoAtiva != nullptr) {
+					functionVector.push_back(*funcaoAtiva);
 
-				functionVector.push_back(funcaoAtiva);
-				funcaoAtiva == nullptr;
-				
-				$$.traducao = "";
+					delete funcaoAtiva;
 
+					funcaoAtiva = nullptr;
+				}
+
+				$$.traducao = ""; 
 			}
 FOR_DECL_OU_EXPR
 		    : TK_VAR TK_ID '=' E  
@@ -1666,15 +1672,15 @@ void adicionarParametro(string nome, string tipo){
 	}
 
 	Symbol parametro;
-	parametro.nome = "param" + to_string(funcaoAtiva.parametros.size());
+	parametro.nome = "param" + to_string(funcaoAtiva->parametros.size());
 	parametro.tipo = tipo;
-	funcaoAtiva.parametros.push_back(parametro);
+	funcaoAtiva->parametros.push_back(parametro);
 }
 
 Symbol* buscarParametro(string nome) {
 
 
-    for (auto& parametro : funcaoAtiva.parametros) {
+    for (auto& parametro : funcaoAtiva->parametros) {
         if (parametro.nome == nome) {
             return &parametro;
         }
