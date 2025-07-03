@@ -37,18 +37,27 @@ struct TabelaSimbolos
 	int quantidade;
 };
 
-// Estrutura para guardar os rótulos de um laço
 struct InfoLaco {
     string inicio;
     string fim;
 };
 
+
+struct Function{
+
+	string nome;
+	string temp;
+	string tipoRetorno;
+	vector<Symbol> parametros;
+	string traducao;
+};
+
 struct SwitchContext {
-    string temp_var;      // Temp que guarda o valor da expressão do switch
-    string end_label;       // Rótulo para o 'break' pular
-    string default_label;   // Rótulo para o 'default' (pode ser o mesmo que end_label)
-    bool has_default = false;  // Flag para saber se um default foi definido
-    vector<CaseInfo> cases; // Vetor com todos os cases (valor, rótulo)
+    string temp_var;      
+    string end_label;       
+    string default_label;   
+    bool has_default = false;  
+    vector<CaseInfo> cases; 
 };
  
 
@@ -58,10 +67,12 @@ typedef struct {
 } String;
 
 int var_temp_qnt;
-// Pilha para os rótulos de saída (para o 'break') - continua igual
+int funCount = 0;
+Function funcaoAtiva;
+
+vector<Function> functionVector;
 stack<string> breakLabels;
 stack<string> continueLabels;
-// NOVA Pilha para gerenciar os laços ativos
 vector<InfoLaco> pilhaLacos;
 stack<SwitchContext> switchStack;
 vector<Symbol> tempsVector;
@@ -80,7 +91,10 @@ void reportSemanticError(string type1, string type3, string text);
 void entraEscopo();
 void saiEscopo();
 void declaraVariavel(Symbol& simbolo);
+Symbol* buscarParametro(string nome);
+void adicionarParametro(string nome, string tipo);
 string genlabel();
+string genTempFunction();
 String strCopy(String source);
 // string searchType(const string& label);
 %}
@@ -94,6 +108,7 @@ String strCopy(String source);
 %token TK_FIM TK_ERROR
 %token TK_PRINT TK_INPUT TK_STRING
 %token TK_WHILE TK_FOR TK_DO TK_IF TK_BREAK TK_CONTINUE TK_BREAKOUT TK_SWITCH TK_CASE TK_DEFAULT
+%token TK_FUNCTION TK_TIPO TK_RETURN
 
 
 %start S
@@ -291,7 +306,6 @@ COMANDO
 					}
 					else{
 						$$.traducao = $4.traducao + "\t" + val.temp + " = " + $4.label +";\n"  ;
-						cout << "\nAAAAAAAA "+ $4.traducao << endl;
 					}
 					
 					$$.label = $2.label;
@@ -338,6 +352,21 @@ COMANDO
 		            $$.traducao = "goto " + continueLabels.top() + ";\n";
 		        }
 		    }
+		    | TK_RETURN E
+		    {
+
+                if (funcaoAtiva == nullptr) {
+                    yyerror("O comando RETURN não pode ser usado fora de uma função");
+                }
+
+                if (funcaoAtiva.tipoRetorno != "void" && funcaoAtiva.tipoRetorno != $2.tipo) {
+                    yyerror("O tipo de retorno da função (" + funcaoAtiva.tipoRetorno + ") não corresponde ao tipo da expressão (" + $2.tipo + ")");
+                }
+
+                $$.traducao = $2.traducao;
+                $$.traducao += "return " + $2.label + ";\n";
+                    
+		    }
 
 		    ;
 
@@ -353,10 +382,71 @@ POP_ESCOPO  : '}'
 			}
 			;
 
+FUNCTION_INIT 
+			: TK_FUNCTION TK_TIPO TK_ID{
+
+				Function funcao;
+
+				if(funcaoAtiva == nullptr){
+					yyerror("Não é possível declarar uma função dentro de outra função")
+				}
+
+				funcao.nome = $2.label;
+				funcao.temp = genTempFunction()
+				funcao.tipoRetorno = $2.label; 
+
+				funcaoAtiva = funcao;
+			} 
+			;
+
+FUNCTION_PARAMETROS
+			: '(' PARAMETROS ')'{
+
+				funcaoAtiva.tipoRetorno = TIPO_VOID;
+			}
+			;
+PARAMETROS
+			: PARAMETRO 
+			{
+
+			}
+			|PARAMETRO ',' PARAMETRO {
+
+			}
+			|
+			{
+
+			}
+			;
+
+PARAMETRO 
+			: TK_TIPO TK_ID {
+
+				Function funcao = funcaoAtiva;
+
+				adicionarParametro($2.label, $1.label);
+			}
+			;
+
+FUNCTION_CORPO
+			: '{' COMANDOS '}' {
+            	compilador.debug("Corpo da função");
+            
+            	funcaoAtiva = $2.traducao;
+        	}
+        	;
+DECLARAR_FUNCTION
+			: FUNCTION_INIT FUNCTION_PARAMETROS FUNCTION_CORPO {
+
+				functionVector.push_back(funcaoAtiva);
+				funcaoAtiva == nullptr;
+				
+				$$.traducao = "";
+
+			}
 FOR_DECL_OU_EXPR
-		    : TK_VAR TK_ID '=' E  // Ex: var a = 0
+		    : TK_VAR TK_ID '=' E  
 		    {
-		        // Ação semântica para declarar a variável
 		        Symbol val;
 		        val.nome = $2.label;
 		        val.tipo = $4.type;
@@ -376,7 +466,7 @@ FOR_INIT
 		    {
 		        $$.traducao = $1.traducao; 
 		    }
-		    | /* epsilon */
+		    | 
 		    {
 		        $$.traducao = ""; 
 		    }
@@ -1569,10 +1659,39 @@ void checkUndefinedTypes(const TabelaSimbolos& symbolTable) {
     }
 }
 
+void adicionarParametro(string nome, string tipo){
+
+	if (buscarParametro(nome) != nullptr) {
+	    yyerror("O parametro " + nome + " ja foi declarado nessa funcao");
+	}
+
+	Symbol parametro;
+	parametro.nome = "param" + to_string(funcaoAtiva.parametros.size());
+	parametro.tipo = tipo;
+	funcaoAtiva.parametros.push_back(parametro);
+}
+
+Symbol* buscarParametro(string nome) {
+
+
+    for (auto& parametro : funcaoAtiva.parametros) {
+        if (parametro.nome == nome) {
+            return &parametro;
+        }
+    }
+
+    return nullptr;
+}
+
 int labelCount = 0;
 
 string genlabel() {
     return "L" + to_string(labelCount++);
+}
+
+string genTempFunction() {
+
+	return "fun" + to_string(funCount++);
 }
 
 // string searchType(const string& label) {

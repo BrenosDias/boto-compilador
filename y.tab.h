@@ -93,8 +93,11 @@ extern int yydebug;
     TK_SWITCH = 294,               /* TK_SWITCH  */
     TK_CASE = 295,                 /* TK_CASE  */
     TK_DEFAULT = 296,              /* TK_DEFAULT  */
-    LOWER_THAN_ELSE = 297,         /* LOWER_THAN_ELSE  */
-    TK_ELSE = 298                  /* TK_ELSE  */
+    TK_FUNCTION = 297,             /* TK_FUNCTION  */
+    TK_TIPO = 298,                 /* TK_TIPO  */
+    TK_RETURN = 299,               /* TK_RETURN  */
+    LOWER_THAN_ELSE = 300,         /* LOWER_THAN_ELSE  */
+    TK_ELSE = 301                  /* TK_ELSE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -142,8 +145,11 @@ extern int yydebug;
 #define TK_SWITCH 294
 #define TK_CASE 295
 #define TK_DEFAULT 296
-#define LOWER_THAN_ELSE 297
-#define TK_ELSE 298
+#define TK_FUNCTION 297
+#define TK_TIPO 298
+#define TK_RETURN 299
+#define LOWER_THAN_ELSE 300
+#define TK_ELSE 301
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

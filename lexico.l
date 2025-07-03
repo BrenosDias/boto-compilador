@@ -29,6 +29,7 @@ MAIOR_IGUAL     {MAIOR_QUE}{IGUAL}
 MENOR_IGUAL     {MENOR_QUE}{IGUAL}
 IGUAL_IGUAL     {IGUAL}{IGUAL}
 DIFERENTE       {NEGACAO}{IGUAL}
+TIPOS boolean|int|float|string|char
 
 
 
@@ -76,9 +77,15 @@ DIFERENTE       {NEGACAO}{IGUAL}
 
 "break"      {return TK_BREAK;}
 
+"return"        {return TK_RETURN;}
+
+"function"      {return TK_FUNCTION;}
+
 "breakout"      {return TK_BREAKOUT;}
 
 "continue"      {return TK_CONTINUE;}
+
+{TIPOS}         {return TK_TIPO;}
 
 {MAIOR_IGUAL}   { return TK_MAIOR_IGUAL;}
 
