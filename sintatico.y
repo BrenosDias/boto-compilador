@@ -1119,6 +1119,8 @@ E
 				} else if (var_simbolo->tipo != "int" && var_simbolo->tipo != "float") {
 					yyerror("Operador '++' só pode ser usado com tipos numéricos.");
 				}
+
+				
 				
 				string temp_atual = var_simbolo->temp; // var_simbolo->temp contém "t1"
 
@@ -1204,15 +1206,15 @@ E
 				// 3. Gera temporárias para a operação
 				string temp_one = gentempcode("int");
 				insertTempsST(temp_one, "int");
-				string temp_nova = gentempcode("int");
-				insertTempsST(temp_nova, "int");
+				// string temp_nova = gentempcode("int");
+				// insertTempsST(temp_nova, "int");
 
 				string traducao = "";
 				traducao += "\t" + temp_one + " = 1;\n";
-				traducao += "\t" + temp_nova + " = " + temp_atual + " - " + temp_one + ";\n";
+				traducao += "\t" + temp_atual + " = " + temp_atual + " - " + temp_one + ";\n";
 				
 				
-				var_simbolo->temp = temp_nova;
+				//var_simbolo->temp = temp_nova;
 
 				// 6. Prepara o resultado da regra
 				$$.traducao = traducao;
@@ -1231,6 +1233,8 @@ E
 				}
 				if (!var_simbolo) {
 					yyerror("Variável '" + $1.label + "' não declarada.");
+				} else if (var_simbolo->tipo != "int" && var_simbolo->tipo != "float") {
+					yyerror("Operador '+=' só pode ser usado com tipos numéricos.");
 				}
 
 				// <<< INÍCIO DA NOVA VERIFICAÇÃO DE TIPO >>>
@@ -1256,6 +1260,8 @@ E
 				}
 				if (!var_simbolo) {
 					yyerror("Variável '" + $1.label + "' não declarada.");
+				} else if (var_simbolo->tipo != "int" && var_simbolo->tipo != "float") {
+					yyerror("Operador '-=' só pode ser usado com tipos numéricos.");
 				}
 
 				
@@ -1280,6 +1286,8 @@ E
 				}
 				if (!var_simbolo) {
 					yyerror("Variável '" + $1.label + "' não declarada.");
+				} else if (var_simbolo->tipo != "int" && var_simbolo->tipo != "float") {
+					yyerror("Operador '*=' só pode ser usado com tipos numéricos.");
 				}
 
 				
@@ -1308,6 +1316,8 @@ E
 				}
 				if (!var_simbolo) {
 					yyerror("Variável '" + $1.label + "' não declarada.");
+				} else if (var_simbolo->tipo != "int" && var_simbolo->tipo != "float") {
+					yyerror("Operador '/=' só pode ser usado com tipos numéricos.");
 				}
 		
 				string temp_atual = var_simbolo->temp;

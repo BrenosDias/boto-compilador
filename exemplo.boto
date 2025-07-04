@@ -1,4 +1,4 @@
 int main() {
-    var a = 2;
-    a /= 3; 
+    var i = 'a';
+    i -= 3;
 }

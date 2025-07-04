@@ -1,35 +1,57 @@
-
+================================ string
 int main() {
 
     var a = "hello";
-    var b;
-    b = a;
-    var d="";
+    print(a);
 
 }
 
-================================DO While input
+================================ string com stdin
 
 int main() {
 
-    var a = 20;
-    do{
+    var a = "";
+    a = input();
 
-        a = input();
-    }while(a > 3);
+    print(a);
+    
 
 }
 
-================================For + print
+================================ inicializações
 
 int main() {
 
+    var a = 10;
+    var b = 'c';
+    var c = "oi";
+}
 
-    for(var i = 0; i <20 ; i = i + 1){
+================================= unário
 
+int main() {
+
+    var i;
+    var a = 6;
+
+    for(i=0;i<a;i++){
         print(i);
+        a--;
     }
 }
+================================= switch
+int main() {
+    var opcao;
+    opcao = 2;  
+    
+    switch (opcao) {
+    case 1:
+        var i = 3; 
+    case 2:
+        var mari = 5;
+    }
+}
+
 
 =================================While + break + if
 
@@ -45,18 +67,75 @@ int main() {
         }
     }
 }
-================================= Switch Case
+
+=================================Do while + continue
+
 int main() {
-    var opcao;
-    opcao = 2;  
-    
-    switch (opcao) {
-    case 1:
-        var i = 3; 
-    case 2:
-        var mari = 5;
-    }
+    var i = 0;
+
+    do {
+        i++;
+        
+        if (i == 5) {
+            continue;  
+        }
+        
+        print(i);
+        
+    } while (i < 10);
+}
+
+=================================Operadores compostos
+
+int main() {
+    var i = 0;
+    i += 20;
+    i /= 2;
+
+    print(i);
 }
 
 
-===========================
+---------------------------- Extras
+
+
+================================= Inferência de tipo
+
+int main() {
+    var a = 0;
+    var b = "abc";
+    var c = 'o';
+
+}
+
+================================= Operador ++i
+
+int main() {
+    var a = 0;
+    ++a;
+
+    print(a);
+}
+
+================================= breakout
+
+int main() {
+    var i = 0;
+    var j = 0;
+
+    for (i = 0; i < 5; i++) {
+
+        print(i);
+        
+        for (j = 0; j < 5; j++) {
+            
+            print(j);
+        
+                breakout;
+            
+        }
+    }
+
+    print("oi");
+
+}
