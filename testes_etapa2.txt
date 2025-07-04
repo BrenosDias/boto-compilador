@@ -139,3 +139,14 @@ int main() {
     print("oi");
 
 }
+
+================================= comentarios
+main() {
+    var resultado;
+
+    resultado = 3;
+
+    // resultado++;
+
+
+}
